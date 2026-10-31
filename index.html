@@ -1,926 +1,849 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#0f1115">
-<title>Perspective Studio - Multi-Point Perspective Engine</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Perspective Studio — 3D Primitive Sandbox</title>
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
-:root {
-    --bg: #0f1115;
-    --panel: #161b22;
-    --input: #21262d;
-    --border: #30363d;
-    --text: #e6edf3;
-    --muted: #8b949e;
-    --accent: #58a6ff;
-    --accent-soft: rgba(88,166,255,0.15);
-    --danger: #f85149;
-    --success: #3fb950;
-    --warning: #d29922;
-    --safe-top: env(safe-area-inset-top, 0px);
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
-    --nav-h: 64px;
-    --header-h: 52px;
-}
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; width: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 15px; touch-action: none; overscroll-behavior: none; }
-button, input, select { font: inherit; color: inherit; }
-button { background: none; border: none; cursor: pointer; }
-input[type="range"] { -webkit-appearance: none; appearance: none; background: transparent; }
-.app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; width: 100vw; position: relative; }
-.header { height: var(--header-h); padding-top: var(--safe-top); background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding-left: 16px; padding-right: 12px; flex-shrink: 0; z-index: 20; }
-.header .title { font-size: 0.95rem; font-weight: 700; letter-spacing: 0.5px; color: var(--accent); }
-.header .subtitle { font-size: 0.65rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
-.mode-badge { background: var(--accent-soft); color: var(--accent); padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--accent); }
-.stage { flex: 1; position: relative; background: #0d1117; overflow: hidden; width: 100%; height: 100%; }
-canvas { display: block; width: 100%; height: 100%; touch-action: none; background: #0d1117; }
-.hud { position: absolute; top: calc(var(--safe-top) + 10px); left: 10px; right: 10px; display: flex; justify-content: space-between; pointer-events: none; font-size: 0.7rem; color: var(--muted); z-index: 10; }
-.hud-chip { background: rgba(22,27,34,0.85); padding: 6px 10px; border-radius: 6px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid var(--border); }
-.hud-chip strong { color: var(--accent); }
-.preset-bar { position: absolute; top: calc(var(--safe-top) + 42px); left: 10px; display: flex; gap: 6px; z-index: 12; }
-.preset-btn { background: rgba(22,27,34,0.85); border: 1px solid var(--border); color: var(--text); padding: 5px 10px; border-radius: 14px; font-size: 0.68rem; font-weight: 600; backdrop-filter: blur(8px); transition: all 0.15s; }
-.preset-btn:active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
-.selection-indicator { position: absolute; top: calc(var(--safe-top) + 44px); right: 10px; background: rgba(255,220,50,0.18); color: #ffdc32; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(255,220,50,0.5); pointer-events: none; display: none; backdrop-filter: blur(8px); z-index: 10; }
-.selection-indicator.visible { display: block; }
-.fab { position: absolute; bottom: calc(var(--safe-bottom) + 16px); right: 16px; width: 56px; height: 56px; border-radius: 50%; background: var(--accent); color: white; font-size: 1.8rem; font-weight: 300; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(88,166,255,0.4); z-index: 15; transition: transform 0.15s; }
-.fab:active { transform: scale(0.92); }
-.gesture-hint { position: absolute; bottom: calc(var(--safe-bottom) + 80px); left: 50%; transform: translateX(-50%); background: rgba(22,27,34,0.85); color: var(--muted); padding: 6px 12px; border-radius: 16px; font-size: 0.68rem; backdrop-filter: blur(8px); border: 1px solid var(--border); pointer-events: none; opacity: 0.9; z-index: 10; }
-.bottom-nav { height: var(--nav-h); padding-bottom: var(--safe-bottom); background: var(--panel); border-top: 1px solid var(--border); display: flex; flex-shrink: 0; z-index: 20; }
-.nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--muted); font-size: 0.65rem; font-weight: 500; transition: color 0.15s; position: relative; }
-.nav-btn .icon { font-size: 1.3rem; line-height: 1; }
-.nav-btn.active { color: var(--accent); }
-.nav-btn.active::before { content: ''; position: absolute; top: 0; left: 25%; right: 25%; height: 2px; background: var(--accent); border-radius: 0 0 2px 2px; }
-.panel { position: absolute; left: 0; right: 0; bottom: 0; background: var(--panel); border-top-left-radius: 18px; border-top-right-radius: 18px; border-top: 1px solid var(--border); padding: 16px 18px calc(16px + var(--safe-bottom)); transform: translateY(100%); transition: transform 0.28s cubic-bezier(0.4,0,0.2,1); z-index: 18; max-height: 75vh; overflow-y: auto; overscroll-behavior: contain; box-shadow: 0 -10px 40px rgba(0,0,0,0.4); }
-.panel.open { transform: translateY(0); }
-.panel-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: -6px auto 14px; }
-.panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.panel h3 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); font-weight: 600; margin-bottom: 12px; }
-.panel-close { width: 28px; height: 28px; border-radius: 50%; background: var(--input); color: var(--muted); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: all 0.15s; }
-.panel-close:active { background: var(--danger); color: white; }
-.seg-control { display: flex; background: var(--input); border-radius: 10px; padding: 3px; gap: 3px; margin-bottom: 14px; }
-.seg-control button { flex: 1; padding: 10px 6px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; color: var(--muted); transition: all 0.15s; }
-.seg-control button.active { background: var(--accent); color: white; }
-.prim-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 14px; }
-.prim-btn { background: var(--input); border: 1px solid var(--border); border-radius: 10px; padding: 14px 6px; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--text); transition: all 0.15s; }
-.prim-btn:active { background: var(--accent-soft); border-color: var(--accent); transform: scale(0.96); }
-.prim-btn .ico { font-size: 1.4rem; }
-.obj-list { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
-.obj-item { display: flex; align-items: center; justify-content: space-between; background: var(--input); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; cursor: pointer; }
-.obj-item.selected { border-color: #ffdc32; background: rgba(255,220,50,0.12); color: #ffdc32; }
-.obj-item .del { color: var(--danger); font-size: 1.2rem; padding: 0 4px; background: none; border: none; cursor: pointer; }
-.slider { margin-bottom: 14px; }
-.slider .row { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 6px; }
-.slider .row span:last-child { color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
-.slider input[type="range"] { width: 100%; height: 28px; }
-.slider input[type="range"]::-webkit-slider-runnable-track { height: 4px; background: var(--input); border-radius: 2px; }
-.slider input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; background: var(--accent); border-radius: 50%; margin-top: -9px; border: 3px solid var(--panel); box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
-.toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-.toggle-row:last-child { border-bottom: none; }
-.switch { position: relative; width: 44px; height: 26px; flex-shrink: 0; }
-.switch input { opacity: 0; width: 0; height: 0; }
-.slider-sw { position: absolute; inset: 0; background: var(--input); border-radius: 26px; transition: 0.2s; border: 1px solid var(--border); }
-.slider-sw::before { content: ''; position: absolute; width: 20px; height: 20px; left: 2px; top: 2px; background: var(--muted); border-radius: 50%; transition: 0.2s; }
-input:checked+.slider-sw { background: var(--accent); border-color: var(--accent); }
-input:checked+.slider-sw::before { transform: translateX(18px); background: white; }
-.btn-row { display: flex; gap: 8px; margin-top: 14px; }
-.btn { flex: 1; padding: 12px; background: var(--input); border: 1px solid var(--border); border-radius: 10px; font-size: 0.85rem; font-weight: 600; color: var(--text); transition: all 0.15s; }
-.btn:active { transform: scale(0.97); }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
-.btn.danger { color: var(--danger); border-color: var(--danger); }
-.lesson-card { background: var(--input); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
-.lesson-card .num { font-size: 0.7rem; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
-.lesson-card h4 { font-size: 1rem; margin: 0 0 8px; color: var(--text); }
-.lesson-card p { font-size: 0.85rem; line-height: 1.5; color: var(--muted); }
-.quiz-box { background: var(--input); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
-.quiz-box .q-num { font-size: 0.7rem; color: var(--accent); letter-spacing: 1px; margin-bottom: 8px; }
-.quiz-box .q-text { font-size: 0.95rem; line-height: 1.4; margin-bottom: 14px; }
-.quiz-opt { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 6px; font-size: 0.88rem; width: 100%; text-align: left; transition: all 0.15s; cursor: pointer; }
-.quiz-opt:active { transform: scale(0.98); }
-.quiz-opt.correct { background: rgba(63,185,80,0.15); border-color: var(--success); color: var(--success); }
-.quiz-opt.wrong { background: rgba(248,81,73,0.15); border-color: var(--danger); color: var(--danger); }
-.score-strip { display: flex; align-items: center; justify-content: space-between; background: var(--input); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
-.score-strip .label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-.score-strip .val { font-size: 1.6rem; font-weight: 700; color: var(--accent); }
-.empty-state { text-align: center; padding: 24px 16px; color: var(--muted); font-size: 0.85rem; }
-.empty-state .ico { font-size: 2rem; margin-bottom: 8px; opacity: 0.5; }
+:root { color-scheme: dark; --bg: #0b1020; --panel: #111a2d; --panel2: #17233b; --line: #293956; --text: #e8eef9; --muted: #91a2bd; --accent: #65d6c4; --blue: #79a9ff; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+canvas { touch-action: none; display: block; width: 100%; height: 100%; }
 </style>
 </head>
-<body>
-<div class="app">
-<header class="header">
-<div><div class="title">PERSPECTIVE STUDIO</div><div class="subtitle">Multi-Point Projection Engine</div></div>
-<div class="mode-badge" id="modeBadge">1-POINT</div>
+<body class="h-screen w-screen flex flex-col bg-[#0b1020] select-none">
+
+<!-- Top Navigation / Header -->
+<header class="h-14 border-b border-[#293956] bg-[#0e1628] px-4 flex items-center justify-between shrink-0 z-20">
+  <div class="flex items-center gap-2">
+    <div class="font-extrabold tracking-wider text-sm sm:text-base">PERSPECTIVE <span class="text-[#65d6c4]">STUDIO</span></div>
+    <span class="hidden sm:inline-block text-[11px] bg-[#17233b] text-[#91a2bd] px-2 py-0.5 rounded-md border border-[#293956]">Mobile 3D</span>
+  </div>
+  <div class="flex items-center gap-2">
+    <button id="resetView" class="px-2.5 py-1.5 text-xs bg-[#17233b] hover:bg-[#20304f] border border-[#293956] rounded-lg text-[#e8eef9] font-medium transition active:scale-95">Reset View</button>
+    <button id="exportBtn" class="hidden sm:inline-block px-2.5 py-1.5 text-xs bg-[#17233b] hover:bg-[#20304f] border border-[#293956] rounded-lg text-[#e8eef9] font-medium transition active:scale-95">Export</button>
+    <button id="addCubeQuick" class="px-3 py-1.5 text-xs bg-[#65d6c4] hover:bg-[#54b8a7] border border-[#65d6c4] rounded-lg text-[#071b1a] font-bold transition active:scale-95 shadow-lg shadow-[#65d6c4]/20">+ Cube</button>
+  </div>
 </header>
 
-<div class="stage" id="stageContainer">
-<canvas id="canvas"></canvas>
-<div class="hud">
-<div class="hud-chip">Objects: <strong id="objCount">0</strong></div>
-<div class="hud-chip">Alt: <strong id="altDisplay">35°</strong></div>
-</div>
-<div class="preset-bar">
-<button class="preset-btn" id="btnWorm">🐛 Worm's Eye</button>
-<button class="preset-btn" id="btnBird">🦅 Bird's Eye</button>
-<button class="preset-btn" id="btnResetCam">👁 Normal</button>
-</div>
-<div class="selection-indicator" id="selIndicator">Selected: <span id="selName">—</span></div>
-<div class="gesture-hint" id="gestureHint">1-finger orbit · 2-finger zoom/pan</div>
-<button class="fab" id="fabAdd" aria-label="Add object">+</button>
+<!-- Main Stage / Canvas Viewport -->
+<main class="relative flex-1 w-full h-full overflow-hidden bg-[radial-gradient(ellipse_at_50%_42%,#182641_0%,#0b1222_72%)]">
+  <canvas id="view"></canvas>
+  
+  <!-- HUD Badges -->
+  <div class="absolute left-3 top-3 flex flex-wrap gap-2 pointer-events-none z-10">
+    <span id="modeLabel" class="bg-[#0b1425cc] border border-[#344665] rounded-full px-3 py-1 text-[11px] font-medium text-[#c3d2e8] backdrop-blur-sm">2-POINT PERSPECTIVE</span>
+    <span id="countLabel" class="bg-[#0b1425cc] border border-[#344665] rounded-full px-3 py-1 text-[11px] font-medium text-[#c3d2e8] backdrop-blur-sm">1 OBJECT</span>
+  </div>
+
+  <!-- Hint Overlay -->
+  <div class="absolute bottom-16 sm:bottom-4 left-3 right-3 sm:right-auto pointer-events-none text-center sm:text-left bg-[#0b1425bb] border border-[#293956] backdrop-blur-sm px-3 py-2 rounded-xl text-[11px] text-[#93a5c0] z-10">
+    💡 One finger: Orbit or drag object · Pinch / Scroll: Zoom
+  </div>
+</main>
+
+<!-- Bottom Drawer Overlay -->
+<div id="overlay" class="fixed inset-0 bg-black/50 backdrop-blur-xs opacity-0 pointer-events-none transition-opacity duration-300 z-30" onclick="closeDrawer()"></div>
+
+<!-- Bottom Slide-up Drawer -->
+<div id="drawer" class="fixed bottom-14 left-0 right-0 max-h-[75vh] bg-[#111a2d] border-t border-[#293956] rounded-t-2xl shadow-2xl transform translate-y-full transition-transform duration-300 ease-out z-40 flex flex-col">
+  <!-- Drawer Header / Handle bar -->
+  <div class="w-full pt-3 pb-2 flex justify-center items-center cursor-pointer shrink-0" onclick="closeDrawer()">
+    <div class="w-12 h-1.5 bg-[#293956] rounded-full"></div>
+  </div>
+
+  <!-- Drawer Scrollable Content Area -->
+  <div class="p-4 overflow-y-auto flex-1 space-y-4 pb-8">
+    
+    <!-- Tab 1: Build & View Content -->
+    <div id="buildContent" class="tab-content space-y-4">
+      <div>
+        <h3 class="text-[11px] uppercase tracking-widest text-[#91a2bd] font-semibold mb-2">Add Primitive Shapes</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <button data-add="cube" class="p-3 bg-[#17233b] hover:bg-[#1f304f] border border-[#293956] rounded-xl text-left transition active:scale-95">
+            <b class="block text-base text-[#65d6c4] mb-0.5">▧ Cube</b>
+            <small class="text-[10px] text-[#91a2bd]">6 equal faces</small>
+          </button>
+          <button data-add="sphere" class="p-3 bg-[#17233b] hover:bg-[#1f304f] border border-[#293956] rounded-xl text-left transition active:scale-95">
+            <b class="block text-base text-[#79a9ff] mb-0.5">● Sphere</b>
+            <small class="text-[10px] text-[#91a2bd]">UV mesh ball</small>
+          </button>
+          <button data-add="cylinder" class="p-3 bg-[#17233b] hover:bg-[#1f304f] border border-[#293956] rounded-xl text-left transition active:scale-95">
+            <b class="block text-base text-[#f0b66d] mb-0.5">⬭ Cylinder</b>
+            <small class="text-[10px] text-[#91a2bd]">Round solid</small>
+          </button>
+          <button data-add="pyramid" class="p-3 bg-[#17233b] hover:bg-[#1f304f] border border-[#293956] rounded-xl text-left transition active:scale-95">
+            <b class="block text-base text-[#c18be8] mb-0.5">△ Pyramid</b>
+            <small class="text-[10px] text-[#91a2bd]">4 triangular sides</small>
+          </button>
+          <button data-add="prism" class="p-3 bg-[#17233b] hover:bg-[#1f304f] border border-[#293956] rounded-xl text-left transition active:scale-95 col-span-2 sm:col-span-1">
+            <b class="block text-base text-[#e77f91] mb-0.5">◭ Prism</b>
+            <small class="text-[10px] text-[#91a2bd]">Triangular prism</small>
+          </button>
+        </div>
+      </div>
+
+      <div class="border-t border-[#293956] pt-4">
+        <h3 class="text-[11px] uppercase tracking-widest text-[#91a2bd] font-semibold mb-3">Camera & Perspective</h3>
+        <div class="space-y-3 bg-[#0b1425] p-3.5 rounded-xl border border-[#293956]">
+          <div>
+            <label class="block text-xs text-[#91a2bd] mb-1">Perspective Mode</label>
+            <select id="perspective" class="w-full bg-[#111a2d] border border-[#293956] rounded-lg p-2.5 text-xs text-white">
+              <option value="one">1-Point Perspective</option>
+              <option value="two" selected>2-Point Perspective</option>
+              <option value="three">3-Point Perspective</option>
+            </select>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-[#91a2bd]">Field of View</span>
+            <input id="fov" type="range" min="28" max="85" value="50" class="w-32 accent-[#65d6c4]">
+          </div>
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <label class="flex items-center gap-2 text-xs text-[#91a2bd] cursor-pointer bg-[#111a2d] p-2 rounded-lg border border-[#293956]">
+              <input id="guides" type="checkbox" checked class="accent-[#65d6c4]"> Construction Guides
+            </label>
+            <label class="flex items-center gap-2 text-xs text-[#91a2bd] cursor-pointer bg-[#111a2d] p-2 rounded-lg border border-[#293956]">
+              <input id="grid" type="checkbox" class="accent-[#65d6c4]"> Ground Grid
+            </label>
+            <label class="flex items-center gap-2 text-xs text-[#91a2bd] cursor-pointer bg-[#111a2d] p-2 rounded-lg border border-[#293956]">
+              <input id="wire" type="checkbox" class="accent-[#65d6c4]"> Wireframe Mode
+            </label>
+            <label class="flex items-center gap-2 text-xs text-[#91a2bd] cursor-pointer bg-[#111a2d] p-2 rounded-lg border border-[#293956]">
+              <input id="shadows" type="checkbox" checked class="accent-[#65d6c4]"> Floor Shadows
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: Scene Content -->
+    <div id="sceneContent" class="tab-content space-y-4 hidden">
+      <div>
+        <h3 class="text-[11px] uppercase tracking-widest text-[#91a2bd] font-semibold mb-2">Scene Objects</h3>
+        <div id="objectList" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></div>
+        <div class="flex gap-2 mt-3">
+          <button id="duplicate" class="flex-1 py-2 text-xs bg-[#17233b] hover:bg-[#20304f] border border-[#293956] rounded-xl font-medium transition active:scale-95">Duplicate Selected</button>
+          <button id="delete" class="flex-1 py-2 text-xs bg-[#3b1717] hover:bg-[#4f2020] border border-[#562929] text-[#ff8f8f] rounded-xl font-medium transition active:scale-95">Delete Selected</button>
+        </div>
+      </div>
+      <div class="border-t border-[#293956] pt-4 space-y-3">
+        <h3 class="text-[11px] uppercase tracking-widest text-[#91a2bd] font-semibold">Scene Management</h3>
+        <div class="grid grid-cols-2 gap-2">
+          <button id="importBtn" class="py-2.5 text-xs bg-[#17233b] hover:bg-[#20304f] border border-[#293956] rounded-xl font-medium">Import JSON</button>
+          <button id="exportBtnDrawer" class="py-2.5 text-xs bg-[#17233b] hover:bg-[#20304f] border border-[#293956] rounded-xl font-medium">Export JSON</button>
+        </div>
+        <input id="fileInput" type="file" accept=".json,application/json" hidden>
+        <button id="newScene" class="w-full py-2.5 text-xs bg-[#1f171b] hover:bg-[#2b1f25] border border-[#462934] text-[#e87f8f] rounded-xl font-medium">Clear / New Scene</button>
+      </div>
+    </div>
+
+    <!-- Tab 3: Inspector Content -->
+    <div id="inspectorContent" class="tab-content space-y-4 hidden">
+      <h3 class="text-[11px] uppercase tracking-widest text-[#91a2bd] font-semibold mb-2">Object Properties</h3>
+      <div id="inspector">
+        <div class="text-xs text-[#91a2bd] p-4 bg-[#0b1425] border border-[#293956] rounded-xl text-center">No object selected. Tap an object in the scene or list.</div>
+      </div>
+    </div>
+
+    <!-- Tab 4: Learn Content -->
+    <div id="learnContent" class="tab-content space-y-3">
+      <div class="bg-[#17243a] border border-[#344966] rounded-xl p-4 space-y-2">
+        <div id="lessonStep" class="text-[10px] tracking-widest text-[#65d6c4] font-extrabold uppercase">LESSON 1 OF 5</div>
+        <div id="lessonTitle" class="text-base font-bold text-white">Start with the eye</div>
+        <p id="lessonText" class="text-xs text-[#d0dced] leading-relaxed">Perspective is a view from one fixed place. The horizon is always at your eye level. Move the camera to see how the drawing changes.</p>
+        <div id="lessonHint" class="text-[11px] text-[#9fb3cf] border-l-2 border-[#65d6c4] pl-2.5 py-0.5 my-2">Try orbiting the scene. Notice how the horizon follows your viewpoint.</div>
+        <div class="flex gap-2 pt-2">
+          <button id="lessonPrev" class="flex-1 py-2 text-xs bg-[#0b1425] border border-[#293956] rounded-lg font-medium disabled:opacity-40">Back</button>
+          <button id="lessonNext" class="flex-1 py-2 text-xs bg-[#65d6c4] text-[#071b1a] rounded-lg font-bold">Next lesson →</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
-<nav class="bottom-nav">
-<button class="nav-btn active" data-panel="scene"><span class="icon">▣</span><span>Scene</span></button>
-<button class="nav-btn" data-panel="transform"><span class="icon">⬡</span><span>Transform</span></button>
-<button class="nav-btn" data-panel="light"><span class="icon">☀</span><span>Light</span></button>
-<button class="nav-btn" data-panel="guides"><span class="icon">⊞</span><span>Guides</span></button>
-<button class="nav-btn" data-panel="learn"><span class="icon">📚</span><span>Learn</span></button>
+<!-- Bottom Navigation Bar -->
+<nav class="h-14 bg-[#0e1628] border-t border-[#293956] grid grid-cols-4 shrink-0 z-50">
+  <button data-tab="build" class="nav-btn flex flex-col items-center justify-center text-[#91a2bd] hover:text-white transition gap-1">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+    <span class="text-[10px] font-medium">Build & View</span>
+  </button>
+  <button data-tab="scene" class="nav-btn flex flex-col items-center justify-center text-[#91a2bd] hover:text-white transition gap-1">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+    <span class="text-[10px] font-medium">Scene (<span id="tabCount">1</span>)</span>
+  </button>
+  <button data-tab="inspector" class="nav-btn flex flex-col items-center justify-center text-[#91a2bd] hover:text-white transition gap-1">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+    <span class="text-[10px] font-medium">Inspector</span>
+  </button>
+  <button data-tab="learn" class="nav-btn flex flex-col items-center justify-center text-[#91a2bd] hover:text-white transition gap-1">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+    <span class="text-[10px] font-medium">Lessons</span>
+  </button>
 </nav>
 
-<section class="panel open" id="panel-scene">
-<div class="panel-handle"></div>
-<div class="panel-header"><h3>Scene</h3><button class="panel-close" data-close="scene">×</button></div>
-<h3>Add Primitive</h3>
-<div class="prim-grid">
-<button class="prim-btn" data-prim="cube"><span class="ico">▣</span>Cube</button>
-<button class="prim-btn" data-prim="pyramid"><span class="ico">▲</span>Pyramid</button>
-<button class="prim-btn" data-prim="sphere"><span class="ico">●</span>Sphere</button>
-<button class="prim-btn" data-prim="cylinder"><span class="ico">◯</span>Cylinder</button>
-<button class="prim-btn" data-prim="prism"><span class="ico">◆</span>Prism</button>
-</div>
-<h3>Scene Objects</h3>
-<div class="obj-list" id="objList"></div>
-<div class="empty-state" id="emptyState" style="display:none;"><div class="ico">▣</div>Tap a primitive above to add it</div>
-<div class="btn-row">
-<button class="btn" id="saveBtn">💾 Save</button>
-<button class="btn" id="loadBtn">📂 Load</button>
-<button class="btn danger" id="resetBtn">Reset</button>
-</div>
-<input type="file" id="fileIn" style="display:none" accept=".json">
-</section>
-
-<section class="panel" id="panel-transform">
-<div class="panel-handle"></div>
-<div class="panel-header"><h3>Transform</h3><button class="panel-close" data-close="transform">×</button></div>
-<div id="transformContent"><div class="empty-state"><div class="ico">⬡</div>Select an object to edit</div></div>
-</section>
-
-<section class="panel" id="panel-light">
-<div class="panel-handle"></div>
-<div class="panel-header"><h3>Light & Shadows</h3><button class="panel-close" data-close="light">×</button></div>
-<div class="slider"><div class="row"><span>Azimuth</span><span id="azVal">45°</span></div><input type="range" min="0" max="360" value="45" id="azimuth"></div>
-<div class="slider"><div class="row"><span>Altitude</span><span id="altVal">35°</span></div><input type="range" min="5" max="85" value="35" id="altitude"></div>
-<div class="toggle-row"><span>Facet Shading</span><label class="switch"><input type="checkbox" id="facetToggle" checked><span class="slider-sw"></span></label></div>
-<div class="toggle-row"><span>Cast Shadows</span><label class="switch"><input type="checkbox" id="shadowToggle" checked><span class="slider-sw"></span></label></div>
-<div class="toggle-row"><span>Wireframe Overlay</span><label class="switch"><input type="checkbox" id="wireframeToggle" checked><span class="slider-sw"></span></label></div>
-</section>
-
-<section class="panel" id="panel-guides">
-<div class="panel-handle"></div>
-<div class="panel-header"><h3>Guides</h3><button class="panel-close" data-close="guides">×</button></div>
-<h3>Perspective Mode</h3>
-<div class="seg-control" id="modeCtrl">
-<button class="active" data-mode="1">1-Point</button>
-<button data-mode="2">2-Point</button>
-<button data-mode="3">3-Point</button>
-</div>
-<h3>Construction Guides</h3>
-<div class="toggle-row"><span>Vanishing Points (VP)</span><label class="switch"><input type="checkbox" data-guide="vps" checked><span class="slider-sw"></span></label></div>
-<div class="toggle-row"><span>Construction Rays</span><label class="switch"><input type="checkbox" data-guide="rays" checked><span class="slider-sw"></span></label></div>
-<div class="toggle-row"><span>Ground Grid</span><label class="switch"><input type="checkbox" data-guide="grid" checked><span class="slider-sw"></span></label></div>
-<div class="toggle-row"><span>Distance Points D1/D2</span><label class="switch"><input type="checkbox" data-guide="dist" checked><span class="slider-sw"></span></label></div>
-</section>
-
-<section class="panel" id="panel-learn">
-<div class="panel-handle"></div>
-<div class="panel-header"><h3>Learn</h3><button class="panel-close" data-close="learn">×</button></div>
-<h3>Perspective Principles</h3>
-<div class="lesson-card"><div class="num">Lesson 01</div><h4>1-Point Perspective</h4><p>Uses 1 central VP on the Horizon Line. Front faces remain parallel to the picture plane, and depth lines converge straight to VP1.</p></div>
-<div class="lesson-card"><div class="num">Lesson 02</div><h4>2-Point Perspective</h4><p>Uses 2 VPs on the Horizon Line (VP1 & VP2). Vertical edges stay perpendicular to the horizon, while left and right depth lines converge to their respective VPs.</p></div>
-<div class="lesson-card"><div class="num">Lesson 03</div><h4>3-Point Perspective</h4><p>Uses 3 VPs. VP1 and VP2 lie on the Horizon Line, and VP3 controls vertical perspective convergence (Zenith when looking up, Nadir when looking down).</p></div>
-<h3 style="margin-top:18px;">Self-Evaluation Quiz</h3>
-<div class="score-strip"><span class="label">Score</span><span class="val"><span id="scoreVal">0</span> / 5</span></div>
-<div class="quiz-box" id="quizBox"></div>
-</section>
-</div>
-
 <script>
+(() => {
+'use strict';
+const canvas = document.getElementById('view'), ctx = canvas.getContext('2d');
+const $ = id => document.getElementById(id);
+
 const state = {
-    mode: 1,
-    objects: [],
-    selected: 0,
-    azimuth: 45,
-    altitude: 35,
-    guides: { vps: true, rays: true, grid: true, dist: true },
-    facetShading: true,
-    castShadows: true,
-    wireframe: true,
-    cam: { theta: 0.3, phi: 0.3, radius: 400 },
-    quiz: { current: 0, score: 0 }
+  objects: [],
+  selected: null,
+  yaw: 0.72,
+  pitch: 0.36,
+  distance: 12,
+  fov: 50,
+  mode: 'two',
+  guides: true,
+  grid: false,
+  wire: false,
+  shadows: true,
+  autosave: true,
+  lesson: 0,
+  drag: null
 };
 
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-let W = 400, H = 600, cx = 200, cy = 300, focal = 500;
+const colors = ['#65d6c4','#79a9ff','#f0b66d','#c18be8','#e77f91','#9bc875'];
+let nextId = 1;
 
-function updateDimensions() {
-    const container = document.getElementById('stageContainer');
-    const rect = container ? container.getBoundingClientRect() : null;
-    const clientW = rect && rect.width > 0 ? rect.width : window.innerWidth;
-    const clientH = rect && rect.height > 0 ? rect.height : window.innerHeight;
-    
-    W = Math.max(clientW, 300);
-    H = Math.max(clientH, 300);
-    
-    const dpr = window.devicePixelRatio || 1;
-    if (canvas.width !== Math.floor(W * dpr) || canvas.height !== Math.floor(H * dpr)) {
-        canvas.width = Math.floor(W * dpr);
-        canvas.height = Math.floor(H * dpr);
-        canvas.style.width = W + 'px';
-        canvas.style.height = H + 'px';
-    }
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    cx = W / 2;
-    cy = H / 2;
+function createObject(type, x = 0, y = 0.7, z = 0) {
+  return {
+    id: nextId++,
+    name: type[0].toUpperCase() + type.slice(1) + ' ' + (nextId - 1),
+    type, x, y, z,
+    rx: 0, ry: 0, rz: 0,
+    sx: 1, sy: 1, sz: 1,
+    color: colors[(nextId - 2) % colors.length]
+  };
 }
 
-function rotY(p, a) { const c = Math.cos(a), s = Math.sin(a); return { x: p.x * c + p.z * s, y: p.y, z: -p.x * s + p.z * c }; }
-function rotX(p, a) { const c = Math.cos(a), s = Math.sin(a); return { x: p.x, y: p.y * c - p.z * s, z: p.y * s + p.z * c }; }
-function sub(a, b) { return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z }; }
-function cross(a, b) { return { x: a.y * b.z - a.z * b.y, y: a.z * b.x - a.x * b.z, z: a.x * b.y - a.y * b.x }; }
-function norm(v) { const l = Math.hypot(v.x, v.y, v.z) || 1; return { x: v.x / l, y: v.y / l, z: v.z / l }; }
-function dot(a, b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
+// Initialize default scene object
+state.objects.push(createObject('cube'));
 
-function toCamera(p) {
-    let q = rotY(p, -state.cam.theta);
-    if (state.mode === 3) {
-        q = rotX(q, -state.cam.phi);
-    }
-    q.z += state.cam.radius;
-    return q;
-}
+const lessons = [
+  {title:'Start with the eye',text:'Begin with a flat sheet of paper. Draw the horizon at your eye level, place a vanishing point on it, then build simple forms with lines that recede toward that point.',hint:'Think like a draftsman: horizon first, vanishing point second, then the box. The scene is a 3D reference for a 2D drawing.'},
+  {title:'One-point perspective',text:'When you face a flat wall, depth lines going straight away from you meet at one vanishing point on the horizon. Vertical and horizontal front edges stay parallel.',hint:'Choose 1-point above, then add a cube. Imagine looking straight down a room or road.'},
+  {title:'Two-point perspective',text:'Turn the corner of a box toward you. Its two horizontal directions recede to two separate vanishing points on the horizon. Vertical edges remain vertical.',hint:'Choose 2-point and orbit gently. Look for the two families of receding edges.'},
+  {title:'Three-point perspective',text:'Look sharply up or down at a building. Vertical edges now converge toward a third vanishing point. Use this for dramatic high or low viewpoints.',hint:'Choose 3-point. Compare the vertical edges with the 2-point view.'},
+  {title:'Build complex things from solids',text:'Artists can simplify complicated subjects into boxes, cylinders, spheres and prisms. Establish the big volume and its direction in space before adding details.',hint:'Combine a cube and cylinder. Move them apart, overlap them, and check how their forms sit in the same space.'}
+];
 
-function project(p) {
-    const cam = toCamera(p);
-    const z = Math.max(cam.z, 1);
-    const s = focal / z;
-
-    if (state.mode === 1) {
-        return { x: cx + p.x * (focal / (p.z + state.cam.radius)), y: cy - p.y * (focal / (p.z + state.cam.radius)), scale: s, z: z };
-    }
-
-    return { x: cx + cam.x * s, y: cy - cam.y * s, scale: s, z: z };
-}
-
-function getDynamicHorizon() {
-    const hY = state.mode === 3 ? cy + Math.tan(state.cam.phi) * focal : cy + (state.cam.phi * 120);
-    const theta = state.cam.theta;
-    
-    const vp1_world = { x: -Math.cos(theta) * 3000, y: 0, z: Math.sin(theta) * 3000 };
-    const vp2_world = { x: Math.sin(theta) * 3000, y: 0, z: Math.cos(theta) * 3000 };
-    
-    const vp1 = project(vp1_world);
-    const vp2 = project(vp2_world);
-    
-    vp1.y = hY;
-    vp2.y = hY;
-    
-    return { y: hY, vp1, vp2 };
-}
-
-function makeCube() {
-    const s = 45;
-    const v = [
-        {x:-s,y:-s,z:-s},{x:s,y:-s,z:-s},{x:s,y:s,z:-s},{x:-s,y:s,z:-s},
-        {x:-s,y:-s,z:s},{x:s,y:-s,z:s},{x:s,y:s,z:s},{x:-s,y:s,z:s}
-    ];
-    const f = [[0,1,2,3],[4,5,6,7],[1,5,6,2],[0,3,7,4],[3,2,6,7],[0,4,5,1]];
-    return { vertices: v, faces: f };
-}
-
-function makePyramid() {
-    const s = 45, h = 75;
-    const v = [{x:-s,y:-s,z:-s},{x:s,y:-s,z:-s},{x:s,y:-s,z:s},{x:-s,y:-s,z:s},{x:0,y:h,z:0}];
-    const f = [[0,1,2,3],[0,1,4],[1,2,4],[2,3,4],[3,0,4]];
-    return { vertices: v, faces: f };
-}
-
-function makeCylinder() {
-    const r = 35, h = 50, seg = 12;
-    const v = [];
-    for (let i = 0; i < seg; i++) {
-        const a = (i / seg) * Math.PI * 2;
-        v.push({ x: Math.cos(a) * r, y: -h, z: Math.sin(a) * r });
-    }
-    for (let i = 0; i < seg; i++) {
-        const a = (i / seg) * Math.PI * 2;
-        v.push({ x: Math.cos(a) * r, y: h, z: Math.sin(a) * r });
-    }
-    const f = [];
-    for (let i = 0; i < seg; i++) {
-        const n = (i + 1) % seg;
-        f.push([i, n, n + seg, i + seg]);
-    }
-    return { vertices: v, faces: f };
-}
-
-function makeSphere() {
-    const r = 40, lat = 8, lon = 10;
-    const v = [];
-    for (let i = 0; i <= lat; i++) {
-        const phi = (i / lat) * Math.PI;
-        for (let j = 0; j < lon; j++) {
-            const th = (j / lon) * Math.PI * 2;
-            v.push({ x: r * Math.sin(phi) * Math.cos(th), y: r * Math.cos(phi), z: r * Math.sin(phi) * Math.sin(th) });
-        }
-    }
-    const f = [];
-    for (let i = 0; i < lat; i++) {
-        for (let j = 0; j < lon; j++) {
-            const n = (j + 1) % lon;
-            const a = i * lon + j, b = i * lon + n;
-            const c = (i + 1) * lon + j, d = (i + 1) * lon + n;
-            f.push([a, b, d, c]);
-        }
-    }
-    return { vertices: v, faces: f };
-}
-
-function makePrism() {
-    const s = 40, h = 70;
-    const v = [{x:-s,y:-s,z:-s},{x:s,y:-s,z:-s},{x:0,y:-s,z:s},{x:-s,y:h,z:-s},{x:s,y:h,z:-s},{x:0,y:h,z:s}];
-    const f = [[0,1,2],[3,4,5],[0,1,4,3],[1,2,5,4],[2,0,3,5]];
-    return { vertices: v, faces: f };
-}
-
-function getGeometry(t) {
-    return ({ cube: makeCube, pyramid: makePyramid, cylinder: makeCylinder, sphere: makeSphere, prism: makePrism })[t]();
-}
-
-function initDefaultScene() {
-    state.objects = [
-        { id: 1, type: 'cube', geo: makeCube(), pos: { x: -60, y: 0, z: 0 }, scale: 1, rotY: 25, color: [88, 166, 255] },
-        { id: 2, type: 'pyramid', geo: makePyramid(), pos: { x: 70, y: 0, z: 20 }, scale: 1, rotY: -15, color: [63, 185, 80] }
-    ];
-    state.selected = 0;
+function renderLesson() {
+  const l = lessons[state.lesson];
+  $('lessonStep').textContent = `LESSON ${state.lesson + 1} OF ${lessons.length}`;
+  $('lessonTitle').textContent = l.title;
+  $('lessonText').textContent = l.text;
+  $('lessonHint').textContent = l.hint;
+  $('lessonPrev').disabled = state.lesson === 0;
+  $('lessonNext').textContent = state.lesson === lessons.length - 1 ? 'Start again ↺' : 'Next lesson →';
 }
 
 function addObject(type) {
-    state.objects.push({
-        id: Date.now() + Math.random(),
-        type,
-        geo: getGeometry(type),
-        pos: { x: (state.objects.length * 30) % 120 - 40, y: 0, z: 0 },
-        scale: 1,
-        rotY: 0,
-        color: [88, 166, 255]
-    });
-    state.selected = state.objects.length - 1;
-    refreshAll();
+  const o = createObject(type, (Math.random() - .5) * 2, .65, (Math.random() - .5) * 2);
+  state.objects.push(o);
+  selectObject(o.id);
+  renderObjectList();
+  saveScene();
+  draw();
 }
 
-function deleteSelected() {
-    if (state.selected < 0) return;
-    state.objects.splice(state.selected, 1);
-    state.selected = Math.min(state.selected, state.objects.length - 1);
-    refreshAll();
+function selectObject(id) {
+  state.selected = id;
+  renderObjectList();
+  if (activeTab === 'inspector') renderInspector();
 }
 
-function resetScene() {
-    state.objects = [];
-    state.selected = -1;
-    refreshAll();
+function getSelectedObject() {
+  return state.objects.find(o => o.id === state.selected);
 }
 
-function selectObject(i) {
-    state.selected = i;
-    refreshAll();
+function resizeCanvas() {
+  const r = canvas.getBoundingClientRect();
+  const d = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = Math.max(1, Math.round(r.width * d));
+  canvas.height = Math.max(1, Math.round(r.height * d));
+  ctx.setTransform(d, 0, 0, d, 0, 0);
+  draw();
 }
 
-function closePanel(id) {
-    document.getElementById('panel-' + id).classList.remove('open');
+function cameraBasis() {
+  let yaw = state.yaw, pitch = state.pitch;
+  const pos = [
+    state.distance * Math.sin(yaw) * Math.cos(pitch),
+    state.distance * Math.sin(pitch),
+    state.distance * Math.cos(yaw) * Math.cos(pitch)
+  ];
+  const norm = v => { let l = Math.hypot(...v) || 1; return v.map(n => n / l); };
+  const sub = (a, b) => a.map((v, i) => v - b[i]);
+  const cross = (a, b) => [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+  const forward = norm(pos.map(v => -v));
+  const right = norm(cross(forward, [0, 1, 0]));
+  const up = norm(cross(right, forward));
+  return { pos, right, up, forward };
 }
 
-function renderTransformPanel() {
-    const c = document.getElementById('transformContent');
-    if (state.selected < 0 || !state.objects[state.selected]) {
-        c.innerHTML = '<div class="empty-state"><div class="ico">⬡</div>Select an object to edit</div>';
-        return;
+function project(p) {
+  const b = cameraBasis();
+  const v = p.map((n, i) => n - b.pos[i]);
+  const z = v.reduce((s, n, i) => s + n * b.forward[i], 0);
+  if (z <= 0.08) return null;
+  const x = v.reduce((s, n, i) => s + n * b.right[i], 0);
+  const y = v.reduce((s, n, i) => s + n * b.up[i], 0);
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  const f = (h * 0.5) / Math.tan(state.fov * Math.PI / 360);
+  return { x: w / 2 + x * f / z, y: h / 2 - y * f / z, z };
+}
+
+function rotatePoint(p, o) {
+  let v = [p[0], p[1], p[2]];
+  let cy = Math.cos(o.ry), sy = Math.sin(o.ry);
+  v = [v[0] * cy + v[2] * sy, v[1], -v[0] * sy + v[2] * cy];
+  let cx = Math.cos(o.rx), sx = Math.sin(o.rx);
+  v = [v[0], v[1] * cx - v[2] * sx, v[1] * sx + v[2] * cx];
+  let cz = Math.cos(o.rz), sz = Math.sin(o.rz);
+  return [v[0] * cz - v[1] * sz, v[0] * sz + v[1] * cz, v[2]];
+}
+
+function getMesh(o) {
+  let v = [], faces = [];
+  if (o.type === 'cube') {
+    v = [[-.5,-.5,-.5],[.5,-.5,-.5],[.5,.5,-.5],[-.5,.5,-.5],[-.5,-.5,.5],[.5,-.5,.5],[.5,.5,.5],[-.5,.5,.5]];
+    faces = [[0,1,2,3],[4,7,6,5],[0,4,5,1],[3,2,6,7],[0,3,7,4],[1,5,6,2]];
+  } else if (o.type === 'pyramid') {
+    v = [[-.5,0,-.5],[.5,0,-.5],[.5,0,.5],[-.5,0,.5],[0,1,0]];
+    faces = [[0,3,2,1],[0,1,4],[1,2,4],[2,3,4],[3,0,4]];
+  } else if (o.type === 'prism') {
+    v = [[-.5,-.5,-.45],[.5,-.5,-.45],[0,.5,-.45],[-.5,-.5,.45],[.5,-.5,.45],[0,.5,.45]];
+    faces = [[0,2,1],[3,4,5],[0,1,4,3],[1,2,5,4],[2,0,3,5]];
+  } else if (o.type === 'cylinder') {
+    let n = 16;
+    for (let i = 0; i < n; i++) { let a = i * 2 * Math.PI / n; v.push([Math.cos(a)*.5, -.5, Math.sin(a)*.5]); }
+    for (let i = 0; i < n; i++) { let a = i * 2 * Math.PI / n; v.push([Math.cos(a)*.5, .5, Math.sin(a)*.5]); }
+    faces.push(Array.from({length: n}, (_, i) => i).reverse(), Array.from({length: n}, (_, i) => n + i));
+    for (let i = 0; i < n; i++) faces.push([i, (i+1)%n, (i+1)%n+n, i+n]);
+  } else if (o.type === 'sphere') {
+    let rings = 8, seg = 14;
+    for (let r = 0; r <= rings; r++) {
+      let ph = Math.PI * r / rings;
+      for (let s = 0; s < seg; s++) {
+        let th = 2 * Math.PI * s / seg;
+        v.push([.5 * Math.sin(ph) * Math.cos(th), .5 * Math.cos(ph), .5 * Math.sin(ph) * Math.sin(th)]);
+      }
     }
-    const o = state.objects[state.selected];
-    c.innerHTML = `
-    <div class="slider"><div class="row"><span>Position X</span><span id="pxV">${o.pos.x|0}</span></div><input type="range" min="-300" max="300" value="${o.pos.x}" id="px"></div>
-    <div class="slider"><div class="row"><span>Position Z (Depth)</span><span id="pzV">${o.pos.z|0}</span></div><input type="range" min="-200" max="300" value="${o.pos.z}" id="pz"></div>
-    <div class="slider"><div class="row"><span>Elevation Y</span><span id="pyV">${o.pos.y|0}</span></div><input type="range" min="-150" max="200" value="${o.pos.y}" id="py"></div>
-    <div class="slider"><div class="row"><span>Scale</span><span id="scV">${o.scale.toFixed(1)}</span></div><input type="range" min="0.3" max="3" step="0.1" value="${o.scale}" id="sc"></div>
-    <div class="slider"><div class="row"><span>Rotation Y</span><span id="ryV">${o.rotY|0}°</span></div><input type="range" min="0" max="360" value="${o.rotY}" id="ry"></div>
-    <div class="btn-row"><button class="btn" id="dupBtn">⎘ Duplicate</button><button class="btn danger" id="delBtn">✕ Delete</button></div>`;
-    
-    ['px','pz','py','sc','ry'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.oninput = (e) => {
-                const obj = state.objects[state.selected]; if (!obj) return;
-                const v = +e.target.value;
-                if (id === 'px') obj.pos.x = v;
-                if (id === 'pz') obj.pos.z = v;
-                if (id === 'py') obj.pos.y = v;
-                if (id === 'sc') obj.scale = v;
-                if (id === 'ry') obj.rotY = v;
-                document.getElementById(id + 'V').textContent = id === 'sc' ? v.toFixed(1) : id === 'ry' ? v + '°' : v | 0;
-                render();
-            };
-        }
-    });
-    const dupBtn = document.getElementById('dupBtn'); if (dupBtn) dupBtn.onclick = duplicateSelected;
-    const delBtn = document.getElementById('delBtn'); if (delBtn) delBtn.onclick = deleteSelected;
+    for (let r = 0; r < rings; r++) {
+      for (let s = 0; s < seg; s++) {
+        let a = r * seg + s, b = r * seg + (s + 1) % seg, c = (r + 1) * seg + (s + 1) % seg, d = (r + 1) * seg + s;
+        faces.push([a, b, c, d]);
+      }
+    }
+  }
+  const world = v.map(p => {
+    let q = rotatePoint(p, o);
+    return [o.x + q[0] * o.sx, o.y + q[1] * o.sy, o.z + q[2] * o.sz];
+  });
+  return { world, faces };
 }
 
-function duplicateSelected() {
-    if (state.selected < 0) return;
-    const src = state.objects[state.selected];
-    state.objects.push({ ...src, id: Date.now() + Math.random(), geo: getGeometry(src.type), pos: { ...src.pos, x: src.pos.x + 50 } });
-    state.selected = state.objects.length - 1;
-    refreshAll();
+function drawLine(a, b, color, width = 1, dash = []) {
+  if (!a || !b) return;
+  ctx.beginPath();
+  ctx.setLineDash(dash);
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.stroke();
+  ctx.setLineDash([]);
 }
 
-function getSunVec() {
-    const az = state.azimuth * Math.PI / 180;
-    const alt = state.altitude * Math.PI / 180;
-    return norm({ x: Math.cos(alt) * Math.sin(az), y: Math.sin(alt), z: Math.cos(alt) * Math.cos(az) });
-}
+function draw() {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  if (!w || !h) return;
+  ctx.clearRect(0, 0, w, h);
 
-function transformVert(v, o) {
-    let p = { x: v.x * o.scale, y: v.y * o.scale, z: v.z * o.scale };
-    p = rotY(p, o.rotY * Math.PI / 180);
-    return { x: p.x + o.pos.x, y: p.y + o.pos.y, z: p.z + o.pos.z };
-}
+  // Ground Grid
+  if (state.grid) {
+    for (let i = -10; i <= 10; i++) {
+      drawLine(project([i, 0, -10]), project([i, 0, 10]), 'rgba(111,145,190,.16)');
+      drawLine(project([-10, 0, i]), project([10, 0, i]), 'rgba(111,145,190,.16)');
+    }
+    drawLine(project([-10, 0, 0]), project([10, 0, 0]), 'rgba(238,117,117,.6)', 1.3);
+    drawLine(project([0, 0, -10]), project([0, 0, 10]), 'rgba(107,191,255,.6)', 1.3);
+  }
 
-function render() {
-    updateDimensions();
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = '#0d1117';
-    ctx.fillRect(0, 0, W, H);
+  // Horizon Line
+  const focal = (h * 0.5) / Math.tan(state.fov * Math.PI / 360);
+  const rawHorizonY = h * 0.5 - focal * Math.tan(state.pitch);
+  const horizonY = Math.max(24, Math.min(h - 24, rawHorizonY));
+  
+  ctx.save();
+  drawLine({ x: 0, y: horizonY }, { x: w, y: horizonY }, 'rgba(135,220,220,.95)', 2);
+  ctx.fillStyle = 'rgba(8,17,31,.88)';
+  ctx.fillRect(10, Math.max(5, horizonY - 22), 142, 18);
+  ctx.fillStyle = 'rgba(185,245,235,1)';
+  ctx.font = 'bold 11px sans-serif';
+  ctx.fillText('HORIZON · EYE LEVEL', 16, Math.max(18, horizonY - 9));
+  ctx.restore();
 
-    const horizon = getDynamicHorizon();
+  // Vanishing Points
+  const basis = cameraBasis(), center = { x: w / 2, y: h / 2 };
+  function vanishingPoint(axis) {
+    const x = axis.reduce((s, n, i) => s + n * basis.right[i], 0);
+    const y = axis.reduce((s, n, i) => s + n * basis.up[i], 0);
+    const z = axis.reduce((s, n, i) => s + n * basis.forward[i], 0);
+    if (Math.abs(z) < 0.025) return null;
+    return { x: center.x + focal * x / z, y: center.y - focal * y / z };
+  }
 
-    drawGrid();
-    drawDynamicHorizon(horizon);
-    drawVanishingPoints(horizon);
+  const vpDefs = [
+    { key: 'X', axis: [1, 0, 0], color: '#ffb86b' },
+    { key: 'Y', axis: [0, 1, 0], color: '#c69bff' },
+    { key: 'Z', axis: [0, 0, 1], color: '#78b7ff' }
+  ];
+  const activeAxes = state.mode === 'one' ? ['Z'] : state.mode === 'two' ? ['X', 'Z'] : ['X', 'Y', 'Z'];
+  const vps = vpDefs.filter(v => activeAxes.includes(v.key)).map(v => ({ ...v, p: vanishingPoint(v.axis) }));
 
-    const sun = getSunVec();
-    const allFaces = [];
-
-    state.objects.forEach((obj, oi) => {
-        const wv = obj.geo.vertices.map(v => transformVert(v, obj));
-        const pv = wv.map(v => project(v));
-        obj.geo.faces.forEach(face => {
-            const wf = face.map(i => wv[i]);
-            const pf = face.map(i => pv[i]);
-            const n = norm(cross(sub(wf[1], wf[0]), sub(wf[2], wf[0])));
-            const avgZ = wf.reduce((s, v) => s + toCamera(v).z, 0) / wf.length;
-            allFaces.push({ proj: pf, world: wf, normal: n, avgZ, oi, color: obj.color });
+  if (state.guides) {
+    for (const vp of vps) {
+      if (!vp.p) continue;
+      for (const o of state.objects) {
+        const m = getMesh(o);
+        m.world.forEach(worldPoint => {
+          const screenPoint = project(worldPoint);
+          if (!screenPoint) return;
+          drawLine(screenPoint, vp.p, vp.color, 0.75, [4, 5]);
         });
-    });
-
-    if (state.castShadows) drawShadows(allFaces, sun);
-
-    allFaces.sort((a, b) => b.avgZ - a.avgZ);
-    allFaces.forEach(f => drawFace(f, sun));
-
-    if (state.guides.rays) {
-        drawConstructionRays(horizon);
+      }
+      ctx.beginPath();
+      ctx.arc(vp.p.x, vp.p.y, 5, 0, Math.PI * 2);
+      ctx.fillStyle = vp.color;
+      ctx.fill();
+      ctx.strokeStyle = '#08111f';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillStyle = vp.color;
+      ctx.fillText('VP ' + vp.key, vp.p.x + 9, vp.p.y - 9);
     }
+  }
 
-    if (state.selected >= 0 && state.objects[state.selected]) {
-        drawSelection(state.objects[state.selected]);
+  // Floor Shadows
+  if (state.shadows) {
+    for (const o of state.objects) {
+      const c = project([o.x, 0.012, o.z]);
+      const rx = Math.max(5, Math.min(60, h * 0.035 * o.sx));
+      const ry = Math.max(3, rx * 0.32);
+      if (c) {
+        ctx.beginPath();
+        ctx.ellipse(c.x, c.y, rx, ry, 0, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0,0,0,.25)';
+        ctx.fill();
+      }
     }
+  }
 
-    updateSelectionIndicator();
-}
-
-function drawFace(f, sun) {
-    const pts = f.proj; if (pts.length < 3) return;
-    let intensity = 0.5;
-    if (state.facetShading) {
-        const d = Math.abs(dot(f.normal, sun));
-        intensity = 0.35 + d * 0.65;
+  // 3D Objects Rendering
+  const allFaces = [];
+  for (const o of state.objects) {
+    const m = getMesh(o);
+    const p = m.world.map(project);
+    for (const f of m.faces) {
+      let pts = f.map(i => p[i]);
+      if (pts.some(x => !x)) continue;
+      let depth = pts.reduce((s, x) => s + x.z, 0) / pts.length;
+      allFaces.push({ o, pts, depth });
     }
-    const [r, g, b] = f.color;
-    ctx.fillStyle = `rgb(${r * intensity | 0},${g * intensity | 0},${b * intensity | 0})`;
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 1.2;
+  }
+  allFaces.sort((a, b) => b.depth - a.depth);
 
+  for (const face of allFaces) {
+    const { o, pts } = face;
     ctx.beginPath();
     ctx.moveTo(pts[0].x, pts[0].y);
     for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
     ctx.closePath();
+    const alpha = o.id === state.selected ? 0.78 : 0.55;
+    ctx.fillStyle = state.wire ? 'rgba(0,0,0,0)' : shadeColor(o.color, Math.max(0.35, 1 - face.depth * 0.035), alpha);
     ctx.fill();
+    ctx.strokeStyle = o.id === state.selected ? '#a5fff0' : 'rgba(12,22,38,.9)';
+    ctx.lineWidth = o.id === state.selected ? 2 : 1;
     ctx.stroke();
-}
+  }
 
-function drawShadows(allFaces, sun) {
-    const byObj = {};
-    allFaces.forEach(f => { (byObj[f.oi] = byObj[f.oi] || []).push(f); });
-    ctx.fillStyle = 'rgba(0,0,0,0.45)';
-    const L = { x: -sun.x, y: -sun.y, z: -sun.z };
-
-    Object.values(byObj).forEach(faces => {
-        const seen = new Set(); const verts = [];
-        faces.forEach(f => f.world.forEach(v => {
-            const k = v.x.toFixed(1) + ',' + v.y.toFixed(1) + ',' + v.z.toFixed(1);
-            if (!seen.has(k)) { seen.add(k); verts.push(v); }
-        }));
-        const gp = verts.map(v => {
-            if (L.y >= 0) return null;
-            const t = -v.y / L.y;
-            if (t < 0) return null;
-            return project({ x: v.x + L.x * t, y: 0, z: v.z + L.z * t });
-        }).filter(p => p);
-
-        if (gp.length < 3) return;
-        const cxp = gp.reduce((s, p) => s + p.x, 0) / gp.length;
-        const cyp = gp.reduce((s, p) => s + p.y, 0) / gp.length;
-        gp.sort((a, b) => Math.atan2(a.y - cyp, a.x - cxp) - Math.atan2(b.y - cyp, b.x - cxp));
-
-        ctx.beginPath();
-        ctx.moveTo(gp[0].x, gp[0].y);
-        for (let i = 1; i < gp.length; i++) ctx.lineTo(gp[i].x, gp[i].y);
-        ctx.closePath();
-        ctx.fill();
-    });
-}
-
-function drawConstructionRays(horizon) {
-    if (state.selected < 0 || !state.objects[state.selected]) return;
-    const obj = state.objects[state.selected];
-    const wv = obj.geo.vertices.map(v => transformVert(v, obj));
-    const pv = wv.map(v => project(v));
-
-    ctx.save();
-    ctx.lineWidth = 1;
-
-    pv.forEach(p => {
-        if (state.mode === 1) {
-            ctx.strokeStyle = 'rgba(88, 166, 255, 0.45)';
-            ctx.setLineDash([4, 4]);
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(cx, horizon.y);
-            ctx.stroke();
-        } else if (state.mode === 2 || state.mode === 3) {
-            ctx.strokeStyle = 'rgba(88, 166, 255, 0.4)';
-            ctx.setLineDash([4, 4]);
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(horizon.vp1.x, horizon.vp1.y);
-            ctx.stroke();
-
-            ctx.strokeStyle = 'rgba(63, 185, 80, 0.4)';
-            ctx.setLineDash([3, 3]);
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(horizon.vp2.x, horizon.vp2.y);
-            ctx.stroke();
-
-            if (state.mode === 3) {
-                const vp3Y = state.cam.phi >= 0 ? horizon.y - 260 : horizon.y + 260;
-                ctx.strokeStyle = 'rgba(212, 153, 34, 0.4)';
-                ctx.beginPath();
-                ctx.moveTo(p.x, p.y);
-                ctx.lineTo(cx, vp3Y);
-                ctx.stroke();
-            }
-        }
-    });
-
-    ctx.restore();
-}
-
-function drawSelection(obj) {
-    const wv = obj.geo.vertices.map(v => transformVert(v, obj));
-    const pv = wv.map(v => project(v));
-
-    ctx.strokeStyle = '#ffdc32';
-    ctx.lineWidth = 3;
-    ctx.shadowColor = '#ffdc32';
-    ctx.shadowBlur = 10;
-    
-    obj.geo.faces.forEach(face => {
-        ctx.beginPath();
-        face.forEach((vi, i) => {
-            if (i === 0) ctx.moveTo(pv[vi].x, pv[vi].y);
-            else ctx.lineTo(pv[vi].x, pv[vi].y);
-        });
-        ctx.closePath();
-        ctx.stroke();
-    });
-
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = '#ffdc32';
-    pv.forEach(p => {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-    });
-}
-
-function drawGrid() {
-    if (!state.guides.grid) return;
-    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
-    ctx.lineWidth = 1;
-    const step = 60, range = 6;
-    for (let i = -range; i <= range; i++) {
-        const a = project({ x: i * step, y: 0, z: -range * step });
-        const b = project({ x: i * step, y: 0, z: range * step });
-        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-        const c = project({ x: -range * step, y: 0, z: i * step });
-        const d = project({ x: range * step, y: 0, z: i * step });
-        ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(d.x, d.y); ctx.stroke();
+  // Selection Marker
+  for (const o of state.objects) {
+    if (o.id !== state.selected) continue;
+    const p = project([o.x, o.y, o.z]);
+    if (p) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+      ctx.fillStyle = '#a5fff0';
+      ctx.fill();
+      ctx.strokeStyle = '#102a30';
+      ctx.lineWidth = 2;
+      ctx.stroke();
     }
+  }
+
+  $('modeLabel').textContent = state.mode.toUpperCase().replace('ONE', '1-POINT').replace('TWO', '2-POINT').replace('THREE', '3-POINT') + ' PERSPECTIVE';
+  $('countLabel').textContent = state.objects.length + ' OBJECT' + (state.objects.length === 1 ? '' : 'S');
+  $('tabCount').textContent = state.objects.length;
 }
 
-function drawDynamicHorizon(horizon) {
-    ctx.strokeStyle = '#f85149';
-    ctx.lineWidth = 2.5;
-    ctx.setLineDash([8, 6]);
-    ctx.beginPath();
-    ctx.moveTo(0, horizon.y);
-    ctx.lineTo(W, horizon.y);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    ctx.fillStyle = '#f85149';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.fillText('DYNAMIC HORIZON LINE (EYE LEVEL)', 14, horizon.y - 8);
+function shadeColor(hex, k, a) {
+  let n = parseInt(hex.slice(1), 16);
+  let r = Math.min(255, ((n >> 16) & 255) * k);
+  let g = Math.min(255, ((n >> 8) & 255) * k);
+  let b = Math.min(255, (n & 255) * k);
+  return `rgba(${r|0},${g|0},${b|0},${a})`;
 }
 
-function drawVanishingPoints(horizon) {
-    if (!state.guides.vps) return;
-    const vps = [];
+function renderObjectList() {
+  const el = $('objectList');
+  if (!el) return;
+  el.innerHTML = '';
+  state.objects.forEach(o => {
+    let d = document.createElement('div');
+    d.className = 'flex items-center gap-2 p-2.5 bg-[#0b1425] border ' + (o.id === state.selected ? 'border-[#65d6c4] bg-[#172c46]' : 'border-[#293956]') + ' rounded-xl cursor-pointer text-xs transition';
+    d.innerHTML = `<span class="w-3 h-3 rounded-md shrink-0" style="background:${o.color}"></span><span class="font-medium truncate">${o.name}</span><span class="ml-auto text-[10px] text-[#91a2bd] uppercase">${o.type}</span>`;
+    d.onclick = () => { selectObject(o.id); draw(); };
+    el.appendChild(d);
+  });
+  $('tabCount').textContent = state.objects.length;
+}
 
-    if (state.mode === 1) {
-        vps.push({ x: cx, y: horizon.y, label: 'VP1 (Central)' });
-    } else if (state.mode === 2 || state.mode === 3) {
-        vps.push({ x: horizon.vp1.x, y: horizon.y, label: 'VP1' });
-        vps.push({ x: horizon.vp2.x, y: horizon.y, label: 'VP2' });
-        if (state.mode === 3) {
-            const vp3Y = state.cam.phi >= 0 ? horizon.y - 260 : horizon.y + 260;
-            vps.push({ x: cx, y: vp3Y, label: state.cam.phi >= 0 ? 'VP3 (Zenith)' : 'VP3 (Nadir)' });
-        }
-    }
+function renderInspector() {
+  const o = getSelectedObject(), el = $('inspector');
+  if (!o) {
+    el.innerHTML = `<div class="text-xs text-[#91a2bd] p-4 bg-[#0b1425] border border-[#293956] rounded-xl text-center">No object selected. Tap an object in the scene or list.</div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="p-3.5 bg-[#0b1425] border border-[#293956] rounded-xl space-y-3">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold text-white">${o.name}</span>
+        <span class="text-[10px] px-2 py-0.5 bg-[#17233b] text-[#65d6c4] rounded-md font-mono">${o.type}</span>
+      </div>
+      <div>
+        <label class="block text-[11px] text-[#91a2bd] mb-1">Position (X, Y, Z)</label>
+        <div class="grid grid-cols-3 gap-2">
+          ${['x','y','z'].map(k => `<div><label class="text-[9px] text-[#91a2bd] uppercase">${k}</label><input type="number" step="0.1" data-k="${k}" value="${o[k].toFixed(2)}" class="w-full bg-[#111a2d] border border-[#293956] rounded-lg p-2 text-xs text-white text-center"></div>`).join('')}
+        </div>
+      </div>
+      <div>
+        <label class="block text-[11px] text-[#91a2bd] mb-1">Rotation (deg)</label>
+        <div class="grid grid-cols-3 gap-2">
+          ${['rx','ry','rz'].map(k => `<div><label class="text-[9px] text-[#91a2bd] uppercase">${k[1]}</label><input type="number" step="5" data-k="${k}" value="${(o[k]*180/Math.PI).toFixed(0)}" class="w-full bg-[#111a2d] border border-[#293956] rounded-lg p-2 text-xs text-white text-center"></div>`).join('')}
+        </div>
+      </div>
+      <div>
+        <label class="block text-[11px] text-[#91a2bd] mb-1">Scale (Width, Height, Depth)</label>
+        <div class="grid grid-cols-3 gap-2">
+          ${['sx','sy','sz'].map(k => `<div><label class="text-[9px] text-[#91a2bd] uppercase">${k[1]}</label><input type="number" min="0.1" step="0.1" data-k="${k}" value="${o[k].toFixed(2)}" class="w-full bg-[#111a2d] border border-[#293956] rounded-lg p-2 text-xs text-white text-center"></div>`).join('')}
+        </div>
+      </div>
+      <div>
+        <label class="block text-[11px] text-[#91a2bd] mb-1">Material Color</label>
+        <input type="color" id="objColor" value="${o.color}" class="w-full h-10 bg-[#111a2d] border border-[#293956] rounded-xl cursor-pointer p-1">
+      </div>
+    </div>
+  `;
 
-    vps.forEach(p => {
-        ctx.fillStyle = '#58a6ff';
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 10px sans-serif';
-        ctx.fillText(p.label, Math.max(10, Math.min(W - 40, p.x + 8)), p.y - 8);
+  el.querySelectorAll('input[data-k]').forEach(inp => {
+    inp.addEventListener('change', () => {
+      let k = inp.dataset.k, v = Number(inp.value);
+      if (!Number.isFinite(v)) return;
+      o[k] = k.startsWith('r') ? v * Math.PI / 180 : v;
+      if (k.startsWith('s')) o[k] = Math.max(0.1, o[k]);
+      saveScene();
+      draw();
     });
+  });
 
-    if (state.guides.dist) {
-        const dOffset = W * 0.22;
-        const dPoints = [
-            { x: cx - dOffset, y: horizon.y, label: 'D1' },
-            { x: cx + dOffset, y: horizon.y, label: 'D2' }
-        ];
-        dPoints.forEach(p => {
-            ctx.fillStyle = '#d29922';
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 10px sans-serif';
-            ctx.fillText(p.label, p.x + 7, p.y - 7);
-        });
-    }
+  const colorInput = $('objColor');
+  if (colorInput) {
+    colorInput.addEventListener('input', e => {
+      o.color = e.target.value;
+      renderObjectList();
+      draw();
+      saveScene();
+    });
+  }
 }
 
-let touches = {}; let lastPinchDist = 0;
-canvas.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    for (const t of e.changedTouches) touches[t.identifier] = { x: t.clientX, y: t.clientY };
-    if (e.touches.length === 2) {
-        const [a, b] = [e.touches[0], e.touches[1]];
-        lastPinchDist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+function saveScene() {
+  if (!state.autosave) return;
+  try {
+    localStorage.setItem('perspective-studio-mobile-scene', JSON.stringify({ version: 1, objects: state.objects, nextId }));
+  } catch(e) {}
+}
+
+function restoreScene() {
+  try {
+    let d = JSON.parse(localStorage.getItem('perspective-studio-mobile-scene'));
+    if (d && Array.isArray(d.objects) && d.objects.length > 0) {
+      state.objects = d.objects;
+      nextId = d.nextId || Math.max(...d.objects.map(o => o.id)) + 1;
+      state.selected = state.objects[0].id;
     }
+  } catch (e) {}
+}
+
+// Drawer & Tab System
+let activeTab = null;
+function setTab(tabName) {
+  const drawer = $('drawer');
+  const overlay = $('overlay');
+  const buttons = document.querySelectorAll('.nav-btn');
+  
+  if (activeTab === tabName) {
+    closeDrawer();
+    return;
+  }
+  
+  activeTab = tabName;
+  drawer.classList.remove('translate-y-full');
+  overlay.classList.remove('opacity-0', 'pointer-events-none');
+  
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+  const content = $(tabName + 'Content');
+  if (content) content.classList.remove('hidden');
+  
+  buttons.forEach(b => {
+    if (b.dataset.tab === tabName) {
+      b.classList.add('text-[#65d6c4]', 'bg-[#17233b]');
+    } else {
+      b.classList.remove('text-[#65d6c4]', 'bg-[#17233b]');
+    }
+  });
+
+  if (tabName === 'inspector') renderInspector();
+  if (tabName === 'scene') renderObjectList();
+}
+
+function closeDrawer() {
+  const drawer = $('drawer');
+  const overlay = $('overlay');
+  drawer.classList.add('translate-y-full');
+  overlay.classList.add('opacity-0', 'pointer-events-none');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('text-[#65d6c4]', 'bg-[#17233b]'));
+  activeTab = null;
+}
+
+window.closeDrawer = closeDrawer;
+
+// Touch and Pointer Event Handling for Canvas
+const activePointers = new Map();
+
+canvas.addEventListener('pointerdown', e => {
+  canvas.setPointerCapture(e.pointerId);
+  activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  
+  if (activePointers.size === 1) {
+    const r = canvas.getBoundingClientRect();
+    const p = { x: e.clientX - r.left, y: e.clientY - r.top };
+    const hit = hitTest(p);
+    if (hit) {
+      selectObject(hit.id);
+      state.drag = { kind: 'object', start: p, last: p };
+    } else {
+      state.drag = { kind: 'orbit', last: p };
+    }
+    draw();
+  }
+});
+
+canvas.addEventListener('pointermove', e => {
+  if (!activePointers.has(e.pointerId)) return;
+  activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+  if (activePointers.size === 2) {
+    // Pinch to zoom
+    const pts = Array.from(activePointers.values());
+    const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+    if (!state.pinchDist) { state.pinchDist = dist; return; }
+    let delta = state.pinchDist - dist;
+    state.distance = Math.max(4, Math.min(30, state.distance + delta * 0.03));
+    state.pinchDist = dist;
+    draw();
+    return;
+  }
+
+  if (!state.drag) return;
+  let p = { x: e.clientX, y: e.clientY };
+  if (state.drag.kind === 'orbit') {
+    state.yaw -= (p.x - state.drag.last.x) * 0.008;
+    state.pitch = Math.max(-1.25, Math.min(1.25, state.pitch + (p.y - state.drag.last.y) * 0.008));
+  } else if (state.drag.kind === 'object') {
+    let o = getSelectedObject();
+    if (o) {
+      let scale = state.distance / Math.max(200, canvas.clientHeight);
+      o.x += (p.x - state.drag.last.x) * scale * Math.cos(state.yaw);
+      o.z -= (p.x - state.drag.last.x) * scale * Math.sin(state.yaw);
+      o.y -= (p.y - state.drag.last.y) * scale;
+      if (activeTab === 'inspector') renderInspector();
+    }
+  }
+  state.drag.last = p;
+  draw();
+});
+
+canvas.addEventListener('pointerup', e => {
+  activePointers.delete(e.pointerId);
+  if (activePointers.size < 2) state.pinchDist = null;
+  if (activePointers.size === 0) {
+    if (state.drag?.kind === 'object') saveScene();
+    state.drag = null;
+  }
+});
+
+canvas.addEventListener('pointercancel', e => {
+  activePointers.delete(e.pointerId);
+  state.pinchDist = null;
+  state.drag = null;
+});
+
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  state.distance = Math.max(4, Math.min(30, state.distance * Math.exp(e.deltaY * 0.001)));
+  draw();
 }, { passive: false });
 
-canvas.addEventListener('touchmove', (e) => {
-    e.preventDefault();
-    if (e.touches.length === 1) {
-        const t = e.touches[0]; const prev = touches[t.identifier];
-        if (prev) {
-            const dx = t.clientX - prev.x; const dy = t.clientY - prev.y;
-            state.cam.theta -= dx * 0.008;
-            state.cam.phi = Math.max(-1.2, Math.min(1.2, state.cam.phi - dy * 0.008));
-        }
-        touches[t.identifier] = { x: t.clientX, y: t.clientY };
-    } else if (e.touches.length === 2) {
-        const [a, b] = [e.touches[0], e.touches[1]];
-        const dist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-        if (lastPinchDist > 0) {
-            const ratio = lastPinchDist / dist;
-            state.cam.radius = Math.max(150, Math.min(1200, state.cam.radius * ratio));
-        }
-        lastPinchDist = dist;
-    }
-}, { passive: false });
+function hitTest(p) {
+  let best = null, dist = 36;
+  for (let o of state.objects) {
+    let q = project([o.x, o.y, o.z]);
+    if (!q) continue;
+    let d = Math.hypot(p.x - q.x, p.y - q.y);
+    if (d < dist) { dist = d; best = o; }
+  }
+  return best;
+}
 
-canvas.addEventListener('touchend', (e) => {
-    for (const t of e.changedTouches) delete touches[t.identifier];
-    if (e.touches.length < 2) lastPinchDist = 0;
+// UI Event Listeners
+document.querySelectorAll('[data-tab]').forEach(b => {
+  b.onclick = () => setTab(b.dataset.tab);
 });
 
-let mouseDown = false, lastMouse = null;
-canvas.addEventListener('mousedown', (e) => { mouseDown = true; lastMouse = { x: e.clientX, y: e.clientY }; });
-canvas.addEventListener('mousemove', (e) => {
-    if (!mouseDown) return;
-    const dx = e.clientX - lastMouse.x; const dy = e.clientY - lastMouse.y;
-    state.cam.theta -= dx * 0.008;
-    state.cam.phi = Math.max(-1.2, Math.min(1.2, state.cam.phi - dy * 0.008));
-    lastMouse = { x: e.clientX, y: e.clientY };
-});
-canvas.addEventListener('mouseup', () => mouseDown = false);
-canvas.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    state.cam.radius = Math.max(150, Math.min(1200, state.cam.radius + e.deltaY * 0.8));
-}, { passive: false });
-
-document.getElementById('btnWorm').onclick = () => { state.cam.phi = -0.85; state.cam.theta = 0.35; };
-document.getElementById('btnBird').onclick = () => { state.cam.phi = 0.85; state.cam.theta = 0.35; };
-document.getElementById('btnResetCam').onclick = () => { state.cam.phi = 0.3; state.cam.theta = 0.3; state.cam.radius = 400; };
-
-document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.onclick = () => {
-        const id = btn.dataset.panel;
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b === btn));
-        document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
-        const panel = document.getElementById('panel-' + id);
-        if (panel) { panel.classList.add('open'); if (id === 'transform') renderTransformPanel(); }
-    };
+document.querySelectorAll('[data-add]').forEach(b => {
+  b.onclick = () => addObject(b.dataset.add);
 });
 
-document.querySelectorAll('.panel-close').forEach(btn => {
-    btn.onclick = (e) => { e.stopPropagation(); closePanel(btn.dataset.close); };
-});
-
-document.getElementById('fabAdd').onclick = () => {
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.panel === 'scene'));
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
-    document.getElementById('panel-scene').classList.add('open');
+$('addCubeQuick').onclick = () => addObject('cube');
+$('duplicate').onclick = () => {
+  let o = getSelectedObject();
+  if (!o) return;
+  let c = { ...o, id: nextId++, name: o.name + ' copy', x: o.x + 0.5, z: o.z + 0.5 };
+  state.objects.push(c);
+  selectObject(c.id);
+  saveScene();
+  draw();
 };
 
-document.querySelectorAll('#modeCtrl button').forEach(b => {
-    b.onclick = () => {
-        state.mode = +b.dataset.mode;
-        document.querySelectorAll('#modeCtrl button').forEach(x => x.classList.toggle('active', x === b));
-        document.getElementById('modeBadge').textContent = state.mode + '-POINT';
+$('delete').onclick = () => {
+  if (!getSelectedObject()) return;
+  state.objects = state.objects.filter(o => o.id !== state.selected);
+  state.selected = state.objects[0]?.id ?? null;
+  renderObjectList();
+  renderInspector();
+  saveScene();
+  draw();
+};
+
+$('perspective').onchange = e => {
+  state.mode = e.target.value;
+  let presets = { one: [0, 0.18], two: [0.72, 0.36], three: [0.72, 0.68] };
+  [state.yaw, state.pitch] = presets[state.mode];
+  draw();
+};
+
+$('fov').oninput = e => { state.fov = Number(e.target.value); draw(); };
+$('guides').onchange = e => { state.guides = e.target.checked; draw(); };
+$('grid').onchange = e => { state.grid = e.target.checked; draw(); };
+$('wire').onchange = e => { state.wire = e.target.checked; draw(); };
+$('shadows').onchange = e => { state.shadows = e.target.checked; draw(); };
+
+$('resetView').onclick = () => {
+  state.yaw = 0.72; state.pitch = 0.36; state.distance = 12; state.fov = 50;
+  $('fov').value = 50;
+  draw();
+};
+
+$('newScene').onclick = () => {
+  if (confirm('Start a new empty scene?')) {
+    state.objects = [];
+    state.selected = null;
+    renderObjectList();
+    renderInspector();
+    saveScene();
+    draw();
+  }
+};
+
+const exportHandler = () => {
+  let data = { format: 'PerspectiveStudioScene', version: 1, objects: state.objects };
+  let blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement('a');
+  a.href = url;
+  a.download = 'perspective-scene.json';
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+$('exportBtn').onclick = exportHandler;
+$('exportBtnDrawer').onclick = exportHandler;
+$('importBtn').onclick = () => $('fileInput').click();
+$('fileInput').onchange = e => {
+  if (e.target.files[0]) {
+    let r = new FileReader();
+    r.onload = ev => {
+      try {
+        let d = JSON.parse(ev.target.result);
+        if (!d || !Array.isArray(d.objects)) throw Error('Invalid scene format');
+        state.objects = d.objects.map(o => ({ ...createObject(o.type), ...o, id: Number(o.id) || nextId++ }));
+        nextId = Math.max(1, ...state.objects.map(o => o.id)) + 1;
+        state.selected = state.objects[0]?.id ?? null;
+        renderObjectList();
+        renderInspector();
+        saveScene();
+        draw();
+        closeDrawer();
+      } catch (err) {
+        alert('Could not import scene: ' + err.message);
+      }
     };
-});
+    r.readAsText(e.target.files[0]);
+  }
+  e.target.value = '';
+};
 
-document.querySelectorAll('.prim-btn').forEach(b => { b.onclick = () => addObject(b.dataset.prim); });
+$('lessonPrev').onclick = () => { state.lesson = Math.max(0, state.lesson - 1); renderLesson(); };
+$('lessonNext').onclick = () => {
+  state.lesson = (state.lesson + 1) % lessons.length;
+  renderLesson();
+  if (state.lesson >= 1 && state.lesson <= 3) {
+    state.mode = ['one', 'two', 'three'][state.lesson - 1];
+    $('perspective').value = state.mode;
+    let presets = { one: [0, 0.18], two: [0.72, 0.36], three: [0.72, 0.68] };
+    [state.yaw, state.pitch] = presets[state.mode];
+    draw();
+  }
+};
 
-document.querySelectorAll('[data-guide]').forEach(cb => {
-    cb.onchange = () => { state.guides[cb.dataset.guide] = cb.checked; };
-});
+window.addEventListener('resize', resizeCanvas);
 
-document.getElementById('azimuth').oninput = (e) => { state.azimuth = +e.target.value; document.getElementById('azVal').textContent = state.azimuth + '°'; };
-document.getElementById('altitude').oninput = (e) => { state.altitude = +e.target.value; document.getElementById('altVal').textContent = state.altitude + '°'; document.getElementById('altDisplay').textContent = state.altitude + '°'; };
-document.getElementById('facetToggle').onchange = (e) => { state.facetShading = e.target.checked; };
-document.getElementById('shadowToggle').onchange = (e) => { state.castShadows = e.target.checked; };
-document.getElementById('wireframeToggle').onchange = (e) => { state.wireframe = e.target.checked; };
+// Initialize application state
+restoreScene();
+renderObjectList();
+renderInspector();
+renderLesson();
+resizeCanvas();
 
-document.getElementById('saveBtn').onclick = saveJSON;
-document.getElementById('loadBtn').onclick = () => document.getElementById('fileIn').click();
-document.getElementById('resetBtn').onclick = resetScene;
-document.getElementById('fileIn').onchange = loadJSON;
-
-function updateSelectionIndicator() {
-    const ind = document.getElementById('selIndicator');
-    const name = document.getElementById('selName');
-    if (state.selected >= 0 && state.objects[state.selected]) {
-        name.textContent = state.objects[state.selected].type.toUpperCase() + ' #' + (state.selected + 1);
-        ind.classList.add('visible');
-    } else {
-        ind.classList.remove('visible');
-    }
-}
-
-function refreshObjList() {
-    const list = document.getElementById('objList');
-    const empty = document.getElementById('emptyState');
-    list.innerHTML = '';
-    if (state.objects.length === 0) { empty.style.display = 'block'; }
-    else {
-        empty.style.display = 'none';
-        state.objects.forEach((o, i) => {
-            const d = document.createElement('div');
-            d.className = 'obj-item' + (i === state.selected ? ' selected' : '');
-            d.innerHTML = `<span>${o.type.toUpperCase()} #${i + 1}</span>`;
-            const del = document.createElement('button');
-            del.className = 'del'; del.textContent = '×';
-            del.onclick = (e) => { e.stopPropagation(); state.selected = i; deleteSelected(); };
-            d.appendChild(del);
-            d.onclick = (e) => { if (e.target === del) return; selectObject(i); };
-            list.appendChild(d);
-        });
-    }
-    document.getElementById('objCount').textContent = state.objects.length;
-}
-
-function refreshAll() { refreshObjList(); renderTransformPanel(); }
-
-function saveJSON() {
-    const data = { mode: state.mode, azimuth: state.azimuth, altitude: state.altitude, guides: state.guides, objects: state.objects.map(o => ({ type: o.type, pos: o.pos, scale: o.scale, rotY: o.rotY, color: o.color })) };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'perspective_scene.json'; a.click();
-}
-
-function loadJSON(e) {
-    const f = e.target.files[0]; if (!f) return;
-    const r = new FileReader();
-    r.onload = (ev) => {
-        const d = JSON.parse(ev.target.result);
-        state.mode = d.mode || 1; state.azimuth = d.azimuth || 45; state.altitude = d.altitude || 35;
-        state.guides = d.guides || state.guides;
-        state.objects = (d.objects || []).map(o => ({ ...o, id: Date.now() + Math.random(), geo: getGeometry(o.type) }));
-        state.selected = state.objects.length > 0 ? 0 : -1;
-        document.getElementById('azimuth').value = state.azimuth;
-        document.getElementById('altitude').value = state.altitude;
-        document.getElementById('azVal').textContent = state.azimuth + '°';
-        document.getElementById('altVal').textContent = state.altitude + '°';
-        document.querySelectorAll('#modeCtrl button').forEach(b => b.classList.toggle('active', +b.dataset.mode === state.mode));
-        document.getElementById('modeBadge').textContent = state.mode + '-POINT';
-        refreshAll();
-    };
-    r.readAsText(f);
-}
-
-const quizData = [
-    { q: "In Perspective drawing, where do primary horizontal vanishing points lie?", opts: ["Ground Plane", "Horizon Line (Eye Level)", "Station Point", "Zenith"], ans: 1 },
-    { q: "What are Distance Points (D1/D2) used for?", opts: ["Calculating elevation", "Accurate foreshortening & depth", "Light source direction", "Vertical tilt"], ans: 1 },
-    { q: "In 2-Point perspective, how many VPs lie on the horizon line?", opts: ["One", "Two", "Three", "Four"], ans: 1 },
-    { q: "In 3-Point worm's eye perspective, where does VP3 point?", opts: ["Straight to Horizon", "Zenith (Above)", "Nadir (Below)", "Center"], ans: 1 },
-    { q: "What happens to objects as they move closer to the Horizon Line?", opts: ["They expand", "They appear at eye level and flatten horizontally", "They turn upside down", "They invert colors"], ans: 1 }
-];
-
-function loadQuiz() {
-    const b = document.getElementById('quizBox');
-    const q = quizData[state.quiz.current];
-    b.innerHTML = `<div class="q-num">Question ${state.quiz.current + 1} / 5</div><div class="q-text">${q.q}</div>${q.opts.map((o, i) => `<button class="quiz-opt" data-idx="${i}">${o}</button>`).join('')}`;
-    b.querySelectorAll('.quiz-opt').forEach(btn => {
-        btn.onclick = () => checkAnswer(+btn.dataset.idx);
-    });
-}
-
-function checkAnswer(i) {
-    const q = quizData[state.quiz.current];
-    const opts = document.querySelectorAll('.quiz-opt');
-    opts.forEach((o, idx) => {
-        o.disabled = true; o.style.pointerEvents = 'none';
-        if (idx === q.ans) o.classList.add('correct');
-        if (idx === i && i !== q.ans) o.classList.add('wrong');
-    });
-    if (i === q.ans) { state.quiz.score++; document.getElementById('scoreVal').textContent = state.quiz.score; }
-    setTimeout(() => {
-        if (state.quiz.current < 4) { state.quiz.current++; loadQuiz(); }
-        else {
-            document.getElementById('quizBox').innerHTML = `<div class="q-num">Module Complete</div><div class="q-text">Final Score: <strong style="color:var(--accent)">${state.quiz.score}/5</strong></div><button class="btn primary" id="retakeBtn">Retake Quiz</button>`;
-            document.getElementById('retakeBtn').onclick = resetQuiz;
-        }
-    }, 1200);
-}
-
-function resetQuiz() { state.quiz = { current: 0, score: 0 }; document.getElementById('scoreVal').textContent = 0; loadQuiz(); }
-
-function animLoop() {
-    render();
-    requestAnimationFrame(animLoop);
-}
-
-window.addEventListener('resize', updateDimensions);
-window.addEventListener('orientationchange', () => setTimeout(updateDimensions, 100));
-
-initDefaultScene();
-refreshAll();
-loadQuiz();
-updateDimensions();
-animLoop();
+})();
 </script>
 </body>
 </html>
