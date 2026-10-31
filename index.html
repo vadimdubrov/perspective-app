@@ -1,834 +1,149 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Perspective Studio | A.P. Baryshnikov Method</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Perspective Studio — 3D Primitive Sandbox</title>
 <style>
-    :root {
-        --bg-dark: #0f1115;
-        --bg-panel: #161b22;
-        --bg-input: #21262d;
-        --text-main: #c9d1d9;
-        --text-muted: #8b949e;
-        --accent: #58a6ff;
-        --accent-hover: #1f6feb;
-        --border: #30363d;
-        --danger: #f85149;
-        --success: #3fb950;
-        --warning: #d29922;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    body { background: var(--bg-dark); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; }
-    
-    .sidebar { width: 280px; background: var(--bg-panel); border-right: 1px solid var(--border); overflow-y: auto; }
-    .main-stage { flex: 1; position: relative; background: #0d1117; }
-    .right-panel { width: 320px; background: var(--bg-panel); border-left: 1px solid var(--border); overflow-y: auto; }
-    
-    .header { padding: 18px; border-bottom: 1px solid var(--border); }
-    .header h1 { font-size: 1rem; color: var(--accent); letter-spacing: 1px; }
-    .header p { font-size: 0.7rem; color: var(--text-muted); margin-top: 3px; }
-    
-    .section { padding: 14px 18px; border-bottom: 1px solid var(--border); }
-    .section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 10px; font-weight: 600; }
-    
-    .btn-group { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px; }
-    .btn { flex: 1; min-width: 60px; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 7px 8px; border-radius: 5px; cursor: pointer; font-size: 0.78rem; transition: 0.15s; text-align: center; }
-    .btn:hover { background: #30363d; border-color: var(--accent); }
-    .btn.active { background: var(--accent); color: white; border-color: var(--accent); }
-    .btn.danger { color: var(--danger); }
-    .btn.danger:hover { background: rgba(248,81,73,0.15); }
-    .btn.small { padding: 5px 8px; font-size: 0.72rem; }
-    
-    .slider-row { margin-bottom: 10px; }
-    .slider-row label { display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 4px; color: var(--text-main); }
-    .slider-row label span { color: var(--accent); font-weight: 600; }
-    .slider-row input[type="range"] { width: 100%; accent-color: var(--accent); }
-    
-    .toggle { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 0.78rem; }
-    .switch { position: relative; width: 32px; height: 18px; flex-shrink: 0; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider-sw { position: absolute; cursor: pointer; inset: 0; background: var(--bg-input); border-radius: 18px; transition: .2s; border: 1px solid var(--border); }
-    .slider-sw:before { position: absolute; content: ""; height: 12px; width: 12px; left: 2px; bottom: 2px; background: var(--text-muted); border-radius: 50%; transition: .2s; }
-    input:checked + .slider-sw { background: var(--accent); border-color: var(--accent); }
-    input:checked + .slider-sw:before { transform: translateX(14px); background: white; }
-    
-    .object-list { max-height: 180px; overflow-y: auto; }
-    .object-item { display: flex; justify-content: space-between; align-items: center; padding: 7px 10px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 5px; margin-bottom: 4px; font-size: 0.78rem; cursor: pointer; transition: 0.15s; }
-    .object-item:hover { border-color: var(--accent); }
-    .object-item.selected { background: rgba(88,166,255,0.15); border-color: var(--accent); color: var(--accent); }
-    .object-item .del-btn { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 0.9rem; padding: 0 4px; }
-    
-    canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
-    
-    .canvas-hud { position: absolute; top: 15px; left: 15px; background: rgba(22,27,34,0.85); padding: 8px 12px; border-radius: 6px; font-size: 0.72rem; color: var(--text-muted); backdrop-filter: blur(6px); border: 1px solid var(--border); }
-    .canvas-hud strong { color: var(--accent); }
-    
-    .canvas-help { position: absolute; bottom: 15px; left: 15px; background: rgba(22,27,34,0.85); padding: 8px 12px; border-radius: 6px; font-size: 0.7rem; color: var(--text-muted); backdrop-filter: blur(6px); border: 1px solid var(--border); }
-    
-    .quiz-card { background: var(--bg-input); padding: 16px; margin: 14px; border-radius: 8px; border: 1px solid var(--border); }
-    .quiz-card h4 { color: var(--accent); margin-bottom: 10px; font-size: 0.85rem; }
-    .quiz-question { font-size: 0.85rem; margin-bottom: 12px; line-height: 1.4; }
-    .quiz-options { display: flex; flex-direction: column; gap: 6px; }
-    .quiz-opt { background: var(--bg-panel); padding: 9px 10px; border-radius: 5px; cursor: pointer; border: 1px solid var(--border); transition: 0.15s; font-size: 0.78rem; }
-    .quiz-opt:hover { border-color: var(--accent); }
-    .quiz-opt.correct { background: rgba(63,185,80,0.15); border-color: var(--success); color: var(--success); }
-    .quiz-opt.wrong { background: rgba(248,81,73,0.15); border-color: var(--danger); color: var(--danger); }
-    
-    .score-board { text-align: center; padding: 14px; background: var(--bg-input); margin: 14px; border-radius: 8px; border: 1px solid var(--border); }
-    .score-board span { font-size: 1.8rem; color: var(--accent); font-weight: bold; }
-    .score-board .label { font-size: 0.7rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
-    
-    .course-list { font-size: 0.78rem; line-height: 1.9; color: var(--text-muted); }
-    .course-list strong { color: var(--text-main); }
-    
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg-dark); }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+:root{color-scheme:dark;--bg:#0b1020;--panel:#111a2d;--panel2:#17233b;--line:#293956;--text:#e8eef9;--muted:#91a2bd;--accent:#65d6c4;--blue:#79a9ff}
+*{box-sizing:border-box}html,body{margin:0;height:100%;font:14px/1.4 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}
+.app{height:100%;display:grid;grid-template-rows:56px 1fr;min-height:520px}.top{display:flex;align-items:center;gap:14px;padding:0 18px;border-bottom:1px solid var(--line);background:#0e1628}
+.brand{font-weight:750;letter-spacing:.02em}.brand span{color:var(--accent)}.sub{color:var(--muted);font-size:12px}.topright{margin-left:auto;display:flex;gap:8px}
+button,select,input{font:inherit;color:var(--text)}button{border:1px solid var(--line);background:var(--panel2);padding:8px 11px;border-radius:8px;cursor:pointer}button:hover{border-color:var(--accent)}button.primary{background:var(--accent);color:#071b1a;border-color:var(--accent);font-weight:700}
+.main{min-height:0;display:grid;grid-template-columns:220px minmax(260px,1fr) 250px}.side{background:var(--panel);padding:14px;overflow:auto}.left{border-right:1px solid var(--line)}.right{border-left:1px solid var(--line)}
+h3{font-size:11px;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);margin:8px 0 10px}.tools{display:grid;grid-template-columns:1fr 1fr;gap:7px}.tools button{padding:10px 5px;text-align:left}.tools button b{display:block;font-size:17px;margin-bottom:3px}.tools button small{color:var(--muted)}
+.section{border-top:1px solid var(--line);margin-top:16px;padding-top:12px}.field{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:10px 0;color:var(--muted)}.field input[type=number]{width:82px;background:#0b1425;border:1px solid var(--line);border-radius:6px;padding:6px}.field input[type=range]{width:112px;accent-color:var(--accent)}select{background:#0b1425;border:1px solid var(--line);border-radius:6px;padding:7px;width:100%}
+.stage{position:relative;min-width:0;min-height:0;background:radial-gradient(ellipse at 50% 42%,#182641 0%,#0b1222 72%);overflow:hidden}canvas{width:100%;height:100%;display:block;touch-action:none}.hud{position:absolute;left:14px;top:12px;display:flex;gap:7px;pointer-events:none}.pill{background:#0b1425cc;border:1px solid #344665;border-radius:20px;padding:5px 9px;color:#c3d2e8;font-size:11px}.help{position:absolute;bottom:12px;left:14px;color:#93a5c0;font-size:11px;background:#0b1425bb;padding:7px 10px;border-radius:7px;pointer-events:none}
+.objectlist{display:flex;flex-direction:column;gap:5px}.objrow{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid transparent;border-radius:7px;cursor:pointer;color:#cbd7e9}.objrow.active{background:#1c2c46;border-color:#46617f}.swatch{width:10px;height:10px;border-radius:3px}.objrow small{margin-left:auto;color:var(--muted)}
+.inspector label{display:block;color:var(--muted);font-size:12px;margin:11px 0 5px}.inspector input[type=number]{width:100%;background:#0b1425;border:1px solid var(--line);border-radius:6px;padding:7px}.xyz{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.xyz label{margin-top:8px}.xyz input{min-width:0}.axisnote{font-size:11px;color:var(--muted);margin-top:12px;line-height:1.5}
+@media(max-width:850px){.main{grid-template-columns:175px minmax(220px,1fr)}.right{display:none}.side{padding:10px}.tools{grid-template-columns:1fr 1fr}.sub{display:none}}
+@media(max-width:560px){.main{grid-template-columns:1fr;grid-template-rows:1fr}.left{display:none}.top{padding:0 10px}.topright button{padding:7px}.brand{font-size:13px}}
 </style>
 </head>
 <body>
-
-<!-- LEFT SIDEBAR -->
-<aside class="sidebar">
-    <div class="header">
-        <h1>PERSPECTIVE STUDIO</h1>
-        <p>A.P. Baryshnikov Method</p>
-    </div>
-
-    <div class="section">
-        <div class="section-title">Perspective Mode</div>
-        <div class="btn-group">
-            <button class="btn active" data-mode="1">1-Point</button>
-            <button class="btn" data-mode="2">2-Point</button>
-            <button class="btn" data-mode="3">3-Point</button>
-        </div>
-    </div>
-
-    <div class="section">
-        <div class="section-title">Add Primitive</div>
-        <div class="btn-group">
-            <button class="btn small" onclick="addObject('cube')">■ Cube</button>
-            <button class="btn small" onclick="addObject('sphere')">● Sphere</button>
-            <button class="btn small" onclick="addObject('pyramid')">▲ Pyramid</button>
-        </div>
-        <div class="btn-group">
-            <button class="btn small" onclick="addObject('cylinder')">◯ Cylinder</button>
-            <button class="btn small" onclick="addObject('prism')">◆ Prism</button>
-        </div>
-    </div>
-
-    <div class="section">
-        <div class="section-title">Scene Objects</div>
-        <div class="object-list" id="objectList"></div>
-        <button class="btn danger" style="width:100%; margin-top:6px;" onclick="deleteSelected()">Delete Selected</button>
-    </div>
-
-    <div class="section">
-        <div class="section-title">Selected Object</div>
-        <div class="slider-row">
-            <label>Position X <span id="px-val">0</span></label>
-            <input type="range" min="-400" max="400" value="0" id="posX" oninput="updateSelected()">
-        </div>
-        <div class="slider-row">
-            <label>Position Z (depth) <span id="pz-val">200</span></label>
-            <input type="range" min="50" max="800" value="200" id="posZ" oninput="updateSelected()">
-        </div>
-        <div class="slider-row">
-            <label>Elevation (Y) <span id="py-val">0</span></label>
-            <input type="range" min="-200" max="300" value="0" id="posY" oninput="updateSelected()">
-        </div>
-        <div class="slider-row">
-            <label>Scale <span id="sc-val">1.0</span></label>
-            <input type="range" min="0.2" max="3" step="0.1" value="1" id="scale" oninput="updateSelected()">
-        </div>
-        <div class="slider-row">
-            <label>Rotation Y° <span id="ry-val">0</span></label>
-            <input type="range" min="0" max="360" value="0" id="rotY" oninput="updateSelected()">
-        </div>
-    </div>
-
-    <div class="section">
-        <div class="section-title">Sun & Shadows</div>
-        <div class="slider-row">
-            <label>Azimuth <span id="az-val">45°</span></label>
-            <input type="range" min="0" max="360" value="45" id="azimuth" oninput="updateSun()">
-        </div>
-        <div class="slider-row">
-            <label>Altitude <span id="alt-val">35°</span></label>
-            <input type="range" min="5" max="85" value="35" id="altitude" oninput="updateSun()">
-        </div>
-    </div>
-
-    <div class="section">
-        <div class="section-title">Guides</div>
-        <div class="toggle"><span>Horizon Line</span><label class="switch"><input type="checkbox" checked data-guide="horizon"><span class="slider-sw"></span></label></div>
-        <div class="toggle"><span>Vanishing Points</span><label class="switch"><input type="checkbox" checked data-guide="vps"><span class="slider-sw"></span></label></div>
-        <div class="toggle"><span>Ground Grid</span><label class="switch"><input type="checkbox" checked data-guide="grid"><span class="slider-sw"></span></label></div>
-        <div class="toggle"><span>Distance Points D1/D2</span><label class="switch"><input type="checkbox" data-guide="dist"><span class="slider-sw"></span></label></div>
-        <div class="toggle"><span>Facet Shading</span><label class="switch"><input type="checkbox" checked id="facetToggle"><span class="slider-sw"></span></label></div>
-        <div class="toggle"><span>Cast Shadows</span><label class="switch"><input type="checkbox" checked id="shadowToggle"><span class="slider-sw"></span></label></div>
-    </div>
-
-    <div class="section">
-        <div class="section-title">Project File</div>
-        <div class="btn-group">
-            <button class="btn" onclick="saveJSON()">Save JSON</button>
-            <button class="btn" onclick="document.getElementById('fileInput').click()">Open JSON</button>
-            <input type="file" id="fileInput" style="display:none" accept=".json" onchange="loadJSON(event)">
-        </div>
-        <button class="btn danger" style="width:100%; margin-top:6px;" onclick="resetScene()">Reset Scene</button>
-    </div>
+<div class="app">
+<header class="top"><div class="brand">PERSPECTIVE <span>STUDIO</span></div><div class="sub">3D primitive sandbox · standalone edition</div><div class="topright">
+<button id="resetView">Reset view</button><button id="exportBtn">Export JSON</button><button id="importBtn">Import</button><button class="primary" id="addCube">＋ Add cube</button><input id="fileInput" type="file" accept=".json,application/json" hidden>
+</div></header>
+<div class="main">
+<aside class="side left">
+<h3>Primitives</h3><div class="tools">
+<button data-add="cube"><b>▧</b>Cube<small>6 faces</small></button>
+<button data-add="sphere"><b>●</b>Sphere<small>UV mesh</small></button>
+<button data-add="cylinder"><b>⬭</b>Cylinder<small>Round solid</small></button>
+<button data-add="pyramid"><b>△</b>Pyramid<small>4 sides</small></button>
+<button data-add="prism"><b>◭</b>Triangular prism<small>3 sides</small></button>
+</div>
+<div class="section"><h3>Camera projection</h3><select id="perspective"><option value="one">1-point perspective</option><option value="two" selected>2-point perspective</option><option value="three">3-point perspective</option></select>
+<div class="field"><span>Field of view</span><input id="fov" type="range" min="28" max="85" value="50"></div>
+<div class="field"><span>Construction guides</span><input id="guides" type="checkbox" checked></div>
+<div class="field"><span>Ground grid</span><input id="grid" type="checkbox" checked></div>
+<div class="field"><span>Wireframe</span><input id="wire" type="checkbox"></div>
+</div>
+<div class="section"><h3>Scene</h3><div class="objectlist" id="objectList"></div>
+<div style="display:flex;gap:7px;margin-top:10px"><button id="duplicate" style="flex:1">Duplicate</button><button id="delete" style="flex:1">Delete</button></div>
+</div>
 </aside>
-
-<!-- MAIN CANVAS -->
-<main class="main-stage">
-    <canvas id="canvas"></canvas>
-    <div class="canvas-hud">
-        Mode: <strong id="mode-display">1-Point</strong> | Objects: <strong id="obj-count">0</strong>
-    </div>
-    <div class="canvas-help">
-        Click an object in the list to select • Adjust sliders to transform
-    </div>
-</main>
-
-<!-- RIGHT PANEL -->
-<aside class="right-panel">
-    <div class="section">
-        <div class="section-title">Course Modules</div>
-        <div class="course-list">
-            <strong>1. Fundamentals</strong> — Picture Plane & Horizon<br>
-            <strong>2. 1-Point</strong> — Frontal Foreshortening<br>
-            <strong>3. 2-Point</strong> — Angular Views & Distance Points<br>
-            <strong>4. 3-Point</strong> — Zenith & Nadir Convergence<br>
-            <strong>5. Light & Reflections</strong> — Solar Shadows & Mirrors
-        </div>
-    </div>
-
-    <div class="score-board">
-        <div class="label">Baryshnikov Quiz</div>
-        <span id="score-display">0</span> / 5
-    </div>
-
-    <div class="quiz-card" id="quiz-container"></div>
+<main class="stage"><canvas id="view"></canvas><div class="hud"><span class="pill" id="modeLabel">2-POINT PERSPECTIVE</span><span class="pill" id="countLabel">1 OBJECT</span></div><div class="help">Drag empty space to orbit · Scroll to zoom · Drag object to move · Click to select</div></main>
+<aside class="side right">
+<h3>Object inspector</h3><div class="inspector" id="inspector"><div class="axisnote">Select an object in the scene or object list to edit its transform.</div></div>
+<div class="section"><h3>Scene controls</h3><div class="field"><span>Shadows</span><input id="shadows" type="checkbox" checked></div><div class="field"><span>Auto-save</span><input id="autosave" type="checkbox" checked></div><button id="newScene" style="width:100%;margin-top:8px">New scene</button>
+<div class="axisnote">Coordinates: X = width, Y = height, Z = depth. Scene data stays in this browser unless you export it.</div></div>
 </aside>
-
+</div>
+</div>
 <script>
-// ============ STATE ============
-const state = {
-    mode: 1,
-    objects: [],
-    selected: -1,
-    azimuth: 45,
-    altitude: 35,
-    guides: { horizon: true, vps: true, grid: true, dist: false },
-    facetShading: true,
-    castShadows: true,
-    quiz: { current: 0, score: 0 }
-};
-
-// ============ CANVAS SETUP ============
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-let W, H, cx, cy, focal = 500;
-
-function resize() {
-    W = canvas.parentElement.clientWidth;
-    H = canvas.parentElement.clientHeight;
-    canvas.width = W;
-    canvas.height = H;
-    cx = W / 2;
-    cy = H / 2;
-    render();
+(() => {
+'use strict';
+const canvas=document.getElementById('view'),ctx=canvas.getContext('2d');
+const $=id=>document.getElementById(id);
+const state={objects:[],selected:null,yaw:.72,pitch:.36,distance:10,fov:50,mode:'two',guides:true,grid:true,wire:false,shadows:true,drag:null,autosave:true};
+const colors=['#69c9bb','#7da9f7','#f0b66d','#c18be8','#e77f91','#9bc875'];
+let nextId=1;
+function obj(type,x=0,y=.7,z=0){return {id:nextId++,name:type[0].toUpperCase()+type.slice(1)+' '+nextId,type,x,y,z,rx:0,ry:0,rz:0,sx:1,sy:1,sz:1,color:colors[(nextId-2)%colors.length]};}
+state.objects.push(obj('cube'));
+function add(type){const o=obj(type,(Math.random()-.5)*2,.65,(Math.random()-.5)*2);state.objects.push(o);select(o.id);renderList();save();draw();}
+function select(id){state.selected=id;renderList();renderInspector();}
+function selected(){return state.objects.find(o=>o.id===state.selected)}
+function resize(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(r.width*d));canvas.height=Math.max(1,Math.round(r.height*d));ctx.setTransform(d,0,0,d,0,0);draw();}
+function cameraBasis(){
+ let yaw=state.yaw,pitch=state.pitch;
+ const pos=[state.distance*Math.sin(yaw)*Math.cos(pitch),state.distance*Math.sin(pitch),state.distance*Math.cos(yaw)*Math.cos(pitch)];
+ const norm=v=>{let l=Math.hypot(...v)||1;return v.map(n=>n/l)};
+ const sub=(a,b)=>a.map((v,i)=>v-b[i]),cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+ const forward=norm(pos.map(v=>-v)),right=norm(cross(forward,[0,1,0])),up=norm(cross(right,forward));
+ return {pos,right,up,forward};
 }
-window.addEventListener('resize', resize);
-
-// ============ 3D MATH ============
-function rotateY(p, angle) {
-    const c = Math.cos(angle), s = Math.sin(angle);
-    return { x: p.x * c + p.z * s, y: p.y, z: -p.x * s + p.z * c };
+function project(p){
+ const b=cameraBasis(),v=p.map((n,i)=>n-b.pos[i]),z=v.reduce((s,n,i)=>s+n*b.forward[i],0);
+ if(z<=.08)return null;
+ const x=v.reduce((s,n,i)=>s+n*b.right[i],0),y=v.reduce((s,n,i)=>s+n*b.up[i],0);
+ const w=canvas.clientWidth,h=canvas.clientHeight,f=(h*.5)/Math.tan(state.fov*Math.PI/360);
+ return {x:w/2+x*f/z,y:h/2-y*f/z,z};
 }
-function translate(p, t) { return { x: p.x + t.x, y: p.y + t.y, z: p.z + t.z }; }
-
-function project(p) {
-    const z = Math.max(p.z, 1);
-    const scale = focal / z;
-    return {
-        x: cx + p.x * scale,
-        y: cy - p.y * scale,
-        scale: scale,
-        z: z
-    };
+function rotate(p,o){
+ let v=[p[0],p[1],p[2]];
+ let cy=Math.cos(o.ry),sy=Math.sin(o.ry);v=[v[0]*cy+v[2]*sy,v[1],-v[0]*sy+v[2]*cy];
+ let cx=Math.cos(o.rx),sx=Math.sin(o.rx);v=[v[0],v[1]*cx-v[2]*sx,v[1]*sx+v[2]*cx];
+ let cz=Math.cos(o.rz),sz=Math.sin(o.rz);return [v[0]*cz-v[1]*sz,v[0]*sz+v[1]*cz,v[2]];
 }
-
-function cross(a, b) {
-    return { x: a.y*b.z - a.z*b.y, y: a.z*b.x - a.x*b.z, z: a.x*b.y - a.y*b.x };
+function mesh(o){
+ let v=[],faces=[];
+ const push=(p)=>v.push(p);
+ if(o.type==='cube'){v=[[-.5,-.5,-.5],[.5,-.5,-.5],[.5,.5,-.5],[-.5,.5,-.5],[-.5,-.5,.5],[.5,-.5,.5],[.5,.5,.5],[-.5,.5,.5]];faces=[[0,1,2,3],[4,7,6,5],[0,4,5,1],[3,2,6,7],[0,3,7,4],[1,5,6,2]];}
+ if(o.type==='pyramid'){v=[[-.5,0,-.5],[.5,0,-.5],[.5,0,.5],[-.5,0,.5],[0,1,0]];faces=[[0,3,2,1],[0,1,4],[1,2,4],[2,3,4],[3,0,4]];}
+ if(o.type==='prism'){v=[[-.5,-.5,-.45],[.5,-.5,-.45],[0,.5,-.45],[-.5,-.5,.45],[.5,-.5,.45],[0,.5,.45]];faces=[[0,2,1],[3,4,5],[0,1,4,3],[1,2,5,4],[2,0,3,5]];}
+ if(o.type==='cylinder'){let n=20;for(let i=0;i<n;i++){let a=i*2*Math.PI/n;v.push([Math.cos(a)*.5,-.5,Math.sin(a)*.5]);}for(let i=0;i<n;i++){let a=i*2*Math.PI/n;v.push([Math.cos(a)*.5,.5,Math.sin(a)*.5]);}faces.push(Array.from({length:n},(_,i)=>i).reverse(),Array.from({length:n},(_,i)=>n+i));for(let i=0;i<n;i++)faces.push([i,(i+1)%n,(i+1)%n+n,i+n]);}
+ if(o.type==='sphere'){let rings=10,seg=18;for(let r=0;r<=rings;r++){let ph=Math.PI*r/rings;for(let s=0;s<seg;s++){let th=2*Math.PI*s/seg;v.push([.5*Math.sin(ph)*Math.cos(th),.5*Math.cos(ph),.5*Math.sin(ph)*Math.sin(th)]);}}for(let r=0;r<rings;r++)for(let s=0;s<seg;s++){let a=r*seg+s,b=r*seg+(s+1)%seg,c=(r+1)*seg+(s+1)%seg,d=(r+1)*seg+s;faces.push([a,b,c,d]);}}
+ const world=v.map(p=>{let q=rotate(p,o);return [o.x+q[0]*o.sx,o.y+q[1]*o.sy,o.z+q[2]*o.sz]});
+ return {world,faces};
 }
-function sub(a, b) { return { x: a.x-b.x, y: a.y-b.y, z: a.z-b.z }; }
-function normalize(v) {
-    const l = Math.sqrt(v.x*v.x + v.y*v.y + v.z*v.z) || 1;
-    return { x: v.x/l, y: v.y/l, z: v.z/l };
+function drawLine(a,b,color,width=1,dash=[]){if(!a||!b)return;ctx.beginPath();ctx.setLineDash(dash);ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();ctx.setLineDash([]);}
+function draw(){
+ const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;
+ ctx.clearRect(0,0,w,h);
+ // ground grid
+ if(state.grid){for(let i=-10;i<=10;i++){let a=project([i,0,-10]),b=project([i,0,10]),c=project([-10,0,i]),d=project([10,0,i]);drawLine(a,b,'rgba(111,145,190,.16)');drawLine(c,d,'rgba(111,145,190,.16)');}
+ drawLine(project([-10,0,0]),project([10,0,0]),'rgba(238,117,117,.6)',1.3);drawLine(project([0,0,-10]),project([0,0,10]),'rgba(107,191,255,.6)',1.3);}
+ if(state.guides){const y=h*.5+Math.sin(state.pitch)*h*.15;drawLine({x:0,y},{x:w,y},'rgba(101,214,196,.35)',1,[7,6]);ctx.fillStyle='rgba(135,220,210,.75)';ctx.font='11px system-ui';ctx.fillText('HORIZON / EYE LEVEL',12,Math.max(15,y-8));}
+ const all=[];
+ if(state.shadows){for(const o of state.objects){const c=project([o.x,.012,o.z]),rx=Math.max(5,Math.min(60,canvas.clientHeight*.035*o.sx)),ry=Math.max(3,rx*.32);if(c){ctx.beginPath();ctx.ellipse(c.x,c.y,rx,ry,0,0,Math.PI*2);ctx.fillStyle='rgba(0,0,0,.22)';ctx.fill();}}}
+ for(const o of state.objects){const m=mesh(o),p=m.world.map(project);for(const f of m.faces){let pts=f.map(i=>p[i]);if(pts.some(x=>!x))continue;let depth=pts.reduce((s,x)=>s+x.z,0)/pts.length;all.push({o,pts,depth});}}
+ all.sort((a,b)=>b.depth-a.depth);
+ for(const face of all){const {o,pts}=face;ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i].x,pts[i].y);ctx.closePath();
+ const alpha=o.id===state.selected?.72:.5;ctx.fillStyle=state.wire?'rgba(0,0,0,0)':shade(o.color,Math.max(.35,1-face.depth*.035),alpha);ctx.fill();ctx.strokeStyle=o.id===state.selected?'#a5fff0':'rgba(12,22,38,.9)';ctx.lineWidth=o.id===state.selected?2:1;ctx.stroke();}
+ for(const o of state.objects){if(o.id!==state.selected)continue;const p=project([o.x,o.y,o.z]);if(p){ctx.beginPath();ctx.arc(p.x,p.y,5,0,Math.PI*2);ctx.fillStyle='#a5fff0';ctx.fill();ctx.strokeStyle='#102a30';ctx.stroke();}}
+ $('modeLabel').textContent=state.mode.toUpperCase().replace('ONE','1-POINT').replace('TWO','2-POINT').replace('THREE','3-POINT')+' PERSPECTIVE';
+ $('countLabel').textContent=state.objects.length+' OBJECT'+(state.objects.length===1?'':'S');
 }
-function dot(a, b) { return a.x*b.x + a.y*b.y + a.z*b.z; }
-
-// ============ PRIMITIVE GENERATORS ============
-function makeCube() {
-    const s = 40;
-    const v = [
-        {x:-s,y:-s,z:-s},{x:s,y:-s,z:-s},{x:s,y:s,z:-s},{x:-s,y:s,z:-s},
-        {x:-s,y:-s,z:s},{x:s,y:-s,z:s},{x:s,y:s,z:s},{x:-s,y:s,z:s}
-    ];
-    const f = [[0,1,2,3],[4,5,6,7],[1,5,6,2],[0,3,7,4],[3,2,6,7],[0,4,5,1]];
-    return { vertices: v, faces: f };
+function shade(hex,k,a){let n=parseInt(hex.slice(1),16),r=Math.min(255,((n>>16)&255)*k),g=Math.min(255,((n>>8)&255)*k),b=Math.min(255,(n&255)*k);return `rgba(${r|0},${g|0},${b|0},${a})`;}
+function renderList(){const el=$('objectList');el.innerHTML='';state.objects.forEach(o=>{let d=document.createElement('div');d.className='objrow'+(o.id===state.selected?' active':'');d.innerHTML=`<span class="swatch" style="background:${o.color}"></span><span>${o.name}</span><small>${o.type}</small>`;d.onclick=()=>{select(o.id);draw()};el.appendChild(d);});$('countLabel').textContent=state.objects.length+' OBJECT'+(state.objects.length===1?'':'S');}
+function renderInspector(){let o=selected(),el=$('inspector');if(!o){el.innerHTML='<div class="axisnote">No object selected.</div>';return;}
+ el.innerHTML=`<div style="font-weight:650">${o.name}</div><label>Primitive</label><div style="color:#d5e1f2">${o.type}</div><label>Position</label><div class="xyz">${['x','y','z'].map(k=>`<div><label>${k.toUpperCase()}</label><input type="number" step=".1" data-k="${k}" value="${o[k].toFixed(2)}"></div>`).join('')}</div><label>Rotation (degrees)</label><div class="xyz">${['rx','ry','rz'].map(k=>`<div><label>${k[1].toUpperCase()}</label><input type="number" step="5" data-k="${k}" value="${(o[k]*180/Math.PI).toFixed(0)}"></div>`).join('')}</div><label>Scale</label><div class="xyz">${['sx','sy','sz'].map(k=>`<div><label>${k[1].toUpperCase()}</label><input type="number" min=".1" step=".1" data-k="${k}" value="${o[k].toFixed(2)}"></div>`).join('')}</div><label>Material colour</label><input type="color" id="objColor" value="${o.color}" style="width:100%;height:35px;background:#0b1425;border:1px solid var(--line);border-radius:6px">`;
+ el.querySelectorAll('input[data-k]').forEach(inp=>inp.addEventListener('change',()=>{let k=inp.dataset.k,v=Number(inp.value);if(!Number.isFinite(v))return;o[k]=k.startsWith('r')?v*Math.PI/180:v;if(k.startsWith('s'))o[k]=Math.max(.1,o[k]);save();draw();}));
+ $('objColor').addEventListener('input',e=>{o.color=e.target.value;renderList();draw();save()});
 }
-function makePyramid() {
-    const s = 45, h = 70;
-    const v = [
-        {x:-s,y:-s,z:-s},{x:s,y:-s,z:-s},{x:s,y:-s,z:s},{x:-s,y:-s,z:s},
-        {x:0,y:h,z:0}
-    ];
-    const f = [[0,1,2,3],[0,1,4],[1,2,4],[2,3,4],[3,0,4]];
-    return { vertices: v, faces: f };
-}
-function makePrism() {
-    const s = 45, h = 70;
-    const v = [
-        {x:-s,y:-s,z:-s},{x:s,y:-s,z:-s},{x:0,y:-s,z:s},
-        {x:-s,y:h,z:-s},{x:s,y:h,z:-s},{x:0,y:h,z:s}
-    ];
-    const f = [[0,1,2],[3,4,5],[0,1,4,3],[1,2,5,4],[2,0,3,5]];
-    return { vertices: v, faces: f };
-}
-function makeCylinder() {
-    const r = 35, h = 50, seg = 16;
-    const v = [];
-    for (let i = 0; i < seg; i++) {
-        const a = (i / seg) * Math.PI * 2;
-        v.push({ x: Math.cos(a)*r, y: -h, z: Math.sin(a)*r });
-    }
-    for (let i = 0; i < seg; i++) {
-        const a = (i / seg) * Math.PI * 2;
-        v.push({ x: Math.cos(a)*r, y: h, z: Math.sin(a)*r });
-    }
-    const f = [];
-    for (let i = 0; i < seg; i++) {
-        const n = (i+1) % seg;
-        f.push([i, n, n+seg, i+seg]);
-    }
-    const top = [], bot = [];
-    for (let i = 0; i < seg; i++) { top.push(i+seg); bot.push(i); }
-    f.push(top); f.push(bot.reverse());
-    return { vertices: v, faces: f };
-}
-function makeSphere() {
-    const r = 45, lat = 10, lon = 16;
-    const v = [];
-    for (let i = 0; i <= lat; i++) {
-        const phi = (i / lat) * Math.PI;
-        for (let j = 0; j < lon; j++) {
-            const theta = (j / lon) * Math.PI * 2;
-            v.push({
-                x: r * Math.sin(phi) * Math.cos(theta),
-                y: r * Math.cos(phi),
-                z: r * Math.sin(phi) * Math.sin(theta)
-            });
-        }
-    }
-    const f = [];
-    for (let i = 0; i < lat; i++) {
-        for (let j = 0; j < lon; j++) {
-            const n = (j+1) % lon;
-            const a = i*lon + j, b = i*lon + n;
-            const c = (i+1)*lon + j, d = (i+1)*lon + n;
-            f.push([a, b, d, c]);
-        }
-    }
-    return { vertices: v, faces: f };
-}
-
-function getGeometry(type) {
-    switch(type) {
-        case 'cube': return makeCube();
-        case 'sphere': return makeSphere();
-        case 'pyramid': return makePyramid();
-        case 'cylinder': return makeCylinder();
-        case 'prism': return makePrism();
-    }
-}
-
-// ============ OBJECT MANAGEMENT ============
-function addObject(type) {
-    const geo = getGeometry(type);
-    state.objects.push({
-        id: Date.now() + Math.random(),
-        type: type,
-        geo: geo,
-        pos: { x: 0, y: 0, z: 200 },
-        scale: 1,
-        rotY: 0,
-        color: [88, 166, 255]
-    });
-    state.selected = state.objects.length - 1;
-    refreshUI();
-    render();
-}
-
-function deleteSelected() {
-    if (state.selected < 0) return;
-    state.objects.splice(state.selected, 1);
-    state.selected = Math.min(state.selected, state.objects.length - 1);
-    refreshUI();
-    render();
-}
-
-function resetScene() {
-    state.objects = [];
-    state.selected = -1;
-    refreshUI();
-    render();
-}
-
-function selectObject(idx) {
-    state.selected = idx;
-    refreshUI();
-    if (idx >= 0) {
-        const o = state.objects[idx];
-        document.getElementById('posX').value = o.pos.x;
-        document.getElementById('posZ').value = o.pos.z;
-        document.getElementById('posY').value = o.pos.y;
-        document.getElementById('scale').value = o.scale;
-        document.getElementById('rotY').value = o.rotY;
-        updateSliderLabels();
-    }
-    render();
-}
-
-function updateSelected() {
-    if (state.selected < 0) return;
-    const o = state.objects[state.selected];
-    o.pos.x = +document.getElementById('posX').value;
-    o.pos.z = +document.getElementById('posZ').value;
-    o.pos.y = +document.getElementById('posY').value;
-    o.scale = +document.getElementById('scale').value;
-    o.rotY = +document.getElementById('rotY').value;
-    updateSliderLabels();
-    render();
-}
-
-function updateSliderLabels() {
-    document.getElementById('px-val').textContent = document.getElementById('posX').value;
-    document.getElementById('pz-val').textContent = document.getElementById('posZ').value;
-    document.getElementById('py-val').textContent = document.getElementById('posY').value;
-    document.getElementById('sc-val').textContent = (+document.getElementById('scale').value).toFixed(1);
-    document.getElementById('ry-val').textContent = document.getElementById('rotY').value + '°';
-}
-
-function refreshUI() {
-    const list = document.getElementById('objectList');
-    list.innerHTML = '';
-    state.objects.forEach((o, i) => {
-        const div = document.createElement('div');
-        div.className = 'object-item' + (i === state.selected ? ' selected' : '');
-        div.innerHTML = `<span>${o.type.toUpperCase()} #${i+1}</span><button class="del-btn" onclick="event.stopPropagation(); state.selected=${i}; deleteSelected();">×</button>`;
-        div.onclick = () => selectObject(i);
-        list.appendChild(div);
-    });
-    document.getElementById('obj-count').textContent = state.objects.length;
-}
-
-// ============ RENDERING ============
-function getSunVector() {
-    const az = state.azimuth * Math.PI / 180;
-    const alt = state.altitude * Math.PI / 180;
-    return normalize({
-        x: Math.cos(alt) * Math.sin(az),
-        y: Math.sin(alt),
-        z: Math.cos(alt) * Math.cos(az)
-    });
-}
-
-function transformVertex(v, obj) {
-    let p = { x: v.x * obj.scale, y: v.y * obj.scale, z: v.z * obj.scale };
-    p = rotateY(p, obj.rotY * Math.PI / 180);
-    p = translate(p, obj.pos);
-    return p;
-}
-
-function render() {
-    ctx.clearRect(0, 0, W, H);
-    drawGrid();
-    drawHorizon();
-    drawVanishingPoints();
-    
-    const allFaces = [];
-    const sun = getSunVector();
-    
-    state.objects.forEach((obj, objIdx) => {
-        const worldVerts = obj.geo.vertices.map(v => transformVertex(v, obj));
-        const projVerts = worldVerts.map(v => project(v));
-        
-        obj.geo.faces.forEach(face => {
-            const worldFace = face.map(i => worldVerts[i]);
-            const projFace = face.map(i => projVerts[i]);
-            
-            const v0 = worldFace[0], v1 = worldFace[1], v2 = worldFace[2];
-            const normal = normalize(cross(sub(v1, v0), sub(v2, v0)));
-            
-            const avgZ = worldFace.reduce((s, v) => s + v.z, 0) / worldFace.length;
-            
-            allFaces.push({
-                proj: projFace,
-                world: worldFace,
-                normal: normal,
-                avgZ: avgZ,
-                objIdx: objIdx,
-                color: obj.color
-            });
-        });
-    });
-    
-    if (state.castShadows) {
-        drawShadows(allFaces, sun);
-    }
-    
-    allFaces.sort((a, b) => b.avgZ - a.avgZ);
-    
-    allFaces.forEach(f => drawFace(f, sun));
-    
-    if (state.selected >= 0) {
-        drawSelection(state.objects[state.selected]);
-    }
-}
-
-function drawFace(f, sun) {
-    const pts = f.proj;
-    if (pts.length < 3) return;
-    
-    // Screen-space back-face culling (Y is down, so front-facing is counter-clockwise -> negative area)
-    let area = 0;
-    for (let i = 0; i < pts.length; i++) {
-        const j = (i+1) % pts.length;
-        area += pts[i].x * pts[j].y - pts[j].x * pts[i].y;
-    }
-    if (area > 0) return; // Cull back-facing polygons
-    
-    let intensity = 0.5;
-    if (state.facetShading) {
-        // Use Math.abs for two-sided lighting to handle any vertex winding order gracefully
-        const d = Math.abs(dot(f.normal, sun));
-        intensity = 0.3 + d * 0.7;
-    }
-    
-    const [r, g, b] = f.color;
-    const fill = `rgb(${Math.round(r*intensity)}, ${Math.round(g*intensity)}, ${Math.round(b*intensity)})`;
-    
-    ctx.beginPath();
-    ctx.moveTo(pts[0].x, pts[0].y);
-    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
-    ctx.closePath();
-    ctx.fillStyle = fill;
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-}
-
-function drawShadows(allFaces, sun) {
-    const byObj = {};
-    allFaces.forEach(f => {
-        if (!byObj[f.objIdx]) byObj[f.objIdx] = [];
-        byObj[f.objIdx].push(f);
-    });
-    
-    ctx.fillStyle = 'rgba(0,0,0,0.35)';
-    const lightDir = { x: -sun.x, y: -sun.y, z: -sun.z };
-    
-    Object.values(byObj).forEach(faces => {
-        const verts = [];
-        const seen = new Set();
-        faces.forEach(f => {
-            f.world.forEach(v => {
-                const key = v.x.toFixed(2) + ',' + v.y.toFixed(2) + ',' + v.z.toFixed(2);
-                if (!seen.has(key)) { seen.add(key); verts.push(v); }
-            });
-        });
-        
-        const groundPts = verts.map(v => {
-            if (lightDir.y >= 0) return null; // Sun is below horizon
-            const t = -v.y / lightDir.y;
-            if (t < 0) return null;
-            const gx = v.x + lightDir.x * t;
-            const gz = v.z + lightDir.z * t;
-            return project({ x: gx, y: 0, z: gz });
-        }).filter(p => p !== null);
-        
-        if (groundPts.length < 3) return;
-        
-        const cxp = groundPts.reduce((s,p) => s+p.x, 0) / groundPts.length;
-        const cyp = groundPts.reduce((s,p) => s+p.y, 0) / groundPts.length;
-        groundPts.sort((a,b) => Math.atan2(a.y-cyp, a.x-cxp) - Math.atan2(b.y-cyp, b.x-cxp));
-        
-        ctx.beginPath();
-        ctx.moveTo(groundPts[0].x, groundPts[0].y);
-        for (let i = 1; i < groundPts.length; i++) ctx.lineTo(groundPts[i].x, groundPts[i].y);
-        ctx.closePath();
-        ctx.fill();
-    });
-}
-
-function drawSelection(obj) {
-    const worldVerts = obj.geo.vertices.map(v => transformVertex(v, obj));
-    const projVerts = worldVerts.map(v => project(v));
-    
-    ctx.strokeStyle = '#ffdc32';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([4, 3]);
-    
-    obj.geo.faces.forEach(face => {
-        ctx.beginPath();
-        face.forEach((vi, i) => {
-            const p = projVerts[vi];
-            if (i === 0) ctx.moveTo(p.x, p.y);
-            else ctx.lineTo(p.x, p.y);
-        });
-        ctx.closePath();
-        ctx.stroke();
-    });
-    ctx.setLineDash([]);
-}
-
-// ============ GUIDES ============
-function drawGrid() {
-    if (!state.guides.grid) return;
-    ctx.strokeStyle = 'rgba(255,255,255,0.07)';
-    ctx.lineWidth = 1;
-    
-    const vp1 = getVP(0);
-    
-    // Radiating lines from VP1
-    for (let i = -25; i <= 25; i++) {
-        const x = cx + i * 60;
-        ctx.beginPath();
-        ctx.moveTo(vp1.x, vp1.y);
-        ctx.lineTo(x, H + 100);
-        ctx.stroke();
-    }
-    
-    // Radiating lines from VP2 (if 2-point or 3-point)
-    if (state.mode >= 2) {
-        const vp2 = getVP(1);
-        for (let i = -25; i <= 25; i++) {
-            const x = cx + i * 60;
-            ctx.beginPath();
-            ctx.moveTo(vp2.x, vp2.y);
-            ctx.lineTo(x, H + 100);
-            ctx.stroke();
-        }
-    }
-    
-    // Horizontal depth lines
-    for (let i = 1; i <= 20; i++) {
-        const y = cy + (i * i * 2.5); 
-        if (y > H) break;
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(W, y);
-        ctx.stroke();
-    }
-}
-
-function getVP(idx) {
-    if (state.mode === 1) return { x: cx, y: cy };
-    if (state.mode === 2) {
-        return idx === 0 ? { x: cx - focal, y: cy } : { x: cx + focal, y: cy };
-    }
-    if (state.mode === 3) {
-        if (idx === 0) return { x: cx - focal, y: cy };
-        if (idx === 1) return { x: cx + focal, y: cy };
-        return { x: cx, y: cy - 400 };
-    }
-    return { x: cx, y: cy };
-}
-
-function drawHorizon() {
-    if (!state.guides.horizon) return;
-    ctx.strokeStyle = 'rgba(248,81,73,0.6)';
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([6, 4]);
-    ctx.beginPath();
-    ctx.moveTo(0, cy);
-    ctx.lineTo(W, cy);
-    ctx.stroke();
-    ctx.setLineDash([]);
-}
-
-function drawVanishingPoints() {
-    if (!state.guides.vps) return;
-    const count = state.mode === 1 ? 1 : state.mode === 2 ? 2 : 3;
-    for (let i = 0; i < count; i++) {
-        const vp = getVP(i);
-        ctx.fillStyle = '#58a6ff';
-        ctx.beginPath();
-        ctx.arc(vp.x, vp.y, 6, 0, Math.PI*2);
-        ctx.fill();
-        ctx.strokeStyle = 'white';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-        
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 10px sans-serif';
-        ctx.fillText('VP' + (i+1), vp.x + 10, vp.y - 10);
-    }
-    
-    if (state.guides.dist) {
-        ctx.fillStyle = '#d29922';
-        const d1 = { x: cx - focal, y: cy };
-        const d2 = { x: cx + focal, y: cy };
-        [d1, d2].forEach((p, i) => {
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, 5, 0, Math.PI*2);
-            ctx.fill();
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 10px sans-serif';
-            ctx.fillText('D' + (i+1), p.x + 8, p.y - 8);
-            ctx.fillStyle = '#d29922';
-        });
-    }
-}
-
-// ============ UI HANDLERS ============
-document.querySelectorAll('[data-mode]').forEach(btn => {
-    btn.onclick = () => {
-        state.mode = +btn.dataset.mode;
-        document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById('mode-display').textContent = state.mode + '-Point';
-        render();
-    };
-});
-
-document.querySelectorAll('[data-guide]').forEach(cb => {
-    cb.onchange = () => {
-        state.guides[cb.dataset.guide] = cb.checked;
-        render();
-    };
-});
-
-document.getElementById('facetToggle').onchange = (e) => { state.facetShading = e.target.checked; render(); };
-document.getElementById('shadowToggle').onchange = (e) => { state.castShadows = e.target.checked; render(); };
-
-function updateSun() {
-    state.azimuth = +document.getElementById('azimuth').value;
-    state.altitude = +document.getElementById('altitude').value;
-    document.getElementById('az-val').textContent = state.azimuth + '°';
-    document.getElementById('alt-val').textContent = state.altitude + '°';
-    render();
-}
-
-// ============ JSON SAVE/LOAD ============
-function saveJSON() {
-    const data = {
-        mode: state.mode,
-        azimuth: state.azimuth,
-        altitude: state.altitude,
-        guides: state.guides,
-        objects: state.objects.map(o => ({
-            type: o.type, pos: o.pos, scale: o.scale, rotY: o.rotY, color: o.color
-        }))
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'perspective_scene.json';
-    a.click();
-}
-
-function loadJSON(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const data = JSON.parse(e.target.result);
-        state.mode = data.mode || 1;
-        state.azimuth = data.azimuth || 45;
-        state.altitude = data.altitude || 35;
-        state.guides = data.guides || state.guides;
-        state.objects = (data.objects || []).map(o => ({
-            ...o, id: Date.now() + Math.random(), geo: getGeometry(o.type)
-        }));
-        state.selected = -1;
-        document.getElementById('azimuth').value = state.azimuth;
-        document.getElementById('altitude').value = state.altitude;
-        updateSun();
-        document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('active', +b.dataset.mode === state.mode));
-        document.getElementById('mode-display').textContent = state.mode + '-Point';
-        refreshUI();
-        render();
-    };
-    reader.readAsText(file);
-}
-
-// ============ QUIZ ============
-const quizData = [
-    { q: "In 1-Point Perspective, where do all orthogonal lines converge?", opts: ["Horizon Line", "Central Vanishing Point", "Ground Plane", "Station Point"], ans: 1 },
-    { q: "What is the primary use of Distance Points (D1/D2)?", opts: ["Measuring height", "Accurate foreshortening & circles", "Finding sun angle", "Drawing 3-point views"], ans: 1 },
-    { q: "In 2-Point perspective, how many VPs are on the horizon?", opts: ["One", "Two", "Three", "None"], ans: 1 },
-    { q: "In 3-Point looking up (Worm's Eye), verticals converge to?", opts: ["Parallel remain", "Nadir point", "Zenith point", "Horizon"], ans: 2 },
-    { q: "If Sun Altitude is 90°, what happens to shadows?", opts: ["Longest", "Disappear underneath", "Point left", "Infinite"], ans: 1 }
-];
-
-function loadQuiz() {
-    const c = document.getElementById('quiz-container');
-    const q = quizData[state.quiz.current];
-    c.innerHTML = `
-        <h4>Question ${state.quiz.current + 1} / 5</h4>
-        <div class="quiz-question">${q.q}</div>
-        <div class="quiz-options">
-            ${q.opts.map((o, i) => `<div class="quiz-opt" onclick="checkAnswer(${i})">${o}</div>`).join('')}
-        </div>
-    `;
-}
-
-function checkAnswer(i) {
-    const q = quizData[state.quiz.current];
-    const opts = document.querySelectorAll('.quiz-opt');
-    opts.forEach((o, idx) => {
-        o.style.pointerEvents = 'none';
-        if (idx === q.ans) o.classList.add('correct');
-        if (idx === i && i !== q.ans) o.classList.add('wrong');
-    });
-    if (i === q.ans) {
-        state.quiz.score++;
-        document.getElementById('score-display').textContent = state.quiz.score;
-    }
-    setTimeout(() => {
-        if (state.quiz.current < 4) {
-            state.quiz.current++;
-            loadQuiz();
-        } else {
-            document.getElementById('quiz-container').innerHTML = `
-                <h4>Module Complete!</h4>
-                <p style="margin-top:10px; color: var(--text-muted);">Final Score: ${state.quiz.score}/5</p>
-                <button class="btn" style="margin-top:12px; width:100%" onclick="resetQuiz()">Retake Quiz</button>
-            `;
-        }
-    }, 1400);
-}
-
-function resetQuiz() {
-    state.quiz = { current: 0, score: 0 };
-    document.getElementById('score-display').textContent = 0;
-    loadQuiz();
-}
-
-// ============ INIT ============
-resize();
-refreshUI();
-updateSliderLabels();
-loadQuiz();
-
-addObject('cube');
-state.objects[0].pos.z = 250;
+function save(){if(!state.autosave)return;try{localStorage.setItem('perspective-studio-scene',JSON.stringify({version:1,objects:state.objects,nextId}));}catch(e){}}
+function restore(){try{let d=JSON.parse(localStorage.getItem('perspective-studio-scene'));if(d&&Array.isArray(d.objects)&&d.objects.length){state.objects=d.objects;nextId=d.nextId||Math.max(...d.objects.map(o=>o.id))+1;state.selected=state.objects[0].id;}}catch(e){}}
+function duplicate(){let o=selected();if(!o)return;let c={...o,id:nextId++,name:o.name+' copy',x:o.x+.5,z:o.z+.5};state.objects.push(c);select(c.id);save();draw();}
+function remove(){if(!selected())return;state.objects=state.objects.filter(o=>o.id!==state.selected);state.selected=state.objects[0]?.id??null;renderList();renderInspector();save();draw();}
+function exportScene(){let data={format:'PerspectiveStudioScene',version:1,objects:state.objects};let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='perspective-scene.json';a.click();URL.revokeObjectURL(url);}
+function importScene(file){let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);if(!d||!Array.isArray(d.objects)||d.objects.some(o=>!['cube','sphere','cylinder','pyramid','prism'].includes(o.type)))throw Error('Invalid scene format');state.objects=d.objects.map(o=>({...obj(o.type),...o,id:Number(o.id)||nextId++}));nextId=Math.max(1,...state.objects.map(o=>o.id))+1;state.selected=state.objects[0]?.id??null;renderList();renderInspector();save();draw();}catch(e){alert('Could not import scene: '+e.message)}};r.readAsText(file);}
+function pointerPos(e){let r=canvas.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};}
+function hitTest(p){let best=null,dist=32;for(let o of state.objects){let q=project([o.x,o.y,o.z]);if(!q)continue;let d=Math.hypot(p.x-q.x,p.y-q.y);if(d<dist){dist=d;best=o;}}return best;}
+canvas.addEventListener('pointerdown',e=>{canvas.setPointerCapture(e.pointerId);let p=pointerPos(e),hit=hitTest(p);if(hit){select(hit.id);state.drag={kind:'object',start:p,last:p,origin:[hit.x,hit.y,hit.z]};}else{state.drag={kind:'orbit',last:p};}draw();});
+canvas.addEventListener('pointermove',e=>{if(!state.drag)return;let p=pointerPos(e),d=state.drag;if(d.kind==='orbit'){state.yaw-=(p.x-d.last.x)*.008;state.pitch=Math.max(-1.25,Math.min(1.25,state.pitch+(p.y-d.last.y)*.008));}else{let o=selected();if(o){let scale=state.distance/Math.max(200,canvas.clientHeight);o.x+=(p.x-d.last.x)*scale*Math.cos(state.yaw);o.z-=(p.x-d.last.x)*scale*Math.sin(state.yaw);o.y-=(p.y-d.last.y)*scale;renderInspector();}}d.last=p;draw();});
+canvas.addEventListener('pointerup',()=>{if(state.drag?.kind==='object')save();state.drag=null;});
+canvas.addEventListener('wheel',e=>{e.preventDefault();state.distance=Math.max(3,Math.min(28,state.distance*Math.exp(e.deltaY*.001)));draw();},{passive:false});
+document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>add(b.dataset.add));$('addCube').onclick=()=>add('cube');$('duplicate').onclick=duplicate;$('delete').onclick=remove;
+$('perspective').onchange=e=>{state.mode=e.target.value;let presets={one:[0,.18],two:[.72,.36],three:[.72,.68]};[state.yaw,state.pitch]=presets[state.mode];draw();};
+$('fov').oninput=e=>{state.fov=Number(e.target.value);draw()};$('guides').onchange=e=>{state.guides=e.target.checked;draw()};$('grid').onchange=e=>{state.grid=e.target.checked;draw()};$('wire').onchange=e=>{state.wire=e.target.checked;draw()};$('shadows').onchange=e=>{state.shadows=e.target.checked;draw()};
+$('autosave').onchange=e=>{state.autosave=e.target.checked;if(state.autosave)save()};$('exportBtn').onclick=exportScene;$('importBtn').onclick=()=>$('fileInput').click();$('fileInput').onchange=e=>{if(e.target.files[0])importScene(e.target.files[0]);e.target.value=''};
+$('resetView').onclick=()=>{state.yaw=.72;state.pitch=.36;state.distance=10;state.fov=50;$('fov').value=50;draw()};
+$('newScene').onclick=()=>{if(confirm('Start a new empty scene?')){state.objects=[];state.selected=null;renderList();renderInspector();save();draw();}};
+window.addEventListener('keydown',e=>{if(e.target.matches('input,select,textarea'))return;if(e.key==='Delete'||e.key==='Backspace')remove();if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='d'){e.preventDefault();duplicate();}});
+window.addEventListener('resize',resize);
+restore();renderList();renderInspector();resize();
+})();
 </script>
-</body>
-</html>
+</body></html>
