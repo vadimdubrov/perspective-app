@@ -1,959 +1,834 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Perspective Studio - A. P. Baryshnikov (1955)</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        sepia: {
-                            50: '#fbf9f5',
-                            100: '#f7f2e8',
-                            200: '#eee3d0',
-                            300: '#e2cfb0',
-                            800: '#5c4528',
-                            900: '#3d2d18',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- FontAwesome CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- QRCode JS Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <style>
-        body {
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
-        canvas {
-            touch-action: none;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perspective Studio | A.P. Baryshnikov Method</title>
+<style>
+    :root {
+        --bg-dark: #0f1115;
+        --bg-panel: #161b22;
+        --bg-input: #21262d;
+        --text-main: #c9d1d9;
+        --text-muted: #8b949e;
+        --accent: #58a6ff;
+        --accent-hover: #1f6feb;
+        --border: #30363d;
+        --danger: #f85149;
+        --success: #3fb950;
+        --warning: #d29922;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { background: var(--bg-dark); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; }
+    
+    .sidebar { width: 280px; background: var(--bg-panel); border-right: 1px solid var(--border); overflow-y: auto; }
+    .main-stage { flex: 1; position: relative; background: #0d1117; }
+    .right-panel { width: 320px; background: var(--bg-panel); border-left: 1px solid var(--border); overflow-y: auto; }
+    
+    .header { padding: 18px; border-bottom: 1px solid var(--border); }
+    .header h1 { font-size: 1rem; color: var(--accent); letter-spacing: 1px; }
+    .header p { font-size: 0.7rem; color: var(--text-muted); margin-top: 3px; }
+    
+    .section { padding: 14px 18px; border-bottom: 1px solid var(--border); }
+    .section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 10px; font-weight: 600; }
+    
+    .btn-group { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px; }
+    .btn { flex: 1; min-width: 60px; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 7px 8px; border-radius: 5px; cursor: pointer; font-size: 0.78rem; transition: 0.15s; text-align: center; }
+    .btn:hover { background: #30363d; border-color: var(--accent); }
+    .btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+    .btn.danger { color: var(--danger); }
+    .btn.danger:hover { background: rgba(248,81,73,0.15); }
+    .btn.small { padding: 5px 8px; font-size: 0.72rem; }
+    
+    .slider-row { margin-bottom: 10px; }
+    .slider-row label { display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 4px; color: var(--text-main); }
+    .slider-row label span { color: var(--accent); font-weight: 600; }
+    .slider-row input[type="range"] { width: 100%; accent-color: var(--accent); }
+    
+    .toggle { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 0.78rem; }
+    .switch { position: relative; width: 32px; height: 18px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider-sw { position: absolute; cursor: pointer; inset: 0; background: var(--bg-input); border-radius: 18px; transition: .2s; border: 1px solid var(--border); }
+    .slider-sw:before { position: absolute; content: ""; height: 12px; width: 12px; left: 2px; bottom: 2px; background: var(--text-muted); border-radius: 50%; transition: .2s; }
+    input:checked + .slider-sw { background: var(--accent); border-color: var(--accent); }
+    input:checked + .slider-sw:before { transform: translateX(14px); background: white; }
+    
+    .object-list { max-height: 180px; overflow-y: auto; }
+    .object-item { display: flex; justify-content: space-between; align-items: center; padding: 7px 10px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 5px; margin-bottom: 4px; font-size: 0.78rem; cursor: pointer; transition: 0.15s; }
+    .object-item:hover { border-color: var(--accent); }
+    .object-item.selected { background: rgba(88,166,255,0.15); border-color: var(--accent); color: var(--accent); }
+    .object-item .del-btn { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 0.9rem; padding: 0 4px; }
+    
+    canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+    
+    .canvas-hud { position: absolute; top: 15px; left: 15px; background: rgba(22,27,34,0.85); padding: 8px 12px; border-radius: 6px; font-size: 0.72rem; color: var(--text-muted); backdrop-filter: blur(6px); border: 1px solid var(--border); }
+    .canvas-hud strong { color: var(--accent); }
+    
+    .canvas-help { position: absolute; bottom: 15px; left: 15px; background: rgba(22,27,34,0.85); padding: 8px 12px; border-radius: 6px; font-size: 0.7rem; color: var(--text-muted); backdrop-filter: blur(6px); border: 1px solid var(--border); }
+    
+    .quiz-card { background: var(--bg-input); padding: 16px; margin: 14px; border-radius: 8px; border: 1px solid var(--border); }
+    .quiz-card h4 { color: var(--accent); margin-bottom: 10px; font-size: 0.85rem; }
+    .quiz-question { font-size: 0.85rem; margin-bottom: 12px; line-height: 1.4; }
+    .quiz-options { display: flex; flex-direction: column; gap: 6px; }
+    .quiz-opt { background: var(--bg-panel); padding: 9px 10px; border-radius: 5px; cursor: pointer; border: 1px solid var(--border); transition: 0.15s; font-size: 0.78rem; }
+    .quiz-opt:hover { border-color: var(--accent); }
+    .quiz-opt.correct { background: rgba(63,185,80,0.15); border-color: var(--success); color: var(--success); }
+    .quiz-opt.wrong { background: rgba(248,81,73,0.15); border-color: var(--danger); color: var(--danger); }
+    
+    .score-board { text-align: center; padding: 14px; background: var(--bg-input); margin: 14px; border-radius: 8px; border: 1px solid var(--border); }
+    .score-board span { font-size: 1.8rem; color: var(--accent); font-weight: bold; }
+    .score-board .label { font-size: 0.7rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+    
+    .course-list { font-size: 0.78rem; line-height: 1.9; color: var(--text-muted); }
+    .course-list strong { color: var(--text-main); }
+    
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-dark); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
 </head>
-<body class="bg-sepia-50 dark:bg-gray-900 text-sepia-900 dark:text-gray-100 min-h-full flex flex-col font-sans transition-colors duration-200 select-none pb-16 sm:pb-0">
+<body>
 
-    <!-- Header / Navbar -->
-    <header class="bg-sepia-100 dark:bg-gray-800 border-b border-sepia-200 dark:border-gray-700 sticky top-0 z-30 shadow-sm">
-        <div class="max-w-7xl mx-auto px-3 py-2 flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-                <i class="fa-solid fa-cube text-amber-800 dark:text-amber-400 text-xl"></i>
-                <div>
-                    <h1 class="font-serif font-bold text-sm sm:text-base leading-tight">Perspective Studio</h1>
-                    <p class="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400">Based on A. P. Baryshnikov (1955)</p>
-                </div>
-            </div>
+<!-- LEFT SIDEBAR -->
+<aside class="sidebar">
+    <div class="header">
+        <h1>PERSPECTIVE STUDIO</h1>
+        <p>A.P. Baryshnikov Method</p>
+    </div>
 
-            <!-- Main Navigation Tabs -->
-            <nav class="flex items-center space-x-1 sm:space-x-2 bg-white dark:bg-gray-900 p-1 rounded-xl shadow-inner border border-sepia-200 dark:border-gray-700 text-xs sm:text-sm">
-                <button onclick="switchTab('sandbox')" id="tab-sandbox" class="nav-btn px-2.5 py-1.5 rounded-lg font-medium transition-all duration-150 bg-amber-800 text-white shadow">
-                    <i class="fa-solid me-1 fa-drafting-compass"></i> Sandbox
-                </button>
-                <button onclick="switchTab('chapters')" id="tab-chapters" class="nav-btn px-2.5 py-1.5 rounded-lg font-medium text-gray-600 dark:text-gray-300 hover:text-amber-800 dark:hover:text-amber-400">
-                    <i class="fa-solid me-1 fa-book-open"></i> Chapters
-                </button>
-                <button onclick="switchTab('artworks')" id="tab-artworks" class="nav-btn px-2.5 py-1.5 rounded-lg font-medium text-gray-600 dark:text-gray-300 hover:text-amber-800 dark:hover:text-amber-400">
-                    <i class="fa-solid me-1 fa-palette"></i> Artworks
-                </button>
-                <button onclick="switchTab('quiz')" id="tab-quiz" class="nav-btn px-2.5 py-1.5 rounded-lg font-medium text-gray-600 dark:text-gray-300 hover:text-amber-800 dark:hover:text-amber-400">
-                    <i class="fa-solid me-1 fa-graduation-cap"></i> Quiz
-                </button>
-            </nav>
-
-            <div class="flex items-center space-x-1.5">
-                <!-- QR Code Share Button -->
-                <button onclick="openQRCodeModal()" class="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 hover:bg-amber-200 dark:hover:bg-amber-800 transition flex items-center space-x-1" title="Share App / QR">
-                    <i class="fa-solid fa-qrcode text-base"></i>
-                    <span class="text-xs font-semibold hidden md:inline">Share App</span>
-                </button>
-
-                <!-- Theme Switcher -->
-                <button id="themeToggle" onclick="toggleTheme()" class="p-2 rounded-lg bg-sepia-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-sepia-300 dark:hover:bg-gray-600 transition" title="Toggle Theme">
-                    <i class="fa-solid fa-moon dark:hidden"></i>
-                    <i class="fa-solid fa-sun hidden dark:inline"></i>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Content Container -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-2 sm:p-4 flex flex-col">
-
-        <!-- TAB 1: INTERACTIVE PERSPECTIVE SANDBOX -->
-        <section id="sec-sandbox" class="tab-section flex-1 flex flex-col space-y-3">
-            <div class="bg-white dark:bg-gray-800 p-2 sm:p-3 rounded-xl border border-sepia-200 dark:border-gray-700 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-2">
-                <div class="flex items-center space-x-2">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-amber-800 dark:text-amber-400">Model:</span>
-                    <select id="modelSelect" onchange="changeModel(this.value)" class="bg-sepia-50 dark:bg-gray-900 border border-sepia-200 dark:border-gray-700 rounded-lg text-xs sm:text-sm px-2 py-1.5 font-medium outline-none focus:ring-2 focus:ring-amber-500">
-                        <option value="cube1">1-Point Perspective Cube (Frontal)</option>
-                        <option value="cube2">2-Point Perspective Cube (Angular)</option>
-                        <option value="grid">Perspective Floor Grid & Scale</option>
-                        <option value="arch">Arch & Vault Projection</option>
-                        <option value="stairs">Stairs & Inclined Planes (P' & P'')</option>
-                        <option value="human">Human Figures & Horizon Scale</option>
-                        <option value="vehicle">Automobile in Bounding Prism (Ch. 5)</option>
-                    </select>
-                </div>
-                
-                <div class="flex items-center space-x-2 text-xs">
-                    <button onclick="resetCanvasParams()" class="px-2.5 py-1 bg-sepia-200 dark:bg-gray-700 hover:bg-sepia-300 dark:hover:bg-gray-600 rounded-lg font-medium transition">
-                        <i class="fa-solid fa-rotate-left me-1"></i> Reset View
-                    </button>
-                    <label class="flex items-center space-x-1 cursor-pointer">
-                        <input type="checkbox" id="toggleGrid" checked onchange="renderCanvas()" class="rounded text-amber-800 focus:ring-amber-500">
-                        <span>Grid</span>
-                    </label>
-                    <label class="flex items-center space-x-1 cursor-pointer">
-                        <input type="checkbox" id="toggleRay" checked onchange="renderCanvas()" class="rounded text-amber-800 focus:ring-amber-500">
-                        <span>Rays</span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Touch Canvas Container -->
-            <div class="relative flex-1 bg-white dark:bg-gray-950 rounded-xl border border-sepia-300 dark:border-gray-700 shadow-inner overflow-hidden min-h-[360px] flex items-center justify-center">
-                <canvas id="perspectiveCanvas" class="w-full h-full cursor-crosshair"></canvas>
-                
-                <!-- On-screen Helper Badge -->
-                <div class="absolute bottom-2 left-2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] sm:text-xs text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-800 shadow-sm pointer-events-none">
-                    <i class="fa-solid fa-hand-pointer text-amber-600 me-1"></i> Touch & Drag <strong>P</strong> or Horizon Line
-                </div>
-            </div>
-
-            <!-- Perspective Controls Sheet -->
-            <div class="bg-white dark:bg-gray-800 p-3 rounded-xl border border-sepia-200 dark:border-gray-700 shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                <div>
-                    <div class="flex justify-between font-semibold mb-1">
-                        <span>Horizon Height ($H_1H_2$)</span>
-                        <span id="valHorizon">50%</span>
-                    </div>
-                    <input type="range" id="sliderHorizon" min="10" max="90" value="50" oninput="updateControls()" class="w-full accent-amber-800">
-                </div>
-                <div>
-                    <div class="flex justify-between font-semibold mb-1">
-                        <span>Distance ($D_1-D_2$)</span>
-                        <span id="valDistance">250px</span>
-                    </div>
-                    <input type="range" id="sliderDistance" min="80" max="500" value="250" oninput="updateControls()" class="w-full accent-amber-800">
-                </div>
-                <div>
-                    <div class="flex justify-between font-semibold mb-1">
-                        <span>Object Rotation / Offset</span>
-                        <span id="valRotation">0°</span>
-                    </div>
-                    <input type="range" id="sliderRotation" min="-45" max="45" value="0" oninput="updateControls()" class="w-full accent-amber-800">
-                </div>
-            </div>
-        </section>
-
-        <!-- TAB 2: CHAPTERS GUIDE -->
-        <section id="sec-chapters" class="tab-section hidden flex-1 space-y-4">
-            <div class="border-b border-sepia-200 dark:border-gray-700 pb-2">
-                <h2 class="font-serif font-bold text-lg sm:text-xl text-sepia-900 dark:text-amber-100">
-                    A. P. Baryshnikov - Textbook Breakdown (1955)
-                </h2>
-                <p class="text-xs text-gray-600 dark:text-gray-400">
-                    Comprehensive study notes and geometric rules categorized by chapter.
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="chapterCardsContainer">
-                <!-- Chapter cards injected dynamically -->
-            </div>
-        </section>
-
-        <!-- TAB 3: ARTWORK PERSPECTIVE ANALYZER -->
-        <section id="sec-artworks" class="tab-section hidden flex-1 space-y-4">
-            <div class="border-b border-sepia-200 dark:border-gray-700 pb-2 flex justify-between items-end">
-                <div>
-                    <h2 class="font-serif font-bold text-lg sm:text-xl text-sepia-900 dark:text-amber-100">
-                        Masterpiece Perspective Analysis
-                    </h2>
-                    <p class="text-xs text-gray-600 dark:text-gray-400">
-                        Classical artworks analyzed in Chapter 5 with interactive perspective ray overlays.
-                    </p>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="artworkCardsContainer">
-                <!-- Artworks injected dynamically -->
-            </div>
-        </section>
-
-        <!-- TAB 4: QUIZ -->
-        <section id="sec-quiz" class="tab-section hidden flex-1 flex flex-col justify-center items-center">
-            <div class="max-w-xl w-full bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl border border-sepia-200 dark:border-gray-700 shadow-lg space-y-4">
-                <div class="flex justify-between items-center border-b border-sepia-200 dark:border-gray-700 pb-3">
-                    <span class="text-xs font-bold text-amber-800 dark:text-amber-400 uppercase tracking-widest">
-                        Knowledge Check
-                    </span>
-                    <span id="quizProgress" class="text-xs text-gray-500 font-mono">Question 1/5</span>
-                </div>
-
-                <div id="quizContent" class="space-y-4">
-                    <h3 id="quizQuestion" class="font-serif text-sm sm:text-base font-semibold leading-snug">
-                        Question loading...
-                    </h3>
-
-                    <div id="quizOptions" class="space-y-2">
-                        <!-- Options injected dynamically -->
-                    </div>
-
-                    <div id="quizFeedback" class="p-3 rounded-lg text-xs hidden">
-                        <!-- Feedback text -->
-                    </div>
-                </div>
-
-                <div class="flex justify-end pt-2">
-                    <button id="nextQuizBtn" onclick="nextQuestion()" class="px-4 py-2 bg-amber-800 hover:bg-amber-900 text-white rounded-lg text-xs font-semibold transition hidden">
-                        Next Question <i class="fa-solid fa-arrow-right ms-1"></i>
-                    </button>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Bottom Navigation Bar (Mobile Native Style) -->
-    <nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-sepia-200 dark:border-gray-800 flex justify-around py-1.5 z-40 shadow-lg">
-        <button onclick="switchTab('sandbox')" id="mb-sandbox" class="flex flex-col items-center text-amber-800 dark:text-amber-400 text-[10px] font-medium">
-            <i class="fa-solid fa-drafting-compass text-base mb-0.5"></i> Sandbox
-        </button>
-        <button onclick="switchTab('chapters')" id="mb-chapters" class="flex flex-col items-center text-gray-500 dark:text-gray-400 text-[10px] font-medium">
-            <i class="fa-solid fa-book-open text-base mb-0.5"></i> Chapters
-        </button>
-        <button onclick="switchTab('artworks')" id="mb-artworks" class="flex flex-col items-center text-gray-500 dark:text-gray-400 text-[10px] font-medium">
-            <i class="fa-solid fa-palette text-base mb-0.5"></i> Artworks
-        </button>
-        <button onclick="switchTab('quiz')" id="mb-quiz" class="flex flex-col items-center text-gray-500 dark:text-gray-400 text-[10px] font-medium">
-            <i class="fa-solid fa-graduation-cap text-base mb-0.5"></i> Quiz
-        </button>
-    </nav>
-
-    <!-- Modal for Chapter Details -->
-    <div id="chapterModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-lg w-full max-h-[80vh] flex flex-col shadow-2xl border border-sepia-200 dark:border-gray-700 overflow-hidden">
-            <div class="p-4 bg-sepia-100 dark:bg-gray-900 border-b border-sepia-200 dark:border-gray-700 flex justify-between items-center">
-                <h3 id="modalTitle" class="font-serif font-bold text-base text-sepia-900 dark:text-amber-100">Chapter Title</h3>
-                <button onclick="closeChapterModal()" class="text-gray-500 hover:text-gray-800 dark:hover:text-white text-lg">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <div id="modalBody" class="p-4 overflow-y-auto text-xs sm:text-sm space-y-3 leading-relaxed">
-                <!-- Modal content -->
-            </div>
-            <div class="p-3 bg-sepia-50 dark:bg-gray-900 border-t border-sepia-200 dark:border-gray-700 flex justify-end">
-                <button onclick="closeChapterModal()" class="px-4 py-1.5 bg-amber-800 text-white text-xs font-semibold rounded-lg">
-                    Close Guide
-                </button>
-            </div>
+    <div class="section">
+        <div class="section-title">Perspective Mode</div>
+        <div class="btn-group">
+            <button class="btn active" data-mode="1">1-Point</button>
+            <button class="btn" data-mode="2">2-Point</button>
+            <button class="btn" data-mode="3">3-Point</button>
         </div>
     </div>
 
-    <!-- Modal for QR Code Sharing -->
-    <div id="qrModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-sepia-200 dark:border-gray-700 text-center space-y-3">
-            <div class="flex justify-between items-center border-b border-sepia-100 dark:border-gray-700 pb-2">
-                <h3 class="font-serif font-bold text-sm text-sepia-900 dark:text-amber-100 flex items-center">
-                    <i class="fa-solid fa-qrcode text-amber-800 dark:text-amber-400 me-2"></i> Scan to Open App
-                </h3>
-                <button onclick="closeQRCodeModal()" class="text-gray-500 hover:text-gray-800 dark:hover:text-white text-lg px-1">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-
-            <p class="text-[11px] text-gray-600 dark:text-gray-300">
-                Scan this QR code using your smartphone camera or mobile browser to view and interact with Perspective Studio.
-            </p>
-
-            <div class="bg-white p-3 rounded-xl shadow-inner inline-block border border-gray-200">
-                <div id="qrcode-container" class="flex justify-center items-center"></div>
-            </div>
-
-            <div class="space-y-1.5">
-                <div class="flex items-center space-x-1">
-                    <input id="share-url-input" type="text" readonly class="flex-1 bg-sepia-50 dark:bg-gray-700 border border-sepia-200 dark:border-gray-600 rounded-lg text-xs p-1.5 text-gray-700 dark:text-gray-200 outline-none">
-                    <button onclick="copyAppURL()" class="px-3 py-1.5 bg-amber-800 hover:bg-amber-900 text-white text-xs font-semibold rounded-lg transition flex items-center">
-                        <i class="fa-solid fa-copy me-1"></i> Copy
-                    </button>
-                </div>
-                <p id="copy-status" class="text-[10px] text-green-600 dark:text-green-400 hidden">
-                    <i class="fa-solid fa-check me-1"></i> URL copied to clipboard!
-                </p>
-            </div>
+    <div class="section">
+        <div class="section-title">Add Primitive</div>
+        <div class="btn-group">
+            <button class="btn small" onclick="addObject('cube')">■ Cube</button>
+            <button class="btn small" onclick="addObject('sphere')">● Sphere</button>
+            <button class="btn small" onclick="addObject('pyramid')">▲ Pyramid</button>
+        </div>
+        <div class="btn-group">
+            <button class="btn small" onclick="addObject('cylinder')">◯ Cylinder</button>
+            <button class="btn small" onclick="addObject('prism')">◆ Prism</button>
         </div>
     </div>
 
-    <!-- Application Script Logic -->
-    <script>
-        /* ========================================================================= */
-        /* STATE MANAGEMENT & INITIALIZATION */
-        /* ========================================================================= */
-        let state = {
-            currentTab: 'sandbox',
-            currentModel: 'cube1',
-            horizonPercent: 0.5,
-            principalXPercent: 0.5,
-            distancePx: 200,
-            rotationDeg: 0,
-            isDark: false,
-            quizIndex: 0,
-            quizScore: 0
-        };
+    <div class="section">
+        <div class="section-title">Scene Objects</div>
+        <div class="object-list" id="objectList"></div>
+        <button class="btn danger" style="width:100%; margin-top:6px;" onclick="deleteSelected()">Delete Selected</button>
+    </div>
 
-        const canvas = document.getElementById('perspectiveCanvas');
-        const ctx = canvas.getContext('2d');
-        let isDraggingP = false;
-        let isDraggingHorizon = false;
+    <div class="section">
+        <div class="section-title">Selected Object</div>
+        <div class="slider-row">
+            <label>Position X <span id="px-val">0</span></label>
+            <input type="range" min="-400" max="400" value="0" id="posX" oninput="updateSelected()">
+        </div>
+        <div class="slider-row">
+            <label>Position Z (depth) <span id="pz-val">200</span></label>
+            <input type="range" min="50" max="800" value="200" id="posZ" oninput="updateSelected()">
+        </div>
+        <div class="slider-row">
+            <label>Elevation (Y) <span id="py-val">0</span></label>
+            <input type="range" min="-200" max="300" value="0" id="posY" oninput="updateSelected()">
+        </div>
+        <div class="slider-row">
+            <label>Scale <span id="sc-val">1.0</span></label>
+            <input type="range" min="0.2" max="3" step="0.1" value="1" id="scale" oninput="updateSelected()">
+        </div>
+        <div class="slider-row">
+            <label>Rotation Y° <span id="ry-val">0</span></label>
+            <input type="range" min="0" max="360" value="0" id="rotY" oninput="updateSelected()">
+        </div>
+    </div>
 
-        window.addEventListener('DOMContentLoaded', () => {
-            initApp();
-            window.addEventListener('resize', resizeCanvas);
-            setupTouchEvents();
+    <div class="section">
+        <div class="section-title">Sun & Shadows</div>
+        <div class="slider-row">
+            <label>Azimuth <span id="az-val">45°</span></label>
+            <input type="range" min="0" max="360" value="45" id="azimuth" oninput="updateSun()">
+        </div>
+        <div class="slider-row">
+            <label>Altitude <span id="alt-val">35°</span></label>
+            <input type="range" min="5" max="85" value="35" id="altitude" oninput="updateSun()">
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Guides</div>
+        <div class="toggle"><span>Horizon Line</span><label class="switch"><input type="checkbox" checked data-guide="horizon"><span class="slider-sw"></span></label></div>
+        <div class="toggle"><span>Vanishing Points</span><label class="switch"><input type="checkbox" checked data-guide="vps"><span class="slider-sw"></span></label></div>
+        <div class="toggle"><span>Ground Grid</span><label class="switch"><input type="checkbox" checked data-guide="grid"><span class="slider-sw"></span></label></div>
+        <div class="toggle"><span>Distance Points D1/D2</span><label class="switch"><input type="checkbox" data-guide="dist"><span class="slider-sw"></span></label></div>
+        <div class="toggle"><span>Facet Shading</span><label class="switch"><input type="checkbox" checked id="facetToggle"><span class="slider-sw"></span></label></div>
+        <div class="toggle"><span>Cast Shadows</span><label class="switch"><input type="checkbox" checked id="shadowToggle"><span class="slider-sw"></span></label></div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Project File</div>
+        <div class="btn-group">
+            <button class="btn" onclick="saveJSON()">Save JSON</button>
+            <button class="btn" onclick="document.getElementById('fileInput').click()">Open JSON</button>
+            <input type="file" id="fileInput" style="display:none" accept=".json" onchange="loadJSON(event)">
+        </div>
+        <button class="btn danger" style="width:100%; margin-top:6px;" onclick="resetScene()">Reset Scene</button>
+    </div>
+</aside>
+
+<!-- MAIN CANVAS -->
+<main class="main-stage">
+    <canvas id="canvas"></canvas>
+    <div class="canvas-hud">
+        Mode: <strong id="mode-display">1-Point</strong> | Objects: <strong id="obj-count">0</strong>
+    </div>
+    <div class="canvas-help">
+        Click an object in the list to select • Adjust sliders to transform
+    </div>
+</main>
+
+<!-- RIGHT PANEL -->
+<aside class="right-panel">
+    <div class="section">
+        <div class="section-title">Course Modules</div>
+        <div class="course-list">
+            <strong>1. Fundamentals</strong> — Picture Plane & Horizon<br>
+            <strong>2. 1-Point</strong> — Frontal Foreshortening<br>
+            <strong>3. 2-Point</strong> — Angular Views & Distance Points<br>
+            <strong>4. 3-Point</strong> — Zenith & Nadir Convergence<br>
+            <strong>5. Light & Reflections</strong> — Solar Shadows & Mirrors
+        </div>
+    </div>
+
+    <div class="score-board">
+        <div class="label">Baryshnikov Quiz</div>
+        <span id="score-display">0</span> / 5
+    </div>
+
+    <div class="quiz-card" id="quiz-container"></div>
+</aside>
+
+<script>
+// ============ STATE ============
+const state = {
+    mode: 1,
+    objects: [],
+    selected: -1,
+    azimuth: 45,
+    altitude: 35,
+    guides: { horizon: true, vps: true, grid: true, dist: false },
+    facetShading: true,
+    castShadows: true,
+    quiz: { current: 0, score: 0 }
+};
+
+// ============ CANVAS SETUP ============
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let W, H, cx, cy, focal = 500;
+
+function resize() {
+    W = canvas.parentElement.clientWidth;
+    H = canvas.parentElement.clientHeight;
+    canvas.width = W;
+    canvas.height = H;
+    cx = W / 2;
+    cy = H / 2;
+    render();
+}
+window.addEventListener('resize', resize);
+
+// ============ 3D MATH ============
+function rotateY(p, angle) {
+    const c = Math.cos(angle), s = Math.sin(angle);
+    return { x: p.x * c + p.z * s, y: p.y, z: -p.x * s + p.z * c };
+}
+function translate(p, t) { return { x: p.x + t.x, y: p.y + t.y, z: p.z + t.z }; }
+
+function project(p) {
+    const z = Math.max(p.z, 1);
+    const scale = focal / z;
+    return {
+        x: cx + p.x * scale,
+        y: cy - p.y * scale,
+        scale: scale,
+        z: z
+    };
+}
+
+function cross(a, b) {
+    return { x: a.y*b.z - a.z*b.y, y: a.z*b.x - a.x*b.z, z: a.x*b.y - a.y*b.x };
+}
+function sub(a, b) { return { x: a.x-b.x, y: a.y-b.y, z: a.z-b.z }; }
+function normalize(v) {
+    const l = Math.sqrt(v.x*v.x + v.y*v.y + v.z*v.z) || 1;
+    return { x: v.x/l, y: v.y/l, z: v.z/l };
+}
+function dot(a, b) { return a.x*b.x + a.y*b.y + a.z*b.z; }
+
+// ============ PRIMITIVE GENERATORS ============
+function makeCube() {
+    const s = 40;
+    const v = [
+        {x:-s,y:-s,z:-s},{x:s,y:-s,z:-s},{x:s,y:s,z:-s},{x:-s,y:s,z:-s},
+        {x:-s,y:-s,z:s},{x:s,y:-s,z:s},{x:s,y:s,z:s},{x:-s,y:s,z:s}
+    ];
+    const f = [[0,1,2,3],[4,5,6,7],[1,5,6,2],[0,3,7,4],[3,2,6,7],[0,4,5,1]];
+    return { vertices: v, faces: f };
+}
+function makePyramid() {
+    const s = 45, h = 70;
+    const v = [
+        {x:-s,y:-s,z:-s},{x:s,y:-s,z:-s},{x:s,y:-s,z:s},{x:-s,y:-s,z:s},
+        {x:0,y:h,z:0}
+    ];
+    const f = [[0,1,2,3],[0,1,4],[1,2,4],[2,3,4],[3,0,4]];
+    return { vertices: v, faces: f };
+}
+function makePrism() {
+    const s = 45, h = 70;
+    const v = [
+        {x:-s,y:-s,z:-s},{x:s,y:-s,z:-s},{x:0,y:-s,z:s},
+        {x:-s,y:h,z:-s},{x:s,y:h,z:-s},{x:0,y:h,z:s}
+    ];
+    const f = [[0,1,2],[3,4,5],[0,1,4,3],[1,2,5,4],[2,0,3,5]];
+    return { vertices: v, faces: f };
+}
+function makeCylinder() {
+    const r = 35, h = 50, seg = 16;
+    const v = [];
+    for (let i = 0; i < seg; i++) {
+        const a = (i / seg) * Math.PI * 2;
+        v.push({ x: Math.cos(a)*r, y: -h, z: Math.sin(a)*r });
+    }
+    for (let i = 0; i < seg; i++) {
+        const a = (i / seg) * Math.PI * 2;
+        v.push({ x: Math.cos(a)*r, y: h, z: Math.sin(a)*r });
+    }
+    const f = [];
+    for (let i = 0; i < seg; i++) {
+        const n = (i+1) % seg;
+        f.push([i, n, n+seg, i+seg]);
+    }
+    const top = [], bot = [];
+    for (let i = 0; i < seg; i++) { top.push(i+seg); bot.push(i); }
+    f.push(top); f.push(bot.reverse());
+    return { vertices: v, faces: f };
+}
+function makeSphere() {
+    const r = 45, lat = 10, lon = 16;
+    const v = [];
+    for (let i = 0; i <= lat; i++) {
+        const phi = (i / lat) * Math.PI;
+        for (let j = 0; j < lon; j++) {
+            const theta = (j / lon) * Math.PI * 2;
+            v.push({
+                x: r * Math.sin(phi) * Math.cos(theta),
+                y: r * Math.cos(phi),
+                z: r * Math.sin(phi) * Math.sin(theta)
+            });
+        }
+    }
+    const f = [];
+    for (let i = 0; i < lat; i++) {
+        for (let j = 0; j < lon; j++) {
+            const n = (j+1) % lon;
+            const a = i*lon + j, b = i*lon + n;
+            const c = (i+1)*lon + j, d = (i+1)*lon + n;
+            f.push([a, b, d, c]);
+        }
+    }
+    return { vertices: v, faces: f };
+}
+
+function getGeometry(type) {
+    switch(type) {
+        case 'cube': return makeCube();
+        case 'sphere': return makeSphere();
+        case 'pyramid': return makePyramid();
+        case 'cylinder': return makeCylinder();
+        case 'prism': return makePrism();
+    }
+}
+
+// ============ OBJECT MANAGEMENT ============
+function addObject(type) {
+    const geo = getGeometry(type);
+    state.objects.push({
+        id: Date.now() + Math.random(),
+        type: type,
+        geo: geo,
+        pos: { x: 0, y: 0, z: 200 },
+        scale: 1,
+        rotY: 0,
+        color: [88, 166, 255]
+    });
+    state.selected = state.objects.length - 1;
+    refreshUI();
+    render();
+}
+
+function deleteSelected() {
+    if (state.selected < 0) return;
+    state.objects.splice(state.selected, 1);
+    state.selected = Math.min(state.selected, state.objects.length - 1);
+    refreshUI();
+    render();
+}
+
+function resetScene() {
+    state.objects = [];
+    state.selected = -1;
+    refreshUI();
+    render();
+}
+
+function selectObject(idx) {
+    state.selected = idx;
+    refreshUI();
+    if (idx >= 0) {
+        const o = state.objects[idx];
+        document.getElementById('posX').value = o.pos.x;
+        document.getElementById('posZ').value = o.pos.z;
+        document.getElementById('posY').value = o.pos.y;
+        document.getElementById('scale').value = o.scale;
+        document.getElementById('rotY').value = o.rotY;
+        updateSliderLabels();
+    }
+    render();
+}
+
+function updateSelected() {
+    if (state.selected < 0) return;
+    const o = state.objects[state.selected];
+    o.pos.x = +document.getElementById('posX').value;
+    o.pos.z = +document.getElementById('posZ').value;
+    o.pos.y = +document.getElementById('posY').value;
+    o.scale = +document.getElementById('scale').value;
+    o.rotY = +document.getElementById('rotY').value;
+    updateSliderLabels();
+    render();
+}
+
+function updateSliderLabels() {
+    document.getElementById('px-val').textContent = document.getElementById('posX').value;
+    document.getElementById('pz-val').textContent = document.getElementById('posZ').value;
+    document.getElementById('py-val').textContent = document.getElementById('posY').value;
+    document.getElementById('sc-val').textContent = (+document.getElementById('scale').value).toFixed(1);
+    document.getElementById('ry-val').textContent = document.getElementById('rotY').value + '°';
+}
+
+function refreshUI() {
+    const list = document.getElementById('objectList');
+    list.innerHTML = '';
+    state.objects.forEach((o, i) => {
+        const div = document.createElement('div');
+        div.className = 'object-item' + (i === state.selected ? ' selected' : '');
+        div.innerHTML = `<span>${o.type.toUpperCase()} #${i+1}</span><button class="del-btn" onclick="event.stopPropagation(); state.selected=${i}; deleteSelected();">×</button>`;
+        div.onclick = () => selectObject(i);
+        list.appendChild(div);
+    });
+    document.getElementById('obj-count').textContent = state.objects.length;
+}
+
+// ============ RENDERING ============
+function getSunVector() {
+    const az = state.azimuth * Math.PI / 180;
+    const alt = state.altitude * Math.PI / 180;
+    return normalize({
+        x: Math.cos(alt) * Math.sin(az),
+        y: Math.sin(alt),
+        z: Math.cos(alt) * Math.cos(az)
+    });
+}
+
+function transformVertex(v, obj) {
+    let p = { x: v.x * obj.scale, y: v.y * obj.scale, z: v.z * obj.scale };
+    p = rotateY(p, obj.rotY * Math.PI / 180);
+    p = translate(p, obj.pos);
+    return p;
+}
+
+function render() {
+    ctx.clearRect(0, 0, W, H);
+    drawGrid();
+    drawHorizon();
+    drawVanishingPoints();
+    
+    const allFaces = [];
+    const sun = getSunVector();
+    
+    state.objects.forEach((obj, objIdx) => {
+        const worldVerts = obj.geo.vertices.map(v => transformVertex(v, obj));
+        const projVerts = worldVerts.map(v => project(v));
+        
+        obj.geo.faces.forEach(face => {
+            const worldFace = face.map(i => worldVerts[i]);
+            const projFace = face.map(i => projVerts[i]);
+            
+            const v0 = worldFace[0], v1 = worldFace[1], v2 = worldFace[2];
+            const normal = normalize(cross(sub(v1, v0), sub(v2, v0)));
+            
+            const avgZ = worldFace.reduce((s, v) => s + v.z, 0) / worldFace.length;
+            
+            allFaces.push({
+                proj: projFace,
+                world: worldFace,
+                normal: normal,
+                avgZ: avgZ,
+                objIdx: objIdx,
+                color: obj.color
+            });
         });
+    });
+    
+    if (state.castShadows) {
+        drawShadows(allFaces, sun);
+    }
+    
+    allFaces.sort((a, b) => b.avgZ - a.avgZ);
+    
+    allFaces.forEach(f => drawFace(f, sun));
+    
+    if (state.selected >= 0) {
+        drawSelection(state.objects[state.selected]);
+    }
+}
 
-        function initApp() {
-            renderChapterCards();
-            renderArtworkCards();
-            loadQuizQuestion();
-            resizeCanvas();
-        }
+function drawFace(f, sun) {
+    const pts = f.proj;
+    if (pts.length < 3) return;
+    
+    // Screen-space back-face culling (Y is down, so front-facing is counter-clockwise -> negative area)
+    let area = 0;
+    for (let i = 0; i < pts.length; i++) {
+        const j = (i+1) % pts.length;
+        area += pts[i].x * pts[j].y - pts[j].x * pts[i].y;
+    }
+    if (area > 0) return; // Cull back-facing polygons
+    
+    let intensity = 0.5;
+    if (state.facetShading) {
+        // Use Math.abs for two-sided lighting to handle any vertex winding order gracefully
+        const d = Math.abs(dot(f.normal, sun));
+        intensity = 0.3 + d * 0.7;
+    }
+    
+    const [r, g, b] = f.color;
+    const fill = `rgb(${Math.round(r*intensity)}, ${Math.round(g*intensity)}, ${Math.round(b*intensity)})`;
+    
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.closePath();
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+}
 
-        /* ========================================================================= */
-        /* NAVIGATION & THEME */
-        /* ========================================================================= */
-        function switchTab(tabId) {
-            state.currentTab = tabId;
-            document.querySelectorAll('.tab-section').forEach(sec => sec.classList.add('hidden'));
-            document.getElementById(`sec-${tabId}`).classList.remove('hidden');
-
-            // Header tab styling
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.className = "nav-btn px-2.5 py-1.5 rounded-lg font-medium text-gray-600 dark:text-gray-300 hover:text-amber-800 dark:hover:text-amber-400";
+function drawShadows(allFaces, sun) {
+    const byObj = {};
+    allFaces.forEach(f => {
+        if (!byObj[f.objIdx]) byObj[f.objIdx] = [];
+        byObj[f.objIdx].push(f);
+    });
+    
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    const lightDir = { x: -sun.x, y: -sun.y, z: -sun.z };
+    
+    Object.values(byObj).forEach(faces => {
+        const verts = [];
+        const seen = new Set();
+        faces.forEach(f => {
+            f.world.forEach(v => {
+                const key = v.x.toFixed(2) + ',' + v.y.toFixed(2) + ',' + v.z.toFixed(2);
+                if (!seen.has(key)) { seen.add(key); verts.push(v); }
             });
-            const activeBtn = document.getElementById(`tab-${tabId}`);
-            if(activeBtn) activeBtn.className = "nav-btn px-2.5 py-1.5 rounded-lg font-medium transition-all duration-150 bg-amber-800 text-white shadow";
+        });
+        
+        const groundPts = verts.map(v => {
+            if (lightDir.y >= 0) return null; // Sun is below horizon
+            const t = -v.y / lightDir.y;
+            if (t < 0) return null;
+            const gx = v.x + lightDir.x * t;
+            const gz = v.z + lightDir.z * t;
+            return project({ x: gx, y: 0, z: gz });
+        }).filter(p => p !== null);
+        
+        if (groundPts.length < 3) return;
+        
+        const cxp = groundPts.reduce((s,p) => s+p.x, 0) / groundPts.length;
+        const cyp = groundPts.reduce((s,p) => s+p.y, 0) / groundPts.length;
+        groundPts.sort((a,b) => Math.atan2(a.y-cyp, a.x-cxp) - Math.atan2(b.y-cyp, b.x-cxp));
+        
+        ctx.beginPath();
+        ctx.moveTo(groundPts[0].x, groundPts[0].y);
+        for (let i = 1; i < groundPts.length; i++) ctx.lineTo(groundPts[i].x, groundPts[i].y);
+        ctx.closePath();
+        ctx.fill();
+    });
+}
 
-            // Mobile nav styling
-            ['sandbox', 'chapters', 'artworks', 'quiz'].forEach(t => {
-                const mbBtn = document.getElementById(`mb-${t}`);
-                if(mbBtn) {
-                    if(t === tabId) mbBtn.className = "flex flex-col items-center text-amber-800 dark:text-amber-400 text-[10px] font-medium";
-                    else mbBtn.className = "flex flex-col items-center text-gray-500 dark:text-gray-400 text-[10px] font-medium";
-                }
-            });
+function drawSelection(obj) {
+    const worldVerts = obj.geo.vertices.map(v => transformVertex(v, obj));
+    const projVerts = worldVerts.map(v => project(v));
+    
+    ctx.strokeStyle = '#ffdc32';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 3]);
+    
+    obj.geo.faces.forEach(face => {
+        ctx.beginPath();
+        face.forEach((vi, i) => {
+            const p = projVerts[vi];
+            if (i === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
+        });
+        ctx.closePath();
+        ctx.stroke();
+    });
+    ctx.setLineDash([]);
+}
 
-            if(tabId === 'sandbox') {
-                setTimeout(resizeCanvas, 50);
-            }
-        }
-
-        function toggleTheme() {
-            state.isDark = !state.isDark;
-            document.documentElement.classList.toggle('dark', state.isDark);
-            renderCanvas();
-        }
-
-        /* ========================================================================= */
-        /* CANVAS PERSPECTIVE ENGINE */
-        /* ========================================================================= */
-        function resizeCanvas() {
-            if (!canvas.parentElement) return;
-            const rect = canvas.parentElement.getBoundingClientRect();
-            canvas.width = rect.width * window.devicePixelRatio || rect.width;
-            canvas.height = rect.height * window.devicePixelRatio || rect.height;
-            renderCanvas();
-        }
-
-        function updateControls() {
-            state.horizonPercent = parseFloat(document.getElementById('sliderHorizon').value) / 100;
-            state.distancePx = parseInt(document.getElementById('sliderDistance').value);
-            state.rotationDeg = parseInt(document.getElementById('sliderRotation').value);
-
-            document.getElementById('valHorizon').innerText = `${Math.round(state.horizonPercent * 100)}%`;
-            document.getElementById('valDistance').innerText = `${state.distancePx}px`;
-            document.getElementById('valRotation').innerText = `${state.rotationDeg}°`;
-
-            renderCanvas();
-        }
-
-        function changeModel(val) {
-            state.currentModel = val;
-            renderCanvas();
-        }
-
-        function resetCanvasParams() {
-            document.getElementById('sliderHorizon').value = 50;
-            document.getElementById('sliderDistance').value = 250;
-            document.getElementById('sliderRotation').value = 0;
-            state.principalXPercent = 0.5;
-            updateControls();
-        }
-
-        function renderCanvas() {
-            if(!ctx) return;
-            const w = canvas.width;
-            const h = canvas.height;
-            const dpr = window.devicePixelRatio || 1;
-
-            // Clear
-            ctx.clearRect(0, 0, w, h);
-            ctx.fillStyle = state.isDark ? '#030712' : '#ffffff';
-            ctx.fillRect(0, 0, w, h);
-
-            const horizonY = h * state.horizonPercent;
-            const Px = w * state.principalXPercent;
-            const Py = horizonY;
-            const D1x = Px - state.distancePx * dpr;
-            const D2x = Px + state.distancePx * dpr;
-
-            const showGrid = document.getElementById('toggleGrid').checked;
-            const showRay = document.getElementById('toggleRay').checked;
-
-            // Draw Horizon Line H1-H2
+// ============ GUIDES ============
+function drawGrid() {
+    if (!state.guides.grid) return;
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+    ctx.lineWidth = 1;
+    
+    const vp1 = getVP(0);
+    
+    // Radiating lines from VP1
+    for (let i = -25; i <= 25; i++) {
+        const x = cx + i * 60;
+        ctx.beginPath();
+        ctx.moveTo(vp1.x, vp1.y);
+        ctx.lineTo(x, H + 100);
+        ctx.stroke();
+    }
+    
+    // Radiating lines from VP2 (if 2-point or 3-point)
+    if (state.mode >= 2) {
+        const vp2 = getVP(1);
+        for (let i = -25; i <= 25; i++) {
+            const x = cx + i * 60;
             ctx.beginPath();
-            ctx.strokeStyle = state.isDark ? '#f59e0b' : '#b45309';
-            ctx.lineWidth = 2 * dpr;
-            ctx.moveTo(0, horizonY);
-            ctx.lineTo(w, horizonY);
+            ctx.moveTo(vp2.x, vp2.y);
+            ctx.lineTo(x, H + 100);
             ctx.stroke();
-
-            // Label Horizon Line
-            ctx.fillStyle = state.isDark ? '#fbbf24' : '#78350f';
-            ctx.font = `${11 * dpr}px sans-serif`;
-            ctx.fillText('Horizon Line (H1 - H2)', 10 * dpr, horizonY - 6 * dpr);
-
-            // Draw Points P, D1, D2
-            drawControlPoint(Px, Py, 'P (Principal Point)', '#ef4444', dpr);
-            drawControlPoint(D1x, Py, 'D1', '#3b82f6', dpr);
-            drawControlPoint(D2x, Py, 'D2', '#3b82f6', dpr);
-
-            // Render selected geometrical perspective model
-            switch(state.currentModel) {
-                case 'cube1':
-                    drawFrontalCube(Px, Py, D1x, D2x, showRay, dpr);
-                    break;
-                case 'cube2':
-                    drawAngularCube(Px, Py, D1x, D2x, showRay, dpr);
-                    break;
-                case 'grid':
-                    drawPerspectiveGrid(Px, Py, D1x, D2x, showRay, dpr);
-                    break;
-                case 'arch':
-                    drawPerspectiveArch(Px, Py, D1x, D2x, showRay, dpr);
-                    break;
-                case 'stairs':
-                    drawStairsAndInclinedPlanes(Px, Py, D1x, D2x, showRay, dpr);
-                    break;
-                case 'human':
-                    drawHumanScale(Px, Py, D1x, D2x, showRay, dpr);
-                    break;
-                case 'vehicle':
-                    drawVehicleBoundingPrism(Px, Py, D1x, D2x, showRay, dpr);
-                    break;
-            }
         }
+    }
+    
+    // Horizontal depth lines
+    for (let i = 1; i <= 20; i++) {
+        const y = cy + (i * i * 2.5); 
+        if (y > H) break;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(W, y);
+        ctx.stroke();
+    }
+}
 
-        function drawControlPoint(x, y, label, color, dpr) {
+function getVP(idx) {
+    if (state.mode === 1) return { x: cx, y: cy };
+    if (state.mode === 2) {
+        return idx === 0 ? { x: cx - focal, y: cy } : { x: cx + focal, y: cy };
+    }
+    if (state.mode === 3) {
+        if (idx === 0) return { x: cx - focal, y: cy };
+        if (idx === 1) return { x: cx + focal, y: cy };
+        return { x: cx, y: cy - 400 };
+    }
+    return { x: cx, y: cy };
+}
+
+function drawHorizon() {
+    if (!state.guides.horizon) return;
+    ctx.strokeStyle = 'rgba(248,81,73,0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    ctx.moveTo(0, cy);
+    ctx.lineTo(W, cy);
+    ctx.stroke();
+    ctx.setLineDash([]);
+}
+
+function drawVanishingPoints() {
+    if (!state.guides.vps) return;
+    const count = state.mode === 1 ? 1 : state.mode === 2 ? 2 : 3;
+    for (let i = 0; i < count; i++) {
+        const vp = getVP(i);
+        ctx.fillStyle = '#58a6ff';
+        ctx.beginPath();
+        ctx.arc(vp.x, vp.y, 6, 0, Math.PI*2);
+        ctx.fill();
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText('VP' + (i+1), vp.x + 10, vp.y - 10);
+    }
+    
+    if (state.guides.dist) {
+        ctx.fillStyle = '#d29922';
+        const d1 = { x: cx - focal, y: cy };
+        const d2 = { x: cx + focal, y: cy };
+        [d1, d2].forEach((p, i) => {
             ctx.beginPath();
-            ctx.fillStyle = color;
-            ctx.arc(x, y, 6 * dpr, 0, Math.PI * 2);
+            ctx.arc(p.x, p.y, 5, 0, Math.PI*2);
             ctx.fill();
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 1.5 * dpr;
-            ctx.stroke();
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 10px sans-serif';
+            ctx.fillText('D' + (i+1), p.x + 8, p.y - 8);
+            ctx.fillStyle = '#d29922';
+        });
+    }
+}
 
-            ctx.fillStyle = state.isDark ? '#e5e7eb' : '#1f2937';
-            ctx.font = `bold ${10 * dpr}px sans-serif`;
-            ctx.fillText(label, x - 15 * dpr, y - 10 * dpr);
+// ============ UI HANDLERS ============
+document.querySelectorAll('[data-mode]').forEach(btn => {
+    btn.onclick = () => {
+        state.mode = +btn.dataset.mode;
+        document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('mode-display').textContent = state.mode + '-Point';
+        render();
+    };
+});
+
+document.querySelectorAll('[data-guide]').forEach(cb => {
+    cb.onchange = () => {
+        state.guides[cb.dataset.guide] = cb.checked;
+        render();
+    };
+});
+
+document.getElementById('facetToggle').onchange = (e) => { state.facetShading = e.target.checked; render(); };
+document.getElementById('shadowToggle').onchange = (e) => { state.castShadows = e.target.checked; render(); };
+
+function updateSun() {
+    state.azimuth = +document.getElementById('azimuth').value;
+    state.altitude = +document.getElementById('altitude').value;
+    document.getElementById('az-val').textContent = state.azimuth + '°';
+    document.getElementById('alt-val').textContent = state.altitude + '°';
+    render();
+}
+
+// ============ JSON SAVE/LOAD ============
+function saveJSON() {
+    const data = {
+        mode: state.mode,
+        azimuth: state.azimuth,
+        altitude: state.altitude,
+        guides: state.guides,
+        objects: state.objects.map(o => ({
+            type: o.type, pos: o.pos, scale: o.scale, rotY: o.rotY, color: o.color
+        }))
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'perspective_scene.json';
+    a.click();
+}
+
+function loadJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const data = JSON.parse(e.target.result);
+        state.mode = data.mode || 1;
+        state.azimuth = data.azimuth || 45;
+        state.altitude = data.altitude || 35;
+        state.guides = data.guides || state.guides;
+        state.objects = (data.objects || []).map(o => ({
+            ...o, id: Date.now() + Math.random(), geo: getGeometry(o.type)
+        }));
+        state.selected = -1;
+        document.getElementById('azimuth').value = state.azimuth;
+        document.getElementById('altitude').value = state.altitude;
+        updateSun();
+        document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('active', +b.dataset.mode === state.mode));
+        document.getElementById('mode-display').textContent = state.mode + '-Point';
+        refreshUI();
+        render();
+    };
+    reader.readAsText(file);
+}
+
+// ============ QUIZ ============
+const quizData = [
+    { q: "In 1-Point Perspective, where do all orthogonal lines converge?", opts: ["Horizon Line", "Central Vanishing Point", "Ground Plane", "Station Point"], ans: 1 },
+    { q: "What is the primary use of Distance Points (D1/D2)?", opts: ["Measuring height", "Accurate foreshortening & circles", "Finding sun angle", "Drawing 3-point views"], ans: 1 },
+    { q: "In 2-Point perspective, how many VPs are on the horizon?", opts: ["One", "Two", "Three", "None"], ans: 1 },
+    { q: "In 3-Point looking up (Worm's Eye), verticals converge to?", opts: ["Parallel remain", "Nadir point", "Zenith point", "Horizon"], ans: 2 },
+    { q: "If Sun Altitude is 90°, what happens to shadows?", opts: ["Longest", "Disappear underneath", "Point left", "Infinite"], ans: 1 }
+];
+
+function loadQuiz() {
+    const c = document.getElementById('quiz-container');
+    const q = quizData[state.quiz.current];
+    c.innerHTML = `
+        <h4>Question ${state.quiz.current + 1} / 5</h4>
+        <div class="quiz-question">${q.q}</div>
+        <div class="quiz-options">
+            ${q.opts.map((o, i) => `<div class="quiz-opt" onclick="checkAnswer(${i})">${o}</div>`).join('')}
+        </div>
+    `;
+}
+
+function checkAnswer(i) {
+    const q = quizData[state.quiz.current];
+    const opts = document.querySelectorAll('.quiz-opt');
+    opts.forEach((o, idx) => {
+        o.style.pointerEvents = 'none';
+        if (idx === q.ans) o.classList.add('correct');
+        if (idx === i && i !== q.ans) o.classList.add('wrong');
+    });
+    if (i === q.ans) {
+        state.quiz.score++;
+        document.getElementById('score-display').textContent = state.quiz.score;
+    }
+    setTimeout(() => {
+        if (state.quiz.current < 4) {
+            state.quiz.current++;
+            loadQuiz();
+        } else {
+            document.getElementById('quiz-container').innerHTML = `
+                <h4>Module Complete!</h4>
+                <p style="margin-top:10px; color: var(--text-muted);">Final Score: ${state.quiz.score}/5</p>
+                <button class="btn" style="margin-top:12px; width:100%" onclick="resetQuiz()">Retake Quiz</button>
+            `;
         }
+    }, 1400);
+}
 
-        /* Perspective Model Renderers */
-        function drawFrontalCube(Px, Py, D1x, D2x, rays, dpr) {
-            const size = 100 * dpr;
-            const x0 = Px - size / 2 + (state.rotationDeg * 2 * dpr);
-            const y0 = Py + 80 * dpr;
+function resetQuiz() {
+    state.quiz = { current: 0, score: 0 };
+    document.getElementById('score-display').textContent = 0;
+    loadQuiz();
+}
 
-            // Front face
-            ctx.strokeStyle = state.isDark ? '#60a5fa' : '#2563eb';
-            ctx.lineWidth = 2 * dpr;
-            ctx.strokeRect(x0, y0, size, size);
+// ============ INIT ============
+resize();
+refreshUI();
+updateSliderLabels();
+loadQuiz();
 
-            // Rays to P
-            if(rays) {
-                ctx.strokeStyle = state.isDark ? 'rgba(239,68,68,0.3)' : 'rgba(239,68,68,0.25)';
-                ctx.setLineDash([4 * dpr, 4 * dpr]);
-                ctx.beginPath();
-                ctx.moveTo(x0, y0); ctx.lineTo(Px, Py);
-                ctx.moveTo(x0 + size, y0); ctx.lineTo(Px, Py);
-                ctx.moveTo(x0, y0 + size); ctx.lineTo(Px, Py);
-                ctx.moveTo(x0 + size, y0 + size); ctx.lineTo(Px, Py);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
-
-            // Back face calculations using D1 ray
-            const depth = 0.5;
-            const backX = x0 + (Px - x0) * depth;
-            const backY = y0 + (Py - y0) * depth;
-            const backSize = size * (1 - depth);
-
-            ctx.strokeStyle = state.isDark ? '#34d399' : '#059669';
-            ctx.strokeRect(backX, backY, backSize, backSize);
-
-            // Connect edges
-            ctx.beginPath();
-            ctx.moveTo(x0, y0); ctx.lineTo(backX, backY);
-            ctx.moveTo(x0 + size, y0); ctx.lineTo(backX + backSize, backY);
-            ctx.moveTo(x0, y0 + size); ctx.lineTo(backX, backY + backSize);
-            ctx.moveTo(x0 + size, y0 + size); ctx.lineTo(backX + backSize, backY + backSize);
-            ctx.stroke();
-        }
-
-        function drawAngularCube(Px, Py, D1x, D2x, rays, dpr) {
-            const cornerX = Px + (state.rotationDeg * 3 * dpr);
-            const cornerY = Py + 120 * dpr;
-            const h = 90 * dpr;
-
-            if(rays) {
-                ctx.strokeStyle = 'rgba(156, 163, 175, 0.4)';
-                ctx.setLineDash([3 * dpr, 3 * dpr]);
-                ctx.beginPath();
-                ctx.moveTo(cornerX, cornerY); ctx.lineTo(D1x, Py);
-                ctx.moveTo(cornerX, cornerY); ctx.lineTo(D2x, Py);
-                ctx.moveTo(cornerX, cornerY - h); ctx.lineTo(D1x, Py);
-                ctx.moveTo(cornerX, cornerY - h); ctx.lineTo(D2x, Py);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
-
-            // Front edge
-            ctx.strokeStyle = state.isDark ? '#f472b6' : '#db2777';
-            ctx.lineWidth = 3 * dpr;
-            ctx.beginPath();
-            ctx.moveTo(cornerX, cornerY); ctx.lineTo(cornerX, cornerY - h);
-            ctx.stroke();
-        }
-
-        function drawPerspectiveGrid(Px, Py, D1x, D2x, rays, dpr) {
-            const groundY = Py + 180 * dpr;
-            const numLines = 8;
-            const width = 300 * dpr;
-
-            ctx.strokeStyle = state.isDark ? '#4b5563' : '#d1d5db';
-            ctx.lineWidth = 1 * dpr;
-
-            for(let i = -numLines; i <= numLines; i++) {
-                const gx = Px + (i * width / numLines);
-                ctx.beginPath();
-                ctx.moveTo(gx, groundY);
-                ctx.lineTo(Px, Py);
-                ctx.stroke();
-            }
-
-            // Distance measuring lines from D1
-            for(let j = 1; j <= 5; j++) {
-                const distanceY = Py + (180 / j) * dpr;
-                ctx.beginPath();
-                ctx.moveTo(Px - width, distanceY);
-                ctx.lineTo(Px + width, distanceY);
-                ctx.stroke();
-            }
-        }
-
-        function drawPerspectiveArch(Px, Py, D1x, D2x, rays, dpr) {
-            const archX = Px - 60 * dpr;
-            const archY = Py + 140 * dpr;
-            const archW = 120 * dpr;
-            const archH = 100 * dpr;
-
-            ctx.strokeStyle = state.isDark ? '#fbbf24' : '#d97706';
-            ctx.lineWidth = 2 * dpr;
-
-            // Pillar legs
-            ctx.strokeRect(archX, archY - archH, archW / 4, archH);
-            ctx.strokeRect(archX + (archW * 0.75), archY - archH, archW / 4, archH);
-
-            // Semi-circular arch top
-            ctx.beginPath();
-            ctx.arc(archX + archW / 2, archY - archH, archW / 2.6, Math.PI, 0);
-            ctx.stroke();
-        }
-
-        function drawStairsAndInclinedPlanes(Px, Py, D1x, D2x, rays, dpr) {
-            const P_primeY = Py - 80 * dpr; // Vanishing point for ascending plane P'
-            drawControlPoint(Px, P_primeY, "P' (Ascending)", '#8b5cf6', dpr);
-
-            const startX = Px - 80 * dpr;
-            const startY = Py + 160 * dpr;
-            const steps = 4;
-
-            ctx.strokeStyle = state.isDark ? '#a78bfa' : '#7c3aed';
-            ctx.lineWidth = 2 * dpr;
-
-            let curX = startX;
-            let curY = startY;
-
-            for(let i = 0; i < steps; i++) {
-                ctx.beginPath();
-                ctx.moveTo(curX, curY);
-                curY -= 20 * dpr;
-                ctx.lineTo(curX, curY);
-                curX += 30 * dpr;
-                ctx.lineTo(curX, curY);
-                ctx.stroke();
-            }
-        }
-
-        function drawHumanScale(Px, Py, D1x, D2x, rays, dpr) {
-            const heights = [1.2, 0.8, 0.5, 0.3];
-            const offsets = [-140, -60, 40, 110];
-
-            heights.forEach((hScale, idx) => {
-                const hPx = 100 * dpr * hScale;
-                const x = Px + offsets[idx] * dpr;
-                const y = Py + (120 * dpr * hScale);
-
-                // Draw Stick figure scaled relative to horizon
-                ctx.strokeStyle = state.isDark ? '#38bdf8' : '#0284c7';
-                ctx.lineWidth = 2 * dpr;
-
-                // Head
-                ctx.beginPath();
-                ctx.arc(x, y - hPx, 8 * dpr * hScale, 0, Math.PI * 2);
-                ctx.stroke();
-                // Body & Legs
-                ctx.beginPath();
-                ctx.moveTo(x, y - hPx + (8 * dpr * hScale));
-                ctx.lineTo(x, y - (hPx * 0.3));
-                ctx.lineTo(x - 10 * dpr * hScale, y);
-                ctx.moveTo(x, y - (hPx * 0.3));
-                ctx.lineTo(x + 10 * dpr * hScale, y);
-                ctx.stroke();
-            });
-        }
-
-        function drawVehicleBoundingPrism(Px, Py, D1x, D2x, rays, dpr) {
-            const vx = Px - 80 * dpr;
-            const vy = Py + 130 * dpr;
-            const vw = 160 * dpr;
-            const vh = 60 * dpr;
-
-            // Wireframe Bounding Box
-            ctx.strokeStyle = state.isDark ? '#f43f5e' : '#e11d48';
-            ctx.lineWidth = 2 * dpr;
-            ctx.strokeRect(vx, vy - vh, vw, vh);
-
-            // Wheels inside box
-            ctx.fillStyle = state.isDark ? '#9ca3af' : '#4b5563';
-            ctx.beginPath();
-            ctx.arc(vx + 30 * dpr, vy, 12 * dpr, 0, Math.PI * 2);
-            ctx.arc(vx + vw - 30 * dpr, vy, 12 * dpr, 0, Math.PI * 2);
-            ctx.fill();
-        }
-
-        /* Dynamic Touch Controls */
-        function setupTouchEvents() {
-            const getPos = (e) => {
-                const rect = canvas.getBoundingClientRect();
-                const touch = e.touches ? e.touches[0] : e;
-                return {
-                    x: (touch.clientX - rect.left) * (canvas.width / rect.width),
-                    y: (touch.clientY - rect.top) * (canvas.height / rect.height)
-                };
-            };
-
-            const startDrag = (e) => {
-                const pos = getPos(e);
-                const horizonY = canvas.height * state.horizonPercent;
-                const Px = canvas.width * state.principalXPercent;
-
-                if(Math.abs(pos.x - Px) < 30 && Math.abs(pos.y - horizonY) < 30) {
-                    isDraggingP = true;
-                } else if(Math.abs(pos.y - horizonY) < 20) {
-                    isDraggingHorizon = true;
-                }
-            };
-
-            const doDrag = (e) => {
-                if(!isDraggingP && !isDraggingHorizon) return;
-                const pos = getPos(e);
-
-                if(isDraggingP) {
-                    state.principalXPercent = Math.max(0.1, Math.min(0.9, pos.x / canvas.width));
-                }
-                if(isDraggingHorizon) {
-                    state.horizonPercent = Math.max(0.1, Math.min(0.9, pos.y / canvas.height));
-                    document.getElementById('sliderHorizon').value = Math.round(state.horizonPercent * 100);
-                    document.getElementById('valHorizon').innerText = `${Math.round(state.horizonPercent * 100)}%`;
-                }
-                renderCanvas();
-            };
-
-            const stopDrag = () => {
-                isDraggingP = false;
-                isDraggingHorizon = false;
-            };
-
-            canvas.addEventListener('mousedown', startDrag);
-            canvas.addEventListener('mousemove', doDrag);
-            window.addEventListener('mouseup', stopDrag);
-
-            canvas.addEventListener('touchstart', startDrag, {passive: true});
-            canvas.addEventListener('touchmove', doDrag, {passive: true});
-            window.addEventListener('touchend', stopDrag);
-        }
-
-        /* ========================================================================= */
-        /* CHAPTER GUIDE DATA & CARDS */
-        /* ========================================================================= */
-        const chapterData = {
-            ch1: {
-                title: "Ch. 1: Methods of Representation in Art & Science",
-                summary: "History of perspective from the Renaissance (Leonardo da Vinci, Albrecht Dürer) to modern descriptive geometry.",
-                content: `<p><strong>Key Concepts:</strong></p>
-                <ul class="list-disc ms-4 space-y-1">
-                    <li>Comparison between Orthogonal Projections, Axonometry, and Central Linear Perspective.</li>
-                    <li>Axonometric forms: Isometric, Dimetric, and Military projections.</li>
-                    <li>The physical basis of visual perception and picture plane orientation.</li>
-                </ul>`
-            },
-            ch2: {
-                title: "Ch. 2: The Construction Process of Perspective Images",
-                summary: "Human cone of vision, picture plane setup, principal point P, and distance measuring points D1, D2.",
-                content: `<p><strong>Key Concepts:</strong></p>
-                <ul class="list-disc ms-4 space-y-1">
-                    <li>Cone of vision limited to 30°-37° for distortion-free drawing.</li>
-                    <li>Establishing the Horizon Line ($H_1H_2$) at standing eye level (1.5m - 1.7m).</li>
-                    <li>Distance points $D_1, D_2$ representing observer distance to picture plane.</li>
-                </ul>`
-            },
-            ch3: {
-                title: "Ch. 3: Generalizing Complex Forms & Inclined Planes",
-                summary: "Perspective scales for width, height, and depth. Ascending (P') and descending (P'') vanishing traces.",
-                content: `<p><strong>Key Concepts:</strong></p>
-                <ul class="list-disc ms-4 space-y-1">
-                    <li>Perspective scale divisions using fractional distance points ($PD/2, PD/4$).</li>
-                    <li>Vanishing traces for inclined surfaces, roofs, and staircases.</li>
-                    <li>Topographical perspective for terrain and roads.</li>
-                </ul>`
-            },
-            ch4: {
-                title: "Ch. 4: Classic Architectural Applications",
-                summary: "Methods for circles, arches, vaults, interior furniture, and large-scale architectural complexes.",
-                content: `<p><strong>Key Concepts:</strong></p>
-                <ul class="list-disc ms-4 space-y-1">
-                    <li>Inscribing perspective circles inside octagons.</li>
-                    <li>Architect's method (lowered floor plan method).</li>
-                    <li>Perspective of vaulted ceilings, colonnades, and bridges.</li>
-                </ul>`
-            },
-            ch5: {
-                title: "Ch. 5: Figures, Motion, & Masterpiece Analysis",
-                summary: "Scaling human and animal proportions in depth; objects in motion; analysis of Da Vinci, Raphael, Repin, and Суриков.",
-                content: `<p><strong>Key Concepts:</strong></p>
-                <ul class="list-disc ms-4 space-y-1">
-                    <li>Bounding rectangular prisms for complex organic forms (humans, horses, vehicles).</li>
-                    <li>Analysis of <em>The Last Supper</em> by Leonardo da Vinci (Central P at Christ's right temple).</li>
-                    <li>Perspective analysis of Repin's <em>They Did Not Expect Him</em> and Суриков's <em>Boyarynya Morozova</em>.</li>
-                </ul>`
-            }
-        };
-
-        function renderChapterCards() {
-            const container = document.getElementById('chapterCardsContainer');
-            container.innerHTML = Object.keys(chapterData).map(key => {
-                const item = chapterData[key];
-                return `
-                    <div class="bg-white dark:bg-gray-800 p-3.5 rounded-xl border border-sepia-200 dark:border-gray-700 shadow-sm flex flex-col justify-between">
-                        <div>
-                            <h3 class="font-serif font-bold text-sm text-amber-900 dark:text-amber-300 mb-1">${item.title}</h3>
-                            <p class="text-xs text-gray-600 dark:text-gray-300 mb-3">${item.summary}</p>
-                        </div>
-                        <button onclick="openChapterModal('${key}')" class="self-start text-xs font-semibold text-amber-800 dark:text-amber-400 hover:underline flex items-center">
-                            Read Summary <i class="fa-solid fa-chevron-right text-[10px] ms-1"></i>
-                        </button>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function openChapterModal(chId) {
-            const data = chapterData[chId];
-            if (!data) return;
-            document.getElementById('modalTitle').innerText = data.title;
-            document.getElementById('modalBody').innerHTML = data.content;
-            document.getElementById('chapterModal').classList.remove('hidden');
-        }
-
-        function closeChapterModal() {
-            document.getElementById('chapterModal').classList.add('hidden');
-        }
-
-        /* ========================================================================= */
-        /* ARTWORK ANALYZER DATA & CARDS */
-        /* ========================================================================= */
-        const artworkData = [
-            {
-                title: "Leonardo da Vinci - The Last Supper (1495-1498)",
-                analysis: "Baryshnikov highlights Da Vinci's strict central perspective. The principal point P lies exactly on Christ's right temple, drawing all architectural orthogonals directly to the focal subject.",
-                tag: "Central Linear Perspective"
-            },
-            {
-                title: "Raphael - The School of Athens (1509-1511)",
-                analysis: "Grand vaulted architecture with elevated horizon line emphasizing human scale and classical philosophy.",
-                tag: "Architectural Vaulting"
-            },
-            {
-                title: "Ilya Repin - They Did Not Expect Him (1884-1888)",
-                analysis: "Interior room perspective using off-center principal point to heighten narrative tension and spatial depth.",
-                tag: "Interior & Human Scale"
-            },
-            {
-                title: "Vasily Суриков - Boyarynya Morozova (1887)",
-                analysis: "Dynamic diagonal perspective traces tracking movement of the sleigh through crowd space.",
-                tag: "Motion & Dynamic Traces"
-            }
-        ];
-
-        function renderArtworkCards() {
-            const container = document.getElementById('artworkCardsContainer');
-            container.innerHTML = artworkData.map((art, idx) => `
-                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-sepia-200 dark:border-gray-700 shadow-sm space-y-2">
-                    <div class="flex justify-between items-start">
-                        <h3 class="font-serif font-bold text-sm text-sepia-900 dark:text-amber-100">${art.title}</h3>
-                        <span class="text-[10px] px-2 py-0.5 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 rounded-full font-medium">${art.tag}</span>
-                    </div>
-                    <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">${art.analysis}</p>
-                </div>
-            `).join('');
-        }
-
-        /* ========================================================================= */
-        /* QR CODE SHARING LOGIC */
-        /* ========================================================================= */
-        let qrCodeObj = null;
-
-        function openQRCodeModal() {
-            const currentURL = window.location.href;
-            document.getElementById('share-url-input').value = currentURL;
-
-            const qrContainer = document.getElementById('qrcode-container');
-            qrContainer.innerHTML = '';
-
-            qrCodeObj = new QRCode(qrContainer, {
-                text: currentURL,
-                width: 160,
-                height: 160,
-                colorDark : "#78350f",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
-
-            document.getElementById('qrModal').classList.remove('hidden');
-        }
-
-        function closeQRCodeModal() {
-            document.getElementById('qrModal').classList.add('hidden');
-            document.getElementById('copy-status').classList.add('hidden');
-        }
-
-        function copyAppURL() {
-            const urlInput = document.getElementById('share-url-input');
-            urlInput.select();
-            urlInput.setSelectionRange(0, 99999);
-            document.execCommand('copy');
-
-            const copyStatus = document.getElementById('copy-status');
-            copyStatus.classList.remove('hidden');
-            setTimeout(() => {
-                copyStatus.classList.add('hidden');
-            }, 3000);
-        }
-
-        /* ========================================================================= */
-        /* INTERACTIVE QUIZ ENGINE */
-        /* ========================================================================= */
-        const quizQuestions = [
-            {
-                q: "Where does the Horizon Line (H1-H2) always lie in linear perspective?",
-                options: [
-                    "At the bottom edge of the picture frame",
-                    "At the exact eye level of the observer",
-                    "At the highest point of the main subject",
-                    "It varies depending on the distance points"
-                ],
-                correct: 1,
-                explanation: "According to Chapter 2, the Horizon Line represents the theoretical intersection of the horizontal plane passing through the observer's eye with the picture plane."
-            },
-            {
-                q: "What do Distance Points (D1 and D2) represent?",
-                options: [
-                    "The light source direction",
-                    "The distance between objects in the scene",
-                    "The distance from the observer's eye to the picture plane",
-                    "The angle of inclination of stairs"
-                ],
-                correct: 2,
-                explanation: "Distance points D1 and D2 are measured along the horizon line at a distance equal to the observer's station point distance to the principal point P."
-            },
-            {
-                q: "Which vanishing point is used for lines ascending upwards (like stairs)?",
-                options: [
-                    "Principal point P",
-                    "Distance point D1",
-                    "High vanishing trace point P'",
-                    "Low vanishing trace point P''"
-                ],
-                correct: 2,
-                explanation: "In Chapter 3, Baryshnikov explains that parallel lines inclined upwards vanish at an elevated point P' located vertically above P."
-            }
-        ];
-
-        function loadQuizQuestion() {
-            const qData = quizQuestions[state.quizIndex];
-            document.getElementById('quizProgress').innerText = `Question ${state.quizIndex + 1}/${quizQuestions.length}`;
-            document.getElementById('quizQuestion').innerText = qData.q;
-            
-            const optionsContainer = document.getElementById('quizOptions');
-            optionsContainer.innerHTML = qData.options.map((opt, i) => `
-                <button onclick="selectOption(${i})" class="w-full text-left p-2.5 rounded-lg border border-sepia-200 dark:border-gray-700 hover:bg-sepia-100 dark:hover:bg-gray-700 text-xs font-medium transition">
-                    ${opt}
-                </button>
-            `).join('');
-
-            document.getElementById('quizFeedback').classList.add('hidden');
-            document.getElementById('nextQuizBtn').classList.add('hidden');
-        }
-
-        function selectOption(index) {
-            const qData = quizQuestions[state.quizIndex];
-            const feedback = document.getElementById('quizFeedback');
-            
-            if(index === qData.correct) {
-                feedback.className = "p-3 rounded-lg text-xs bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200 border border-green-300 dark:border-green-800";
-                feedback.innerHTML = `<strong><i class="fa-solid fa-circle-check me-1"></i> Correct!</strong> ${qData.explanation}`;
-            } else {
-                feedback.className = "p-3 rounded-lg text-xs bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200 border border-red-300 dark:border-red-800";
-                feedback.innerHTML = `<strong><i class="fa-solid fa-circle-xmark me-1"></i> Incorrect.</strong> ${qData.explanation}`;
-            }
-
-            feedback.classList.remove('hidden');
-            document.getElementById('nextQuizBtn').classList.remove('hidden');
-        }
-
-        function nextQuestion() {
-            state.quizIndex = (state.quizIndex + 1) % quizQuestions.length;
-            loadQuizQuestion();
-        }
-    </script>
+addObject('cube');
+state.objects[0].pos.z = 250;
+</script>
 </body>
 </html>
