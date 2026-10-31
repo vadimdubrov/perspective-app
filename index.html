@@ -7,1706 +7,769 @@
 <meta name="theme-color" content="#0f1115">
 <title>Perspective Studio</title>
 <style>
-    :root {
-        --bg: #0f1115;
-        --panel: #161b22;
-        --input: #21262d;
-        --border: #30363d;
-        --text: #e6edf3;
-        --muted: #8b949e;
-        --accent: #58a6ff;
-        --accent-soft: rgba(88,166,255,0.15);
-        --danger: #f85149;
-        --success: #3fb950;
-        --warning: #d29922;
-        --safe-top: env(safe-area-inset-top, 0px);
-        --safe-bottom: env(safe-area-inset-bottom, 0px);
-        --nav-h: 64px;
-        --header-h: 52px;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body {
-        height: 100%;
-        overflow: hidden;
-        background: var(--bg);
-        color: var(--text);
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        font-size: 15px;
-        touch-action: none;
-        overscroll-behavior: none;
-    }
-    button, input, select { font: inherit; color: inherit; }
-    button { background: none; border: none; cursor: pointer; }
-    input[type="range"] { -webkit-appearance: none; appearance: none; background: transparent; }
-
-    .app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
-
-    .header {
-        height: var(--header-h);
-        padding-top: var(--safe-top);
-        background: var(--panel);
-        border-bottom: 1px solid var(--border);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding-left: 16px;
-        padding-right: 12px;
-        flex-shrink: 0;
-        z-index: 20;
-    }
-    .header .title { font-size: 0.95rem; font-weight: 700; letter-spacing: 0.5px; color: var(--accent); }
-    .header .subtitle { font-size: 0.65rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
-    .mode-badge {
-        background: var(--accent-soft);
-        color: var(--accent);
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        border: 1px solid var(--accent);
-    }
-
-    .stage { flex: 1; position: relative; background: #0d1117; overflow: hidden; }
-    canvas { display: block; width: 100%; height: 100%; touch-action: none; }
-
-    .hud {
-        position: absolute;
-        top: calc(var(--safe-top) + 10px);
-        left: 10px;
-        right: 10px;
-        display: flex;
-        justify-content: space-between;
-        pointer-events: none;
-        font-size: 0.7rem;
-        color: var(--muted);
-    }
-    .hud-chip {
-        background: rgba(22,27,34,0.85);
-        padding: 6px 10px;
-        border-radius: 6px;
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        border: 1px solid var(--border);
-    }
-    .hud-chip strong { color: var(--accent); }
-
-    .fab {
-        position: absolute;
-        bottom: calc(var(--safe-bottom) + 16px);
-        right: 16px;
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        background: var(--accent);
-        color: white;
-        font-size: 1.8rem;
-        font-weight: 300;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 6px 20px rgba(88,166,255,0.4);
-        z-index: 15;
-        transition: transform 0.15s;
-    }
-    .fab:active { transform: scale(0.92); }
-
-    .gesture-hint {
-        position: absolute;
-        bottom: calc(var(--safe-bottom) + 80px);
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(22,27,34,0.85);
-        color: var(--muted);
-        padding: 6px 12px;
-        border-radius: 16px;
-        font-size: 0.68rem;
-        backdrop-filter: blur(8px);
-        border: 1px solid var(--border);
-        pointer-events: none;
-        opacity: 0.9;
-    }
-
-    .bottom-nav {
-        height: var(--nav-h);
-        padding-bottom: var(--safe-bottom);
-        background: var(--panel);
-        border-top: 1px solid var(--border);
-        display: flex;
-        flex-shrink: 0;
-        z-index: 20;
-    }
-    .nav-btn {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 3px;
-        color: var(--muted);
-        font-size: 0.65rem;
-        font-weight: 500;
-        transition: color 0.15s;
-        position: relative;
-    }
-    .nav-btn .icon { font-size: 1.3rem; line-height: 1; }
-    .nav-btn.active { color: var(--accent); }
-    .nav-btn.active::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 25%;
-        right: 25%;
-        height: 2px;
-        background: var(--accent);
-        border-radius: 0 0 2px 2px;
-    }
-
-    .panel {
-        position: absolute;
-        left: 0; right: 0; bottom: 0;
-        background: var(--panel);
-        border-top-left-radius: 18px;
-        border-top-right-radius: 18px;
-        border-top: 1px solid var(--border);
-        padding: 16px 18px calc(16px + var(--safe-bottom));
-        transform: translateY(100%);
-        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-        z-index: 18;
-        max-height: 75vh;
-        overflow-y: auto;
-        overscroll-behavior: contain;
-        box-shadow: 0 -10px 40px rgba(0,0,0,0.4);
-    }
-    .panel.open { transform: translateY(0); }
-    .panel-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: -6px auto 14px; }
-    .panel h3 {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        color: var(--muted);
-        margin-bottom: 12px;
-        font-weight: 600;
-    }
-
-    .seg-control {
-        display: flex;
-        background: var(--input);
-        border-radius: 10px;
-        padding: 3px;
-        gap: 3px;
-        margin-bottom: 14px;
-    }
-    .seg-control button {
-        flex: 1;
-        padding: 10px 6px;
-        border-radius: 8px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--muted);
-        transition: all 0.15s;
-    }
-    .seg-control button.active { background: var(--accent); color: white; }
-
-    .prim-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-        margin-bottom: 14px;
-    }
-    .prim-btn {
-        background: var(--input);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 14px 6px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.75rem;
-        color: var(--text);
-        transition: all 0.15s;
-    }
-    .prim-btn:active { background: var(--accent-soft); border-color: var(--accent); transform: scale(0.96); }
-    .prim-btn .ico { font-size: 1.4rem; }
-
-    .obj-list { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
-    .obj-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: var(--input);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 10px 12px;
-        font-size: 0.85rem;
-    }
-    .obj-item.selected { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
-    .obj-item .del { color: var(--danger); font-size: 1.2rem; padding: 0 4px; }
-
-    .slider { margin-bottom: 14px; }
-    .slider .row { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 6px; }
-    .slider .row span:last-child { color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
-    .slider input[type="range"] { width: 100%; height: 28px; }
-    .slider input[type="range"]::-webkit-slider-runnable-track { height: 4px; background: var(--input); border-radius: 2px; }
-    .slider input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 22px; height: 22px;
-        background: var(--accent);
-        border-radius: 50%;
-        margin-top: -9px;
-        border: 3px solid var(--panel);
-        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    }
-    .slider input[type="range"]::-moz-range-track { height: 4px; background: var(--input); border-radius: 2px; }
-    .slider input[type="range"]::-moz-range-thumb {
-        width: 22px; height: 22px;
-        background: var(--accent);
-        border-radius: 50%;
-        border: 3px solid var(--panel);
-    }
-
-    .toggle-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 0;
-        border-bottom: 1px solid var(--border);
-        font-size: 0.9rem;
-    }
-    .toggle-row:last-child { border-bottom: none; }
-    .switch { position: relative; width: 44px; height: 26px; flex-shrink: 0; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider-sw {
-        position: absolute;
-        inset: 0;
-        background: var(--input);
-        border-radius: 26px;
-        transition: 0.2s;
-        border: 1px solid var(--border);
-    }
-    .slider-sw::before {
-        content: '';
-        position: absolute;
-        width: 20px; height: 20px;
-        left: 2px; top: 2px;
-        background: var(--muted);
-        border-radius: 50%;
-        transition: 0.2s;
-    }
-    input:checked + .slider-sw { background: var(--accent); border-color: var(--accent); }
-    input:checked + .slider-sw::before { transform: translateX(18px); background: white; }
-
-    .btn-row { display: flex; gap: 8px; margin-top: 14px; }
-    .btn {
-        flex: 1;
-        padding: 12px;
-        background: var(--input);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: var(--text);
-        transition: all 0.15s;
-    }
-    .btn:active { transform: scale(0.97); }
-    .btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
-    .btn.danger { color: var(--danger); border-color: var(--danger); }
-
-    /* Frame style picker */
-    .frame-picker {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
-        margin-bottom: 14px;
-    }
-    .frame-opt {
-        aspect-ratio: 1;
-        border: 2px solid var(--border);
-        border-radius: 8px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-        font-size: 0.68rem;
-        color: var(--muted);
-        transition: all 0.15s;
-        padding: 6px;
-    }
-    .frame-opt.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
-    .frame-opt .preview {
-        width: 70%;
-        aspect-ratio: 1;
-        border-radius: 3px;
-    }
-    .frame-opt[data-style="wood"] .preview {
-        background: linear-gradient(135deg, #8b5a2b, #5c3a1e, #8b5a2b);
-        box-shadow: inset 0 0 0 2px rgba(255,220,150,0.3), inset 0 0 6px rgba(0,0,0,0.5);
-    }
-    .frame-opt[data-style="mat"] .preview {
-        background: white;
-        box-shadow: inset 0 0 0 3px #3a2a1a, 0 0 0 1px #1a1a1a;
-    }
-    .frame-opt[data-style="modern"] .preview {
-        background: #0d1117;
-        box-shadow: inset 0 0 0 1px #e6edf3;
-    }
-    .frame-opt[data-style="corners"] .preview {
-        background: #0d1117;
-        position: relative;
-    }
-    .frame-opt[data-style="corners"] .preview::before,
-    .frame-opt[data-style="corners"] .preview::after {
-        content: '';
-        position: absolute;
-        width: 30%;
-        height: 30%;
-        border: 2px solid var(--accent);
-    }
-    .frame-opt[data-style="corners"] .preview::before { top: 0; left: 0; border-right: none; border-bottom: none; }
-    .frame-opt[data-style="corners"] .preview::after { bottom: 0; right: 0; border-left: none; border-top: none; }
-
-    /* Aspect ratio picker */
-    .ratio-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 6px;
-        margin-bottom: 14px;
-    }
-    .ratio-btn {
-        padding: 10px 6px;
-        background: var(--input);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        font-size: 0.75rem;
-        color: var(--text);
-        text-align: center;
-        transition: all 0.15s;
-    }
-    .ratio-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
-    .ratio-btn .shape {
-        display: inline-block;
-        border: 1px solid currentColor;
-        margin-right: 4px;
-        vertical-align: middle;
-    }
-
-    .lesson-card {
-        background: var(--input);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 12px;
-    }
-    .lesson-card .num { font-size: 0.7rem; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
-    .lesson-card h4 { font-size: 1rem; margin: 0 0 8px; color: var(--text); }
-    .lesson-card p { font-size: 0.85rem; line-height: 1.5; color: var(--muted); }
-
-    .quiz-box { background: var(--input); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
-    .quiz-box .q-num { font-size: 0.7rem; color: var(--accent); letter-spacing: 1px; margin-bottom: 8px; }
-    .quiz-box .q-text { font-size: 0.95rem; line-height: 1.4; margin-bottom: 14px; }
-    .quiz-opt {
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 12px;
-        margin-bottom: 6px;
-        font-size: 0.88rem;
-        width: 100%;
-        text-align: left;
-        transition: all 0.15s;
-    }
-    .quiz-opt:active { transform: scale(0.98); }
-    .quiz-opt.correct { background: rgba(63,185,80,0.15); border-color: var(--success); color: var(--success); }
-    .quiz-opt.wrong { background: rgba(248,81,73,0.15); border-color: var(--danger); color: var(--danger); }
-
-    .score-strip {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: var(--input);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 14px 16px;
-        margin-bottom: 12px;
-    }
-    .score-strip .label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-    .score-strip .val { font-size: 1.6rem; font-weight: 700; color: var(--accent); }
-
-    .empty-state { text-align: center; padding: 24px 16px; color: var(--muted); font-size: 0.85rem; }
-    .empty-state .ico { font-size: 2rem; margin-bottom: 8px; opacity: 0.5; }
-
-    @media (orientation: landscape) and (max-height: 500px) {
-        :root { --header-h: 40px; --nav-h: 48px; }
-        .panel { max-height: 80vh; }
-    }
-    @media (min-width: 600px) {
-        .prim-grid { grid-template-columns: repeat(5, 1fr); }
-        .frame-picker { grid-template-columns: repeat(4, 1fr); }
-    }
+:root{--bg:#0f1115;--panel:#161b22;--input:#21262d;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--accent:#58a6ff;--accent-soft:rgba(88,166,255,0.15);--danger:#f85149;--success:#3fb950;--warning:#d29922;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);--nav-h:64px;--header-h:52px}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:15px;touch-action:none;overscroll-behavior:none}
+button,input,select{font:inherit;color:inherit}
+button{background:none;border:none;cursor:pointer}
+input[type="range"]{-webkit-appearance:none;appearance:none;background:transparent}
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+.header{height:var(--header-h);padding-top:var(--safe-top);background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding-left:16px;padding-right:12px;flex-shrink:0;z-index:20}
+.header .title{font-size:0.95rem;font-weight:700;letter-spacing:0.5px;color:var(--accent)}
+.header .subtitle{font-size:0.65rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.mode-badge{background:var(--accent-soft);color:var(--accent);padding:6px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;border:1px solid var(--accent)}
+.stage{flex:1;position:relative;background:#0d1117;overflow:hidden}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+.hud{position:absolute;top:calc(var(--safe-top) + 10px);left:10px;right:10px;display:flex;justify-content:space-between;pointer-events:none;font-size:0.7rem;color:var(--muted)}
+.hud-chip{background:rgba(22,27,34,0.85);padding:6px 10px;border-radius:6px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--border)}
+.hud-chip strong{color:var(--accent)}
+.selection-indicator{position:absolute;top:calc(var(--safe-top) + 44px);left:50%;transform:translateX(-50%);background:rgba(255,220,50,0.15);color:#ffdc32;padding:6px 14px;border-radius:20px;font-size:0.75rem;font-weight:600;border:1px solid rgba(255,220,50,0.4);pointer-events:none;display:none;backdrop-filter:blur(8px)}
+.selection-indicator.visible{display:block}
+.fab{position:absolute;bottom:calc(var(--safe-bottom) + 16px);right:16px;width:56px;height:56px;border-radius:50%;background:var(--accent);color:white;font-size:1.8rem;font-weight:300;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(88,166,255,0.4);z-index:15;transition:transform 0.15s}
+.fab:active{transform:scale(0.92)}
+.gesture-hint{position:absolute;bottom:calc(var(--safe-bottom) + 80px);left:50%;transform:translateX(-50%);background:rgba(22,27,34,0.85);color:var(--muted);padding:6px 12px;border-radius:16px;font-size:0.68rem;backdrop-filter:blur(8px);border:1px solid var(--border);pointer-events:none;opacity:0.9}
+.bottom-nav{height:var(--nav-h);padding-bottom:var(--safe-bottom);background:var(--panel);border-top:1px solid var(--border);display:flex;flex-shrink:0;z-index:20}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted);font-size:0.65rem;font-weight:500;transition:color 0.15s;position:relative}
+.nav-btn .icon{font-size:1.3rem;line-height:1}
+.nav-btn.active{color:var(--accent)}
+.nav-btn.active::before{content:'';position:absolute;top:0;left:25%;right:25%;height:2px;background:var(--accent);border-radius:0 0 2px 2px}
+.panel{position:absolute;left:0;right:0;bottom:0;background:var(--panel);border-top-left-radius:18px;border-top-right-radius:18px;border-top:1px solid var(--border);padding:16px 18px calc(16px + var(--safe-bottom));transform:translateY(100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);z-index:18;max-height:75vh;overflow-y:auto;overscroll-behavior:contain;box-shadow:0 -10px 40px rgba(0,0,0,0.4)}
+.panel.open{transform:translateY(0)}
+.panel-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:-6px auto 14px}
+.panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.panel h3{font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:600;margin-bottom:12px}
+.panel-close{width:28px;height:28px;border-radius:50%;background:var(--input);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:1.2rem;transition:all 0.15s}
+.panel-close:active{background:var(--danger);color:white}
+.seg-control{display:flex;background:var(--input);border-radius:10px;padding:3px;gap:3px;margin-bottom:14px}
+.seg-control button{flex:1;padding:10px 6px;border-radius:8px;font-size:0.8rem;font-weight:600;color:var(--muted);transition:all 0.15s}
+.seg-control button.active{background:var(--accent);color:white}
+.prim-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.prim-btn{background:var(--input);border:1px solid var(--border);border-radius:10px;padding:14px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:0.75rem;color:var(--text);transition:all 0.15s}
+.prim-btn:active{background:var(--accent-soft);border-color:var(--accent);transform:scale(0.96)}
+.prim-btn .ico{font-size:1.4rem}
+.obj-list{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto}
+.obj-item{display:flex;align-items:center;justify-content:space-between;background:var(--input);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:0.85rem;cursor:pointer}
+.obj-item.selected{border-color:#ffdc32;background:rgba(255,220,50,0.12);color:#ffdc32}
+.obj-item .del{color:var(--danger);font-size:1.2rem;padding:0 4px;background:none;border:none;cursor:pointer}
+.slider{margin-bottom:14px}
+.slider .row{display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:6px}
+.slider .row span:last-child{color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums}
+.slider input[type="range"]{width:100%;height:28px}
+.slider input[type="range"]::-webkit-slider-runnable-track{height:4px;background:var(--input);border-radius:2px}
+.slider input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;background:var(--accent);border-radius:50%;margin-top:-9px;border:3px solid var(--panel);box-shadow:0 2px 6px rgba(0,0,0,0.3)}
+.slider input[type="range"]::-moz-range-track{height:4px;background:var(--input);border-radius:2px}
+.slider input[type="range"]::-moz-range-thumb{width:22px;height:22px;background:var(--accent);border-radius:50%;border:3px solid var(--panel)}
+.toggle-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:0.9rem}
+.toggle-row:last-child{border-bottom:none}
+.switch{position:relative;width:44px;height:26px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider-sw{position:absolute;inset:0;background:var(--input);border-radius:26px;transition:0.2s;border:1px solid var(--border)}
+.slider-sw::before{content:'';position:absolute;width:20px;height:20px;left:2px;top:2px;background:var(--muted);border-radius:50%;transition:0.2s}
+input:checked+.slider-sw{background:var(--accent);border-color:var(--accent)}
+input:checked+.slider-sw::before{transform:translateX(18px);background:white}
+.btn-row{display:flex;gap:8px;margin-top:14px}
+.btn{flex:1;padding:12px;background:var(--input);border:1px solid var(--border);border-radius:10px;font-size:0.85rem;font-weight:600;color:var(--text);transition:all 0.15s}
+.btn:active{transform:scale(0.97)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:white}
+.btn.danger{color:var(--danger);border-color:var(--danger)}
+.frame-picker{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.frame-opt{aspect-ratio:1;border:2px solid var(--border);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:0.68rem;color:var(--muted);transition:all 0.15s;padding:6px;cursor:pointer}
+.frame-opt.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.frame-opt .preview{width:70%;aspect-ratio:1;border-radius:3px}
+.frame-opt[data-style="none"] .preview{background:#0d1117}
+.frame-opt[data-style="wood"] .preview{background:linear-gradient(135deg,#8b5a2b,#5c3a1e,#8b5a2b);box-shadow:inset 0 0 0 2px rgba(255,220,150,0.3),inset 0 0 6px rgba(0,0,0,0.5)}
+.frame-opt[data-style="mat"] .preview{background:white;box-shadow:inset 0 0 0 3px #3a2a1a,0 0 0 1px #1a1a1a}
+.frame-opt[data-style="modern"] .preview{background:#0d1117;box-shadow:inset 0 0 0 1px #e6edf3}
+.ratio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
+.ratio-btn{padding:10px 6px;background:var(--input);border:1px solid var(--border);border-radius:8px;font-size:0.75rem;color:var(--text);text-align:center;transition:all 0.15s;cursor:pointer}
+.ratio-btn.active{background:var(--accent);border-color:var(--accent);color:white}
+.lesson-card{background:var(--input);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
+.lesson-card .num{font-size:0.7rem;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.lesson-card h4{font-size:1rem;margin:0 0 8px;color:var(--text)}
+.lesson-card p{font-size:0.85rem;line-height:1.5;color:var(--muted)}
+.quiz-box{background:var(--input);border:1px solid var(--border);border-radius:12px;padding:16px}
+.quiz-box .q-num{font-size:0.7rem;color:var(--accent);letter-spacing:1px;margin-bottom:8px}
+.quiz-box .q-text{font-size:0.95rem;line-height:1.4;margin-bottom:14px}
+.quiz-opt{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:6px;font-size:0.88rem;width:100%;text-align:left;transition:all 0.15s;cursor:pointer}
+.quiz-opt:active{transform:scale(0.98)}
+.quiz-opt.correct{background:rgba(63,185,80,0.15);border-color:var(--success);color:var(--success)}
+.quiz-opt.wrong{background:rgba(248,81,73,0.15);border-color:var(--danger);color:var(--danger)}
+.score-strip{display:flex;align-items:center;justify-content:space-between;background:var(--input);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.score-strip .label{font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.score-strip .val{font-size:1.6rem;font-weight:700;color:var(--accent)}
+.empty-state{text-align:center;padding:24px 16px;color:var(--muted);font-size:0.85rem}
+.empty-state .ico{font-size:2rem;margin-bottom:8px;opacity:0.5}
+@media (orientation:landscape) and (max-height:500px){:root{--header-h:40px;--nav-h:48px}.panel{max-height:80vh}}
+@media (min-width:600px){.prim-grid{grid-template-columns:repeat(5,1fr)}}
 </style>
 </head>
 <body>
 <div class="app">
+<header class="header">
+<div><div class="title">PERSPECTIVE STUDIO</div><div class="subtitle">Baryshnikov Method</div></div>
+<div class="mode-badge" id="modeBadge">1-POINT</div>
+</header>
 
-    <header class="header">
-        <div>
-            <div class="title">PERSPECTIVE STUDIO</div>
-            <div class="subtitle">Baryshnikov Method</div>
-        </div>
-        <div class="mode-badge" id="modeBadge">1-POINT</div>
-    </header>
+<div class="stage">
+<canvas id="canvas"></canvas>
+<div class="hud">
+<div class="hud-chip">Objects: <strong id="objCount">0</strong></div>
+<div class="hud-chip">Alt: <strong id="altDisplay">35°</strong></div>
+</div>
+<div class="selection-indicator" id="selIndicator">Selected: <span id="selName">—</span></div>
+<div class="gesture-hint" id="gestureHint">1-finger orbit · 2-finger zoom/pan</div>
+<button class="fab" id="fabAdd" aria-label="Add object">+</button>
+</div>
 
-    <div class="stage">
-        <canvas id="canvas"></canvas>
+<nav class="bottom-nav">
+<button class="nav-btn active" data-panel="scene"><span class="icon">▣</span><span>Scene</span></button>
+<button class="nav-btn" data-panel="transform"><span class="icon">⬡</span><span>Transform</span></button>
+<button class="nav-btn" data-panel="light"><span class="icon">☀</span><span>Light</span></button>
+<button class="nav-btn" data-panel="guides"><span class="icon">⊞</span><span>Guides</span></button>
+<button class="nav-btn" data-panel="learn"><span class="icon">📚</span><span>Learn</span></button>
+</nav>
 
-        <div class="hud">
-            <div class="hud-chip">Objects: <strong id="objCount">0</strong></div>
-            <div class="hud-chip">Alt: <strong id="altDisplay">35°</strong></div>
-        </div>
+<section class="panel" id="panel-scene">
+<div class="panel-handle"></div>
+<div class="panel-header"><h3>Scene</h3><button class="panel-close" data-close="scene">×</button></div>
+<h3>Add Primitive</h3>
+<div class="prim-grid">
+<button class="prim-btn" data-prim="cube"><span class="ico">▣</span>Cube</button>
+<button class="prim-btn" data-prim="sphere"><span class="ico">●</span>Sphere</button>
+<button class="prim-btn" data-prim="cylinder"><span class="ico">◯</span>Cylinder</button>
+<button class="prim-btn" data-prim="pyramid"><span class="ico">▲</span>Pyramid</button>
+<button class="prim-btn" data-prim="prism"><span class="ico">◆</span>Prism</button>
+</div>
+<h3>Scene Objects</h3>
+<div class="obj-list" id="objList"></div>
+<div class="empty-state" id="emptyState"><div class="ico">▣</div>Tap a primitive above to add it</div>
+<div class="btn-row">
+<button class="btn" id="saveBtn">💾 Save</button>
+<button class="btn" id="loadBtn">📂 Load</button>
+<button class="btn danger" id="resetBtn">Reset</button>
+</div>
+<input type="file" id="fileIn" style="display:none" accept=".json">
+</section>
 
-        <div class="gesture-hint" id="gestureHint">1-finger orbit · 2-finger zoom/pan</div>
+<section class="panel" id="panel-transform">
+<div class="panel-handle"></div>
+<div class="panel-header"><h3>Transform</h3><button class="panel-close" data-close="transform">×</button></div>
+<div id="transformContent"><div class="empty-state"><div class="ico">⬡</div>Select an object to edit</div></div>
+</section>
 
-        <button class="fab" id="fabAdd" aria-label="Add object">+</button>
-    </div>
+<section class="panel" id="panel-light">
+<div class="panel-handle"></div>
+<div class="panel-header"><h3>Light & Shadows</h3><button class="panel-close" data-close="light">×</button></div>
+<div class="slider"><div class="row"><span>Azimuth</span><span id="azVal">45°</span></div><input type="range" min="0" max="360" value="45" id="azimuth"></div>
+<div class="slider"><div class="row"><span>Altitude</span><span id="altVal">35°</span></div><input type="range" min="5" max="85" value="35" id="altitude"></div>
+<div class="toggle-row"><span>Facet Shading</span><label class="switch"><input type="checkbox" id="facetToggle" checked><span class="slider-sw"></span></label></div>
+<div class="toggle-row"><span>Cast Shadows</span><label class="switch"><input type="checkbox" id="shadowToggle" checked><span class="slider-sw"></span></label></div>
+<div class="toggle-row"><span>Wireframe Overlay</span><label class="switch"><input type="checkbox" id="wireframeToggle"><span class="slider-sw"></span></label></div>
+</section>
 
-    <nav class="bottom-nav">
-        <button class="nav-btn active" data-panel="scene">
-            <span class="icon">▣</span><span>Scene</span>
-        </button>
-        <button class="nav-btn" data-panel="transform">
-            <span class="icon">⬡</span><span>Transform</span>
-        </button>
-        <button class="nav-btn" data-panel="light">
-            <span class="icon">☀</span><span>Light</span>
-        </button>
-        <button class="nav-btn" data-panel="guides">
-            <span class="icon">⊞</span><span>Guides</span>
-        </button>
-        <button class="nav-btn" data-panel="learn">
-            <span class="icon">📚</span><span>Learn</span>
-        </button>
-    </nav>
+<section class="panel" id="panel-guides">
+<div class="panel-handle"></div>
+<div class="panel-header"><h3>Guides</h3><button class="panel-close" data-close="guides">×</button></div>
+<h3>Perspective Mode</h3>
+<div class="seg-control" id="modeCtrl">
+<button class="active" data-mode="1">1-Point</button>
+<button data-mode="2">2-Point</button>
+<button data-mode="3">3-Point</button>
+</div>
+<h3>🖼️ Canvas Frame</h3>
+<div class="frame-picker" id="framePicker">
+<div class="frame-opt" data-style="none"><div class="preview"></div><span>None</span></div>
+<div class="frame-opt active" data-style="wood"><div class="preview"></div><span>Classic</span></div>
+<div class="frame-opt" data-style="mat"><div class="preview"></div><span>Gallery</span></div>
+<div class="frame-opt" data-style="modern"><div class="preview"></div><span>Modern</span></div>
+</div>
+<div class="slider"><div class="row"><span>Frame Thickness</span><span id="frameThickVal">24</span></div><input type="range" min="8" max="60" value="24" id="frameThick"></div>
+<h3>Aspect Ratio</h3>
+<div class="ratio-grid" id="ratioGrid">
+<button class="ratio-btn active" data-ratio="free">Free</button>
+<button class="ratio-btn" data-ratio="1:1">1:1</button>
+<button class="ratio-btn" data-ratio="4:3">4:3</button>
+<button class="ratio-btn" data-ratio="3:2">3:2</button>
+<button class="ratio-btn" data-ratio="16:9">16:9</button>
+<button class="ratio-btn" data-ratio="phi">φ 1.618</button>
+</div>
+<h3>Composition Guides</h3>
+<div class="toggle-row"><span>Rule of Thirds</span><label class="switch"><input type="checkbox" id="thirdsToggle"><span class="slider-sw"></span></label></div>
+<div class="toggle-row"><span>Golden Ratio</span><label class="switch"><input type="checkbox" id="goldenToggle"><span class="slider-sw"></span></label></div>
+<div class="toggle-row"><span>Center Crosshair</span><label class="switch"><input type="checkbox" id="crossToggle"><span class="slider-sw"></span></label></div>
+<h3 style="margin-top:18px;">Construction Guides</h3>
+<div class="toggle-row"><span>Vanishing Points</span><label class="switch"><input type="checkbox" data-guide="vps" checked><span class="slider-sw"></span></label></div>
+<div class="toggle-row"><span>Ground Grid</span><label class="switch"><input type="checkbox" data-guide="grid" checked><span class="slider-sw"></span></label></div>
+<div class="toggle-row"><span>Distance Points D1/D2</span><label class="switch"><input type="checkbox" data-guide="dist"><span class="slider-sw"></span></label></div>
+</section>
 
-    <!-- SCENE PANEL -->
-    <section class="panel" id="panel-scene">
-        <div class="panel-handle"></div>
-        <h3>Add Primitive</h3>
-        <div class="prim-grid">
-            <button class="prim-btn" data-prim="cube"><span class="ico">▣</span>Cube</button>
-            <button class="prim-btn" data-prim="sphere"><span class="ico">●</span>Sphere</button>
-            <button class="prim-btn" data-prim="cylinder"><span class="ico">◯</span>Cylinder</button>
-            <button class="prim-btn" data-prim="pyramid"><span class="ico">▲</span>Pyramid</button>
-            <button class="prim-btn" data-prim="prism"><span class="ico">◆</span>Prism</button>
-        </div>
-
-        <h3>Scene Objects</h3>
-        <div class="obj-list" id="objList"></div>
-        <div class="empty-state" id="emptyState">
-            <div class="ico">▣</div>
-            Tap + to add your first object
-        </div>
-
-        <div class="btn-row">
-            <button class="btn" onclick="saveJSON()">💾 Save</button>
-            <button class="btn" onclick="document.getElementById('fileIn').click()">📂 Load</button>
-            <button class="btn danger" onclick="resetScene()">Reset</button>
-        </div>
-        <input type="file" id="fileIn" style="display:none" accept=".json" onchange="loadJSON(event)">
-    </section>
-
-    <!-- TRANSFORM PANEL -->
-    <section class="panel" id="panel-transform">
-        <div class="panel-handle"></div>
-        <h3>Selected Object</h3>
-        <div id="transformContent">
-            <div class="empty-state">
-                <div class="ico">⬡</div>
-                Select an object to edit its transform
-            </div>
-        </div>
-    </section>
-
-    <!-- LIGHT PANEL -->
-    <section class="panel" id="panel-light">
-        <div class="panel-handle"></div>
-        <h3>Sun & Shadows</h3>
-        <div class="slider">
-            <div class="row"><span>Azimuth</span><span id="azVal">45°</span></div>
-            <input type="range" min="0" max="360" value="45" id="azimuth">
-        </div>
-        <div class="slider">
-            <div class="row"><span>Altitude</span><span id="altVal">35°</span></div>
-            <input type="range" min="5" max="85" value="35" id="altitude">
-        </div>
-        <div class="toggle-row">
-            <span>Facet Shading</span>
-            <label class="switch"><input type="checkbox" id="facetToggle" checked><span class="slider-sw"></span></label>
-        </div>
-        <div class="toggle-row">
-            <span>Cast Shadows</span>
-            <label class="switch"><input type="checkbox" id="shadowToggle" checked><span class="slider-sw"></span></label>
-        </div>
-    </section>
-
-    <!-- GUIDES PANEL -->
-    <section class="panel" id="panel-guides">
-        <div class="panel-handle"></div>
-        <h3>Perspective Mode</h3>
-        <div class="seg-control" id="modeCtrl">
-            <button class="active" data-mode="1">1-Point</button>
-            <button data-mode="2">2-Point</button>
-            <button data-mode="3">3-Point</button>
-        </div>
-
-        <h3>🖼️ Canvas Frame</h3>
-        <div class="frame-picker" id="framePicker">
-            <div class="frame-opt" data-style="none">
-                <div class="preview" style="background:#0d1117"></div>
-                <span>None</span>
-            </div>
-            <div class="frame-opt active" data-style="wood">
-                <div class="preview"></div>
-                <span>Classic</span>
-            </div>
-            <div class="frame-opt" data-style="mat">
-                <div class="preview"></div>
-                <span>Gallery</span>
-            </div>
-            <div class="frame-opt" data-style="modern">
-                <div class="preview"></div>
-                <span>Modern</span>
-            </div>
-        </div>
-
-        <div class="slider">
-            <div class="row"><span>Frame Thickness</span><span id="frameThickVal">24</span></div>
-            <input type="range" min="8" max="60" value="24" id="frameThick">
-        </div>
-
-        <h3>Aspect Ratio</h3>
-        <div class="ratio-grid" id="ratioGrid">
-            <button class="ratio-btn active" data-ratio="free">Free</button>
-            <button class="ratio-btn" data-ratio="1:1">1:1</button>
-            <button class="ratio-btn" data-ratio="4:3">4:3</button>
-            <button class="ratio-btn" data-ratio="3:2">3:2</button>
-            <button class="ratio-btn" data-ratio="16:9">16:9</button>
-            <button class="ratio-btn" data-ratio="phi">φ 1.618</button>
-        </div>
-
-        <h3>Composition Guides</h3>
-        <div class="toggle-row">
-            <span>Rule of Thirds</span>
-            <label class="switch"><input type="checkbox" id="thirdsToggle"><span class="slider-sw"></span></label>
-        </div>
-        <div class="toggle-row">
-            <span>Golden Ratio</span>
-            <label class="switch"><input type="checkbox" id="goldenToggle"><span class="slider-sw"></span></label>
-        </div>
-        <div class="toggle-row">
-            <span>Center Crosshair</span>
-            <label class="switch"><input type="checkbox" id="crossToggle"><span class="slider-sw"></span></label>
-        </div>
-
-        <h3 style="margin-top:18px;">Construction Guides</h3>
-        <div class="toggle-row">
-            <span>Horizon Line</span>
-            <label class="switch"><input type="checkbox" data-guide="horizon" checked><span class="slider-sw"></span></label>
-        </div>
-        <div class="toggle-row">
-            <span>Vanishing Points</span>
-            <label class="switch"><input type="checkbox" data-guide="vps" checked><span class="slider-sw"></span></label>
-        </div>
-        <div class="toggle-row">
-            <span>Ground Grid</span>
-            <label class="switch"><input type="checkbox" data-guide="grid" checked><span class="slider-sw"></span></label>
-        </div>
-        <div class="toggle-row">
-            <span>Distance Points D1/D2</span>
-            <label class="switch"><input type="checkbox" data-guide="dist"><span class="slider-sw"></span></label>
-        </div>
-    </section>
-
-    <!-- LEARN PANEL -->
-    <section class="panel" id="panel-learn">
-        <div class="panel-handle"></div>
-        <h3>Baryshnikov Course</h3>
-
-        <div class="lesson-card">
-            <div class="num">Lesson 01</div>
-            <h4>The Picture Plane</h4>
-            <p>Imagine a transparent glass window between your eye and the scene. Everything you draw lives on this plane. The frame you see is your picture plane — the boundary of your canvas.</p>
-        </div>
-        <div class="lesson-card">
-            <div class="num">Lesson 02</div>
-            <h4>Build with simple forms</h4>
-            <p>Every complex scene is built from cubes, spheres, cylinders, pyramids and prisms. Master these, and you master everything.</p>
-        </div>
-        <div class="lesson-card">
-            <div class="num">Lesson 03</div>
-            <h4>Distance Points (D1/D2)</h4>
-            <p>Use D1 and D2 to measure true depth and construct accurate circles in perspective — a cornerstone of Baryshnikov's method.</p>
-        </div>
-
-        <h3 style="margin-top:18px;">Self-Evaluation Quiz</h3>
-        <div class="score-strip">
-            <span class="label">Score</span>
-            <span class="val"><span id="scoreVal">0</span> / 5</span>
-        </div>
-        <div class="quiz-box" id="quizBox"></div>
-    </section>
-
+<section class="panel" id="panel-learn">
+<div class="panel-handle"></div>
+<div class="panel-header"><h3>Learn</h3><button class="panel-close" data-close="learn">×</button></div>
+<h3>Baryshnikov Course</h3>
+<div class="lesson-card"><div class="num">Lesson 01</div><h4>The Picture Plane</h4><p>Imagine a transparent glass window between your eye and the scene. Everything you draw lives on this plane. The frame you see is your picture plane — the boundary of your canvas.</p></div>
+<div class="lesson-card"><div class="num">Lesson 02</div><h4>Build with simple forms</h4><p>Every complex scene is built from cubes, spheres, cylinders, pyramids and prisms. Master these, and you master everything.</p></div>
+<div class="lesson-card"><div class="num">Lesson 03</div><h4>Distance Points (D1/D2)</h4><p>Use D1 and D2 to measure true depth and construct accurate circles in perspective — a cornerstone of Baryshnikov's method.</p></div>
+<h3 style="margin-top:18px;">Self-Evaluation Quiz</h3>
+<div class="score-strip"><span class="label">Score</span><span class="val"><span id="scoreVal">0</span> / 5</span></div>
+<div class="quiz-box" id="quizBox"></div>
+</section>
 </div>
 
 <script>
-/* ================= STATE ================= */
-const state = {
-    mode: 1,
-    objects: [],
-    selected: -1,
-    azimuth: 45,
-    altitude: 35,
-    guides: { horizon: true, vps: true, grid: true, dist: false },
-    facetShading: true,
-    castShadows: true,
-    cam: { theta: 0.4, phi: 0.35, radius: 700 },
-    quiz: { current: 0, score: 0 },
-    // Frame state
-    frame: {
-        style: 'wood',       // none | wood | mat | modern
-        thickness: 24,
-        ratio: 'free',       // free | 1:1 | 4:3 | 3:2 | 16:9 | phi
-        thirds: false,
-        golden: false,
-        cross: false
-    }
+const state={mode:1,objects:[],selected:-1,azimuth:45,altitude:35,guides:{vps:true,grid:true,dist:false},facetShading:true,castShadows:true,wireframe:false,cam:{theta:0.3,phi:0.4,radius:400},quiz:{current:0,score:0},frame:{style:'wood',thickness:24,ratio:'free',thirds:false,golden:false,cross:false}};
+
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d');
+let W,H,cx,cy,focal=500;
+
+function resize(){
+const r=canvas.parentElement.getBoundingClientRect();
+W=r.width;H=r.height;
+canvas.width=W*devicePixelRatio;
+canvas.height=H*devicePixelRatio;
+canvas.style.width=W+'px';
+canvas.style.height=H+'px';
+ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+cx=W/2;cy=H/2;
+render();
+}
+window.addEventListener('resize',resize);
+window.addEventListener('orientationchange',()=>setTimeout(resize,100));
+
+function rotY(p,a){const c=Math.cos(a),s=Math.sin(a);return{x:p.x*c+p.z*s,y:p.y,z:-p.x*s+p.z*c}}
+function rotX(p,a){const c=Math.cos(a),s=Math.sin(a);return{x:p.x,y:p.y*c-p.z*s,z:p.y*s+p.z*c}}
+function sub(a,b){return{x:a.x-b.x,y:a.y-b.y,z:a.z-b.z}}
+function cross(a,b){return{x:a.y*b.z-a.z*b.y,y:a.z*b.x-a.x*b.z,z:a.x*b.y-a.y*b.x}}
+function norm(v){const l=Math.hypot(v.x,v.y,v.z)||1;return{x:v.x/l,y:v.y/l,z:v.z/l}}
+function dot(a,b){return a.x*b.x+a.y*b.y+a.z*b.z}
+
+function toCamera(p){let q=rotY(p,-state.cam.theta);q=rotX(q,-state.cam.phi);q.z+=state.cam.radius;return q}
+function project(p){const cam=toCamera(p);const z=Math.max(cam.z,1);const s=focal/z;return{x:cx+cam.x*s,y:cy-cam.y*s,scale:s,z:z,cam:cam}}
+
+function makeCube(){const s=50;const v=[{x:-s,y:-s,z:-s},{x:s,y:-s,z:-s},{x:s,y:s,z:-s},{x:-s,y:s,z:-s},{x:-s,y:-s,z:s},{x:s,y:-s,z:s},{x:s,y:s,z:s},{x:-s,y:s,z:s}];const f=[[0,1,2,3],[4,5,6,7],[1,5,6,2],[0,3,7,4],[3,2,6,7],[0,4,5,1]];return{vertices:v,faces:f}}
+function makePyramid(){const s=50,h=80;const v=[{x:-s,y:-s,z:-s},{x:s,y:-s,z:-s},{x:s,y:-s,z:s},{x:-s,y:-s,z:s},{x:0,y:h,z:0}];const f=[[0,1,2,3],[0,1,4],[1,2,4],[2,3,4],[3,0,4]];return{vertices:v,faces:f}}
+function makePrism(){const s=50,h=80;const v=[{x:-s,y:-s,z:-s},{x:s,y:-s,z:-s},{x:0,y:-s,z:s},{x:-s,y:h,z:-s},{x:s,y:h,z:-s},{x:0,y:h,z:s}];const f=[[0,1,2],[3,4,5],[0,1,4,3],[1,2,5,4],[2,0,3,5]];return{vertices:v,faces:f}}
+function makeCylinder(){const r=40,h=60,seg=16;const v=[];for(let i=0;i<seg;i++){const a=(i/seg)*Math.PI*2;v.push({x:Math.cos(a)*r,y:-h,z:Math.sin(a)*r})}for(let i=0;i<seg;i++){const a=(i/seg)*Math.PI*2;v.push({x:Math.cos(a)*r,y:h,z:Math.sin(a)*r})}const f=[];for(let i=0;i<seg;i++){const n=(i+1)%seg;f.push([i,n,n+seg,i+seg])}const top=[],bot=[];for(let i=0;i<seg;i++){top.push(i+seg);bot.push(i)}f.push(top);f.push(bot.reverse());return{vertices:v,faces:f}}
+function makeSphere(){const r=50,lat=10,lon=14;const v=[];for(let i=0;i<=lat;i++){const phi=(i/lat)*Math.PI;for(let j=0;j<lon;j++){const th=(j/lon)*Math.PI*2;v.push({x:r*Math.sin(phi)*Math.cos(th),y:r*Math.cos(phi),z:r*Math.sin(phi)*Math.sin(th)})}}const f=[];for(let i=0;i<lat;i++){for(let j=0;j<lon;j++){const n=(j+1)%lon;const a=i*lon+j,b=i*lon+n;const c=(i+1)*lon+j,d=(i+1)*lon+n;f.push([a,b,d,c])}}return{vertices:v,faces:f}}
+function getGeometry(t){return({cube:makeCube,sphere:makeSphere,pyramid:makePyramid,cylinder:makeCylinder,prism:makePrism})[t]()}
+
+function addObject(type){
+state.objects.push({id:Date.now()+Math.random(),type,geo:getGeometry(type),pos:{x:0,y:0,z:300},scale:1,rotY:0,color:[88,166,255]});
+state.selected=state.objects.length-1;
+refreshAll();
+}
+function deleteSelected(){
+if(state.selected<0)return;
+state.objects.splice(state.selected,1);
+state.selected=Math.min(state.selected,state.objects.length-1);
+refreshAll();
+}
+function resetScene(){
+if(!confirm('Clear all objects?'))return;
+state.objects=[];state.selected=-1;
+refreshAll();
+}
+function selectObject(i){
+state.selected=i;
+refreshAll();
+}
+function openTransformPanel(){
+document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.panel==='transform'));
+document.querySelectorAll('.panel').forEach(p=>p.classList.remove('open'));
+document.getElementById('panel-transform').classList.add('open');
+renderTransformPanel();
+}
+function closePanel(id){document.getElementById('panel-'+id).classList.remove('open')}
+
+function renderTransformPanel(){
+const c=document.getElementById('transformContent');
+if(state.selected<0){c.innerHTML='<div class="empty-state"><div class="ico">⬡</div>Select an object to edit</div>';return}
+const o=state.objects[state.selected];
+c.innerHTML=`
+<div class="slider"><div class="row"><span>Position X</span><span id="pxV">${o.pos.x|0}</span></div><input type="range" min="-400" max="400" value="${o.pos.x}" id="px"></div>
+<div class="slider"><div class="row"><span>Depth Z</span><span id="pzV">${o.pos.z|0}</span></div><input type="range" min="50" max="800" value="${o.pos.z}" id="pz"></div>
+<div class="slider"><div class="row"><span>Elevation Y</span><span id="pyV">${o.pos.y|0}</span></div><input type="range" min="-200" max="300" value="${o.pos.y}" id="py"></div>
+<div class="slider"><div class="row"><span>Scale</span><span id="scV">${o.scale.toFixed(1)}</span></div><input type="range" min="0.2" max="3" step="0.1" value="${o.scale}" id="sc"></div>
+<div class="slider"><div class="row"><span>Rotation</span><span id="ryV">${o.rotY|0}°</span></div><input type="range" min="0" max="360" value="${o.rotY}" id="ry"></div>
+<div class="btn-row"><button class="btn" id="dupBtn">⎘ Duplicate</button><button class="btn danger" id="delBtn">✕ Delete</button></div>`;
+['px','pz','py','sc','ry'].forEach(id=>{
+document.getElementById(id).oninput=(e)=>{
+const o=state.objects[state.selected];const v=+e.target.value;
+if(id==='px')o.pos.x=v;if(id==='pz')o.pos.z=v;if(id==='py')o.pos.y=v;if(id==='sc')o.scale=v;if(id==='ry')o.rotY=v;
+document.getElementById(id+'V').textContent=id==='sc'?v.toFixed(1):id==='ry'?v+'°':v|0;
+render();
+};
+});
+document.getElementById('dupBtn').onclick=duplicateSelected;
+document.getElementById('delBtn').onclick=deleteSelected;
+}
+function duplicateSelected(){
+if(state.selected<0)return;
+const src=state.objects[state.selected];
+state.objects.push({...src,id:Date.now()+Math.random(),geo:getGeometry(src.type),pos:{...src.pos,x:src.pos.x+60}});
+state.selected=state.objects.length-1;
+refreshAll();
+}
+
+function getSunVec(){const az=state.azimuth*Math.PI/180;const alt=state.altitude*Math.PI/180;return norm({x:Math.cos(alt)*Math.sin(az),y:Math.sin(alt),z:Math.cos(alt)*Math.cos(az)})}
+function transformVert(v,o){let p={x:v.x*o.scale,y:v.y*o.scale,z:v.z*o.scale};p=rotY(p,o.rotY*Math.PI/180);return{x:p.x+o.pos.x,y:p.y+o.pos.y,z:p.z+o.pos.z}}
+
+function getFrameRect(){
+const t=state.frame.thickness;let fw=W-t*2;let fh=H-t*2;
+const ratio=state.frame.ratio;
+if(ratio!=='free'){
+let r;if(ratio==='1:1')r=1;else if(ratio==='4:3')r=4/3;else if(ratio==='3:2')r=3/2;else if(ratio==='16:9')r=16/9;else if(ratio==='phi')r=1.618;
+const currentR=fw/fh;
+if(currentR>r)fw=fh*r;else fh=fw/r;
+}
+return{x:(W-fw)/2,y:(H-fh)/2,w:fw,h:fh};
+}
+
+function render(){
+ctx.clearRect(0,0,W,H);
+ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+const fr=getFrameRect();
+const hasFrame=state.frame.style!=='none';
+if(hasFrame){
+ctx.fillStyle='rgba(0,0,0,0.4)';
+ctx.fillRect(0,0,W,fr.y);
+ctx.fillRect(0,fr.y+fr.h,W,H-fr.y-fr.h);
+ctx.fillRect(0,fr.y,fr.x,fr.h);
+ctx.fillRect(fr.x+fr.w,fr.y,W-fr.x-fr.w,fr.h);
+ctx.save();ctx.beginPath();ctx.rect(fr.x,fr.y,fr.w,fr.h);ctx.clip();
+}
+drawGrid();
+drawHorizon();
+drawVanishingPoints();
+const sun=getSunVec();
+const allFaces=[];
+state.objects.forEach((obj,oi)=>{
+const wv=obj.geo.vertices.map(v=>transformVert(v,obj));
+const pv=wv.map(v=>project(v));
+obj.geo.faces.forEach(face=>{
+const wf=face.map(i=>wv[i]);const pf=face.map(i=>pv[i]);
+const n=norm(cross(sub(wf[1],wf[0]),sub(wf[2],wf[0])));
+const avgZ=wf.reduce((s,v)=>s+toCamera(v).z,0)/wf.length;
+allFaces.push({proj:pf,world:wf,normal:n,avgZ,oi,color:obj.color});
+});
+});
+if(state.castShadows)drawShadows(allFaces,sun);
+allFaces.sort((a,b)=>b.avgZ-a.avgZ);
+allFaces.forEach(f=>drawFace(f,sun));
+if(state.selected>=0)drawSelection(state.objects[state.selected]);
+drawSunMarker(sun);
+if(hasFrame){
+if(state.frame.thirds)drawThirds(fr);
+if(state.frame.golden)drawGolden(fr);
+if(state.frame.cross)drawCrosshair(fr);
+}
+if(hasFrame)ctx.restore();
+if(hasFrame)drawFrame(fr);
+updateSelectionIndicator();
+}
+
+function drawFace(f,sun){
+const pts=f.proj;if(pts.length<3)return;
+let area=0;
+for(let i=0;i<pts.length;i++){const j=(i+1)%pts.length;area+=pts[i].x*pts[j].y-pts[j].x*pts[i].y}
+if(area>0)return;
+let intensity=0.5;
+if(state.facetShading){const d=Math.abs(dot(f.normal,sun));intensity=0.3+d*0.7}
+const[r,g,b]=f.color;
+ctx.fillStyle=`rgb(${r*intensity|0},${g*intensity|0},${b*intensity|0})`;
+ctx.strokeStyle='rgba(0,0,0,0.5)';ctx.lineWidth=1;
+ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);
+for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i].x,pts[i].y);
+ctx.closePath();ctx.fill();ctx.stroke();
+if(state.wireframe){
+ctx.strokeStyle='rgba(255,255,255,0.3)';ctx.lineWidth=0.5;
+ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);
+for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i].x,pts[i].y);
+ctx.closePath();ctx.stroke();
+}
+}
+
+function drawShadows(allFaces,sun){
+const byObj={};
+allFaces.forEach(f=>{(byObj[f.oi]=byObj[f.oi]||[]).push(f)});
+ctx.fillStyle='rgba(0,0,0,0.35)';
+const L={x:-sun.x,y:-sun.y,z:-sun.z};
+Object.values(byObj).forEach(faces=>{
+const seen=new Set();const verts=[];
+faces.forEach(f=>f.world.forEach(v=>{const k=v.x.toFixed(1)+','+v.y.toFixed(1)+','+v.z.toFixed(1);if(!seen.has(k)){seen.add(k);verts.push(v)}}));
+const gp=verts.map(v=>{if(L.y>=0)return null;const t=-v.y/L.y;if(t<0)return null;return project({x:v.x+L.x*t,y:0,z:v.z+L.z*t})}).filter(p=>p);
+if(gp.length<3)return;
+const cxp=gp.reduce((s,p)=>s+p.x,0)/gp.length;
+const cyp=gp.reduce((s,p)=>s+p.y,0)/gp.length;
+gp.sort((a,b)=>Math.atan2(a.y-cyp,a.x-cxp)-Math.atan2(b.y-cyp,b.x-cxp));
+ctx.beginPath();ctx.moveTo(gp[0].x,gp[0].y);
+for(let i=1;i<gp.length;i++)ctx.lineTo(gp[i].x,gp[i].y);
+ctx.closePath();ctx.fill();
+});
+}
+
+function drawSelection(obj){
+const wv=obj.geo.vertices.map(v=>transformVert(v,obj));
+const pv=wv.map(v=>project(v));
+ctx.shadowColor='#ffdc32';
+ctx.shadowBlur=12;
+ctx.strokeStyle='#ffdc32';
+ctx.lineWidth=3;
+ctx.setLineDash([8,4]);
+obj.geo.faces.forEach(face=>{
+ctx.beginPath();
+face.forEach((vi,i)=>{if(i===0)ctx.moveTo(pv[vi].x,pv[vi].y);else ctx.lineTo(pv[vi].x,pv[vi].y)});
+ctx.closePath();
+ctx.stroke();
+});
+ctx.shadowBlur=0;
+ctx.setLineDash([]);
+ctx.strokeStyle='rgba(255,255,255,0.9)';
+ctx.lineWidth=1;
+ctx.setLineDash([8,4]);
+obj.geo.faces.forEach(face=>{
+ctx.beginPath();
+face.forEach((vi,i)=>{if(i===0)ctx.moveTo(pv[vi].x,pv[vi].y);else ctx.lineTo(pv[vi].x,pv[vi].y)});
+ctx.closePath();
+ctx.stroke();
+});
+ctx.setLineDash([]);
+ctx.fillStyle='#ffdc32';
+pv.forEach(p=>{
+ctx.beginPath();
+ctx.arc(p.x,p.y,3,0,Math.PI*2);
+ctx.fill();
+});
+}
+
+function drawSunMarker(sun){
+const sunPos={x:sun.x*500,y:Math.abs(sun.y)*500+100,z:sun.z*500};
+const p=project(sunPos);if(p.z<10)return;
+const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,24);
+g.addColorStop(0,'rgba(255,220,50,0.9)');g.addColorStop(1,'rgba(255,220,50,0)');
+ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,24,0,Math.PI*2);ctx.fill();
+ctx.fillStyle='#ffdc32';ctx.beginPath();ctx.arc(p.x,p.y,7,0,Math.PI*2);ctx.fill();
+}
+
+function drawFrame(fr){
+const t=state.frame.thickness;const style=state.frame.style;
+if(style==='wood'){
+ctx.shadowColor='rgba(0,0,0,0.6)';ctx.shadowBlur=20;ctx.shadowOffsetY=8;
+ctx.fillStyle='#3a2416';ctx.fillRect(fr.x-2,fr.y-2,fr.w+4,fr.h+4);
+ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+const grad=ctx.createLinearGradient(fr.x-t,fr.y-t,fr.x+fr.w+t,fr.y+fr.h+t);
+grad.addColorStop(0,'#8b5a2b');grad.addColorStop(0.3,'#a0703d');grad.addColorStop(0.5,'#6b4423');grad.addColorStop(0.7,'#a0703d');grad.addColorStop(1,'#5c3a1e');
+ctx.fillStyle=grad;
+ctx.beginPath();ctx.moveTo(fr.x-t,fr.y-t);ctx.lineTo(fr.x+fr.w+t,fr.y-t);ctx.lineTo(fr.x+fr.w,fr.y);ctx.lineTo(fr.x,fr.y);ctx.closePath();ctx.fill();
+ctx.beginPath();ctx.moveTo(fr.x,fr.y+fr.h);ctx.lineTo(fr.x+fr.w,fr.y+fr.h);ctx.lineTo(fr.x+fr.w+t,fr.y+fr.h+t);ctx.lineTo(fr.x-t,fr.y+fr.h+t);ctx.closePath();ctx.fill();
+ctx.beginPath();ctx.moveTo(fr.x-t,fr.y-t);ctx.lineTo(fr.x,fr.y);ctx.lineTo(fr.x,fr.y+fr.h);ctx.lineTo(fr.x-t,fr.y+fr.h+t);ctx.closePath();ctx.fill();
+ctx.beginPath();ctx.moveTo(fr.x+fr.w,fr.y);ctx.lineTo(fr.x+fr.w+t,fr.y-t);ctx.lineTo(fr.x+fr.w+t,fr.y+fr.h+t);ctx.lineTo(fr.x+fr.w,fr.y+fr.h);ctx.closePath();ctx.fill();
+ctx.strokeStyle='rgba(255,220,150,0.4)';ctx.lineWidth=1.5;ctx.strokeRect(fr.x-0.5,fr.y-0.5,fr.w+1,fr.h+1);
+ctx.strokeStyle='rgba(0,0,0,0.6)';ctx.lineWidth=1;ctx.strokeRect(fr.x-t,fr.y-t,fr.w+t*2,fr.h+t*2);
+}else if(style==='mat'){
+ctx.shadowColor='rgba(0,0,0,0.5)';ctx.shadowBlur=15;ctx.shadowOffsetY=5;
+ctx.fillStyle='#1a1a1a';ctx.fillRect(fr.x-t,fr.y-t,fr.w+t*2,fr.h+t*2);
+ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+const matInset=Math.max(4,t*0.6);
+ctx.fillStyle='#f5f1e8';ctx.fillRect(fr.x-matInset,fr.y-matInset,fr.w+matInset*2,fr.h+matInset*2);
+ctx.strokeStyle='rgba(0,0,0,0.15)';ctx.lineWidth=1;ctx.strokeRect(fr.x-0.5,fr.y-0.5,fr.w+1,fr.h+1);
+}else if(style==='modern'){
+ctx.shadowColor='rgba(0,0,0,0.4)';ctx.shadowBlur=10;ctx.shadowOffsetY=3;
+ctx.fillStyle='#0d1117';ctx.fillRect(fr.x-t,fr.y-t,fr.w+t*2,fr.h+t*2);
+ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+ctx.strokeStyle='#e6edf3';ctx.lineWidth=1.5;ctx.strokeRect(fr.x-0.5,fr.y-0.5,fr.w+1,fr.h+1);
+ctx.strokeStyle='rgba(230,237,243,0.2)';ctx.lineWidth=1;ctx.strokeRect(fr.x-t+0.5,fr.y-t+0.5,fr.w+t*2-1,fr.h+t*2-1);
+}
+}
+
+function drawThirds(fr){
+ctx.strokeStyle='rgba(255,220,50,0.4)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+for(let i=1;i<3;i++){
+const x=fr.x+(fr.w*i/3);ctx.beginPath();ctx.moveTo(x,fr.y);ctx.lineTo(x,fr.y+fr.h);ctx.stroke();
+const y=fr.y+(fr.h*i/3);ctx.beginPath();ctx.moveTo(fr.x,y);ctx.lineTo(fr.x+fr.w,y);ctx.stroke();
+}
+ctx.setLineDash([]);
+ctx.fillStyle='rgba(255,220,50,0.7)';
+for(let i=1;i<3;i++){for(let j=1;j<3;j++){const x=fr.x+(fr.w*i/3);const y=fr.y+(fr.h*j/3);ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fill()}}
+}
+
+function drawGolden(fr){
+ctx.strokeStyle='rgba(212,153,34,0.5)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+const inv=1/1.618;
+const x1=fr.x+fr.w*inv;const x2=fr.x+fr.w*(1-inv);
+ctx.beginPath();ctx.moveTo(x1,fr.y);ctx.lineTo(x1,fr.y+fr.h);ctx.moveTo(x2,fr.y);ctx.lineTo(x2,fr.y+fr.h);
+const y1=fr.y+fr.h*inv;const y2=fr.y+fr.h*(1-inv);
+ctx.moveTo(fr.x,y1);ctx.lineTo(fr.x+fr.w,y1);ctx.moveTo(fr.x,y2);ctx.lineTo(fr.x+fr.w,y2);
+ctx.stroke();ctx.setLineDash([]);
+}
+
+function drawCrosshair(fr){
+ctx.strokeStyle='rgba(248,81,73,0.6)';ctx.lineWidth=1;ctx.setLineDash([2,4]);
+const cx_=fr.x+fr.w/2;const cy_=fr.y+fr.h/2;
+ctx.beginPath();ctx.moveTo(cx_,fr.y);ctx.lineTo(cx_,fr.y+fr.h);ctx.moveTo(fr.x,cy_);ctx.lineTo(fr.x+fr.w,cy_);
+ctx.stroke();ctx.setLineDash([]);
+ctx.fillStyle='rgba(248,81,73,0.8)';ctx.beginPath();ctx.arc(cx_,cy_,3,0,Math.PI*2);ctx.fill();
+}
+
+function drawGrid(){
+if(!state.guides.grid)return;
+ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;
+const step=80,range=5;
+for(let i=-range;i<=range;i++){
+const a=project({x:i*step,y:0,z:-range*step});const b=project({x:i*step,y:0,z:range*step});
+ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+const c=project({x:-range*step,y:0,z:i*step});const d=project({x:range*step,y:0,z:i*step});
+ctx.beginPath();ctx.moveTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.stroke();
+}
+}
+
+function drawHorizon(){
+ctx.strokeStyle='rgba(248,81,73,0.8)';ctx.lineWidth=1.5;ctx.setLineDash([6,4]);
+ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke();
+ctx.setLineDash([]);
+ctx.fillStyle='rgba(248,81,73,0.9)';
+ctx.font='bold 10px sans-serif';
+ctx.fillText('HORIZON',10,cy-6);
+}
+
+function drawVanishingPoints(){
+if(!state.guides.vps)return;
+const far=5000;const vps=[];
+if(state.mode===1)vps.push(project({x:0,y:0,z:far}));
+else{vps.push(project({x:-far,y:0,z:far}));vps.push(project({x:far,y:0,z:far}));if(state.mode===3)vps.push(project({x:0,y:far,z:0}))}
+vps.forEach((p,i)=>{
+if(p.x<-50||p.x>W+50||p.y<-50||p.y>H+50)return;
+ctx.fillStyle='#58a6ff';ctx.beginPath();ctx.arc(p.x,p.y,6,0,Math.PI*2);ctx.fill();
+ctx.strokeStyle='white';ctx.lineWidth=1.5;ctx.stroke();
+ctx.fillStyle='white';ctx.font='bold 10px sans-serif';ctx.fillText('VP'+(i+1),p.x+10,p.y-10);
+});
+if(state.guides.dist){
+const d1=project({x:-state.cam.radius,y:0,z:0});const d2=project({x:state.cam.radius,y:0,z:0});
+[d1,d2].forEach((p,i)=>{
+if(p.x<-50||p.x>W+50)return;
+ctx.fillStyle='#d29922';ctx.beginPath();ctx.arc(p.x,p.y,5,0,Math.PI*2);ctx.fill();
+ctx.fillStyle='white';ctx.font='bold 10px sans-serif';ctx.fillText('D'+(i+1),p.x+8,p.y-8);
+});
+}
+}
+
+let touches={};let lastPinchDist=0;let lastPinchCenter=null;
+canvas.addEventListener('touchstart',(e)=>{
+e.preventDefault();
+for(const t of e.changedTouches)touches[t.identifier]={x:t.clientX,y:t.clientY};
+if(e.touches.length===2){const[a,b]=[e.touches[0],e.touches[1]];lastPinchDist=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);lastPinchCenter={x:(a.clientX+b.clientX)/2,y:(a.clientY+b.clientY)/2}}
+},{passive:false});
+canvas.addEventListener('touchmove',(e)=>{
+e.preventDefault();
+if(e.touches.length===1){
+const t=e.touches[0];const prev=touches[t.identifier];
+if(prev){const dx=t.clientX-prev.x;const dy=t.clientY-prev.y;state.cam.theta-=dx*0.008;state.cam.phi=Math.max(-1.2,Math.min(1.2,state.cam.phi-dy*0.008));render()}
+touches[t.identifier]={x:t.clientX,y:t.clientY};
+}else if(e.touches.length===2){
+const[a,b]=[e.touches[0],e.touches[1]];
+const dist=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+const center={x:(a.clientX+b.clientX)/2,y:(a.clientY+b.clientY)/2};
+if(lastPinchDist>0){const ratio=lastPinchDist/dist;state.cam.radius=Math.max(200,Math.min(2000,state.cam.radius*ratio))}
+if(lastPinchCenter){const dx=center.x-lastPinchCenter.x;const dy=center.y-lastPinchCenter.y;state.objects.forEach(o=>{o.pos.x-=dx*1.5;o.pos.z-=dy*1.5})}
+lastPinchDist=dist;lastPinchCenter=center;render();
+}
+},{passive:false});
+canvas.addEventListener('touchend',(e)=>{
+for(const t of e.changedTouches)delete touches[t.identifier];
+if(e.touches.length<2){lastPinchDist=0;lastPinchCenter=null}
+});
+
+let mouseDown=false,lastMouse=null;
+canvas.addEventListener('mousedown',(e)=>{mouseDown=true;lastMouse={x:e.clientX,y:e.clientY}});
+canvas.addEventListener('mousemove',(e)=>{
+if(!mouseDown)return;
+const dx=e.clientX-lastMouse.x;const dy=e.clientY-lastMouse.y;
+state.cam.theta-=dx*0.008;state.cam.phi=Math.max(-1.2,Math.min(1.2,state.cam.phi-dy*0.008));
+lastMouse={x:e.clientX,y:e.clientY};render();
+});
+canvas.addEventListener('mouseup',()=>mouseDown=false);
+canvas.addEventListener('wheel',(e)=>{e.preventDefault();state.cam.radius=Math.max(200,Math.min(2000,state.cam.radius+e.deltaY*0.8));render()},{passive:false});
+
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+btn.onclick=()=>{
+const id=btn.dataset.panel;
+document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b===btn));
+document.querySelectorAll('.panel').forEach(p=>p.classList.remove('open'));
+const panel=document.getElementById('panel-'+id);
+if(panel){panel.classList.add('open');if(id==='transform')renderTransformPanel()}
+};
+});
+
+document.querySelectorAll('.panel-close').forEach(btn=>{
+btn.onclick=(e)=>{e.stopPropagation();closePanel(btn.dataset.close)};
+});
+
+document.getElementById('fabAdd').onclick=()=>{
+document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.panel==='scene'));
+document.querySelectorAll('.panel').forEach(p=>p.classList.remove('open'));
+document.getElementById('panel-scene').classList.add('open');
 };
 
-/* ================= CANVAS ================= */
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-let W, H, cx, cy, focal = 500;
-
-function resize() {
-    const r = canvas.parentElement.getBoundingClientRect();
-    W = r.width; H = r.height;
-    canvas.width = W * devicePixelRatio;
-    canvas.height = H * devicePixelRatio;
-    canvas.style.width = W + 'px';
-    canvas.style.height = H + 'px';
-    ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
-    cx = W / 2; cy = H / 2;
-    render();
-}
-window.addEventListener('resize', resize);
-window.addEventListener('orientationchange', () => setTimeout(resize, 100));
-
-/* ================= 3D MATH ================= */
-function rotY(p, a) {
-    const c = Math.cos(a), s = Math.sin(a);
-    return { x: p.x*c + p.z*s, y: p.y, z: -p.x*s + p.z*c };
-}
-function rotX(p, a) {
-    const c = Math.cos(a), s = Math.sin(a);
-    return { x: p.x, y: p.y*c - p.z*s, z: p.y*s + p.z*c };
-}
-function sub(a, b) { return { x: a.x-b.x, y: a.y-b.y, z: a.z-b.z }; }
-function cross(a, b) {
-    return { x: a.y*b.z - a.z*b.y, y: a.z*b.x - a.x*b.z, z: a.x*b.y - a.y*b.x };
-}
-function norm(v) {
-    const l = Math.hypot(v.x, v.y, v.z) || 1;
-    return { x: v.x/l, y: v.y/l, z: v.z/l };
-}
-function dot(a, b) { return a.x*b.x + a.y*b.y + a.z*b.z; }
-
-function toCamera(p) {
-    let q = rotY(p, -state.cam.theta);
-    q = rotX(q, -state.cam.phi);
-    q.z += state.cam.radius;
-    return q;
-}
-
-function project(p) {
-    const cam = toCamera(p);
-    const z = Math.max(cam.z, 1);
-    const s = focal / z;
-    return {
-        x: cx + cam.x * s,
-        y: cy - cam.y * s,
-        scale: s,
-        z: z,
-        cam: cam
-    };
-}
-
-/* ================= PRIMITIVES ================= */
-function makeCube() {
-    const s = 40;
-    const v = [
-        {x:-s,y:-s,z:-s},{x:s,y:-s,z:-s},{x:s,y:s,z:-s},{x:-s,y:s,z:-s},
-        {x:-s,y:-s,z:s},{x:s,y:-s,z:s},{x:s,y:s,z:s},{x:-s,y:s,z:s}
-    ];
-    const f = [[0,1,2,3],[4,5,6,7],[1,5,6,2],[0,3,7,4],[3,2,6,7],[0,4,5,1]];
-    return { vertices: v, faces: f };
-}
-function makePyramid() {
-    const s = 45, h = 70;
-    const v = [
-        {x:-s,y:-s,z:-s},{x:s,y:-s,z:-s},{x:s,y:-s,z:s},{x:-s,y:-s,z:s},
-        {x:0,y:h,z:0}
-    ];
-    const f = [[0,1,2,3],[0,1,4],[1,2,4],[2,3,4],[3,0,4]];
-    return { vertices: v, faces: f };
-}
-function makePrism() {
-    const s = 45, h = 70;
-    const v = [
-        {x:-s,y:-s,z:-s},{x:s,y:-s,z:-s},{x:0,y:-s,z:s},
-        {x:-s,y:h,z:-s},{x:s,y:h,z:-s},{x:0,y:h,z:s}
-    ];
-    const f = [[0,1,2],[3,4,5],[0,1,4,3],[1,2,5,4],[2,0,3,5]];
-    return { vertices: v, faces: f };
-}
-function makeCylinder() {
-    const r = 35, h = 50, seg = 16;
-    const v = [];
-    for (let i = 0; i < seg; i++) {
-        const a = (i/seg)*Math.PI*2;
-        v.push({ x: Math.cos(a)*r, y: -h, z: Math.sin(a)*r });
-    }
-    for (let i = 0; i < seg; i++) {
-        const a = (i/seg)*Math.PI*2;
-        v.push({ x: Math.cos(a)*r, y: h, z: Math.sin(a)*r });
-    }
-    const f = [];
-    for (let i = 0; i < seg; i++) {
-        const n = (i+1)%seg;
-        f.push([i, n, n+seg, i+seg]);
-    }
-    const top = [], bot = [];
-    for (let i = 0; i < seg; i++) { top.push(i+seg); bot.push(i); }
-    f.push(top); f.push(bot.reverse());
-    return { vertices: v, faces: f };
-}
-function makeSphere() {
-    const r = 45, lat = 8, lon = 12;
-    const v = [];
-    for (let i = 0; i <= lat; i++) {
-        const phi = (i/lat)*Math.PI;
-        for (let j = 0; j < lon; j++) {
-            const th = (j/lon)*Math.PI*2;
-            v.push({
-                x: r*Math.sin(phi)*Math.cos(th),
-                y: r*Math.cos(phi),
-                z: r*Math.sin(phi)*Math.sin(th)
-            });
-        }
-    }
-    const f = [];
-    for (let i = 0; i < lat; i++) {
-        for (let j = 0; j < lon; j++) {
-            const n = (j+1)%lon;
-            const a = i*lon+j, b = i*lon+n;
-            const c = (i+1)*lon+j, d = (i+1)*lon+n;
-            f.push([a, b, d, c]);
-        }
-    }
-    return { vertices: v, faces: f };
-}
-function getGeometry(t) {
-    return ({ cube: makeCube, sphere: makeSphere, pyramid: makePyramid, cylinder: makeCylinder, prism: makePrism })[t]();
-}
-
-/* ================= OBJECTS ================= */
-function addObject(type) {
-    state.objects.push({
-        id: Date.now() + Math.random(),
-        type, geo: getGeometry(type),
-        pos: { x: 0, y: 0, z: 200 },
-        scale: 1, rotY: 0,
-        color: [88, 166, 255]
-    });
-    state.selected = state.objects.length - 1;
-    refreshAll();
-}
-function deleteSelected() {
-    if (state.selected < 0) return;
-    state.objects.splice(state.selected, 1);
-    state.selected = Math.min(state.selected, state.objects.length - 1);
-    refreshAll();
-}
-function resetScene() {
-    if (!confirm('Clear all objects?')) return;
-    state.objects = [];
-    state.selected = -1;
-    refreshAll();
-}
-function selectObject(i) {
-    state.selected = i;
-    refreshAll();
-}
-
-/* ================= TRANSFORM UI ================= */
-function renderTransformPanel() {
-    const c = document.getElementById('transformContent');
-    if (state.selected < 0) {
-        c.innerHTML = '<div class="empty-state"><div class="ico">⬡</div>Select an object to edit</div>';
-        return;
-    }
-    const o = state.objects[state.selected];
-    c.innerHTML = `
-        <div class="slider">
-            <div class="row"><span>Position X</span><span id="pxV">${o.pos.x|0}</span></div>
-            <input type="range" min="-400" max="400" value="${o.pos.x}" id="px">
-        </div>
-        <div class="slider">
-            <div class="row"><span>Depth Z</span><span id="pzV">${o.pos.z|0}</span></div>
-            <input type="range" min="50" max="800" value="${o.pos.z}" id="pz">
-        </div>
-        <div class="slider">
-            <div class="row"><span>Elevation Y</span><span id="pyV">${o.pos.y|0}</span></div>
-            <input type="range" min="-200" max="300" value="${o.pos.y}" id="py">
-        </div>
-        <div class="slider">
-            <div class="row"><span>Scale</span><span id="scV">${o.scale.toFixed(1)}</span></div>
-            <input type="range" min="0.2" max="3" step="0.1" value="${o.scale}" id="sc">
-        </div>
-        <div class="slider">
-            <div class="row"><span>Rotation</span><span id="ryV">${o.rotY|0}°</span></div>
-            <input type="range" min="0" max="360" value="${o.rotY}" id="ry">
-        </div>
-        <div class="btn-row">
-            <button class="btn" onclick="duplicateSelected()">⎘ Duplicate</button>
-            <button class="btn danger" onclick="deleteSelected()">✕ Delete</button>
-        </div>
-    `;
-    ['px','pz','py','sc','ry'].forEach(id => {
-        document.getElementById(id).oninput = (e) => {
-            const o = state.objects[state.selected];
-            const v = +e.target.value;
-            if (id === 'px') o.pos.x = v;
-            if (id === 'pz') o.pos.z = v;
-            if (id === 'py') o.pos.y = v;
-            if (id === 'sc') o.scale = v;
-            if (id === 'ry') o.rotY = v;
-            document.getElementById(id+'V').textContent =
-                id === 'sc' ? v.toFixed(1) : id === 'ry' ? v+'°' : v|0;
-            render();
-        };
-    });
-}
-function duplicateSelected() {
-    if (state.selected < 0) return;
-    const src = state.objects[state.selected];
-    state.objects.push({
-        ...src, id: Date.now() + Math.random(),
-        geo: getGeometry(src.type),
-        pos: { ...src.pos, x: src.pos.x + 60 }
-    });
-    state.selected = state.objects.length - 1;
-    refreshAll();
-}
-
-/* ================= RENDERING ================= */
-function getSunVec() {
-    const az = state.azimuth * Math.PI/180;
-    const alt = state.altitude * Math.PI/180;
-    return norm({
-        x: Math.cos(alt)*Math.sin(az),
-        y: Math.sin(alt),
-        z: Math.cos(alt)*Math.cos(az)
-    });
-}
-function transformVert(v, o) {
-    let p = { x: v.x*o.scale, y: v.y*o.scale, z: v.z*o.scale };
-    p = rotY(p, o.rotY*Math.PI/180);
-    return { x: p.x+o.pos.x, y: p.y+o.pos.y, z: p.z+o.pos.z };
-}
-
-// Compute the picture-plane rectangle (in screen coords) based on aspect ratio
-function getFrameRect() {
-    const t = state.frame.thickness;
-    let fw = W - t * 2;
-    let fh = H - t * 2;
-    const ratio = state.frame.ratio;
-    if (ratio !== 'free') {
-        let r;
-        if (ratio === '1:1') r = 1;
-        else if (ratio === '4:3') r = 4/3;
-        else if (ratio === '3:2') r = 3/2;
-        else if (ratio === '16:9') r = 16/9;
-        else if (ratio === 'phi') r = 1.618;
-        const targetR = r;
-        const currentR = fw / fh;
-        if (currentR > targetR) {
-            fw = fh * targetR;
-        } else {
-            fh = fw / targetR;
-        }
-    }
-    const x = (W - fw) / 2;
-    const y = (H - fh) / 2;
-    return { x, y, w: fw, h: fh };
-}
-
-function render() {
-    ctx.clearRect(0, 0, W, H);
-    
-    // Background wall color (subtle)
-    ctx.fillStyle = '#0d1117';
-    ctx.fillRect(0, 0, W, H);
-    
-    // Clip to frame area if frame is active
-    const fr = getFrameRect();
-    const hasFrame = state.frame.style !== 'none';
-    
-    if (hasFrame) {
-        // Draw wall outside the frame (darker)
-        ctx.fillStyle = 'rgba(0,0,0,0.4)';
-        ctx.fillRect(0, 0, W, fr.y);
-        ctx.fillRect(0, fr.y + fr.h, W, H - fr.y - fr.h);
-        ctx.fillRect(0, fr.y, fr.x, fr.h);
-        ctx.fillRect(fr.x + fr.w, fr.y, W - fr.x - fr.w, fr.h);
-        
-        // Save and clip to frame rect
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(fr.x, fr.y, fr.w, fr.h);
-        ctx.clip();
-    }
-    
-    // Scene content
-    drawGrid();
-    drawHorizon();
-    drawVanishingPoints();
-
-    const sun = getSunVec();
-    const allFaces = [];
-
-    state.objects.forEach((obj, oi) => {
-        const wv = obj.geo.vertices.map(v => transformVert(v, obj));
-        const pv = wv.map(v => project(v));
-        obj.geo.faces.forEach(face => {
-            const wf = face.map(i => wv[i]);
-            const pf = face.map(i => pv[i]);
-            const n = norm(cross(sub(wf[1], wf[0]), sub(wf[2], wf[0])));
-            const avgZ = wf.reduce((s,v) => s + toCamera(v).z, 0) / wf.length;
-            allFaces.push({ proj: pf, world: wf, normal: n, avgZ, oi, color: obj.color });
-        });
-    });
-
-    if (state.castShadows) drawShadows(allFaces, sun);
-    allFaces.sort((a,b) => b.avgZ - a.avgZ);
-    allFaces.forEach(f => drawFace(f, sun));
-
-    if (state.selected >= 0) drawSelection(state.objects[state.selected]);
-    drawSunMarker(sun);
-    
-    // Composition guides (inside frame)
-    if (hasFrame) {
-        if (state.frame.thirds) drawThirds(fr);
-        if (state.frame.golden) drawGolden(fr);
-        if (state.frame.cross) drawCrosshair(fr);
-    }
-    
-    if (hasFrame) ctx.restore();
-    
-    // Draw the frame itself (on top)
-    if (hasFrame) drawFrame(fr);
-}
-
-function drawFace(f, sun) {
-    const pts = f.proj;
-    if (pts.length < 3) return;
-    let area = 0;
-    for (let i = 0; i < pts.length; i++) {
-        const j = (i+1)%pts.length;
-        area += pts[i].x*pts[j].y - pts[j].x*pts[i].y;
-    }
-    if (area > 0) return;
-
-    let intensity = 0.5;
-    if (state.facetShading) {
-        const d = Math.abs(dot(f.normal, sun));
-        intensity = 0.3 + d * 0.7;
-    }
-    const [r,g,b] = f.color;
-    ctx.fillStyle = `rgb(${r*intensity|0},${g*intensity|0},${b*intensity|0})`;
-    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(pts[0].x, pts[0].y);
-    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-}
-
-function drawShadows(allFaces, sun) {
-    const byObj = {};
-    allFaces.forEach(f => {
-        (byObj[f.oi] = byObj[f.oi] || []).push(f);
-    });
-    ctx.fillStyle = 'rgba(0,0,0,0.35)';
-    const L = { x: -sun.x, y: -sun.y, z: -sun.z };
-    Object.values(byObj).forEach(faces => {
-        const seen = new Set();
-        const verts = [];
-        faces.forEach(f => f.world.forEach(v => {
-            const k = v.x.toFixed(1)+','+v.y.toFixed(1)+','+v.z.toFixed(1);
-            if (!seen.has(k)) { seen.add(k); verts.push(v); }
-        }));
-        const gp = verts.map(v => {
-            if (L.y >= 0) return null;
-            const t = -v.y / L.y;
-            if (t < 0) return null;
-            return project({ x: v.x+L.x*t, y: 0, z: v.z+L.z*t });
-        }).filter(p => p);
-        if (gp.length < 3) return;
-        const cxp = gp.reduce((s,p)=>s+p.x,0)/gp.length;
-        const cyp = gp.reduce((s,p)=>s+p.y,0)/gp.length;
-        gp.sort((a,b) => Math.atan2(a.y-cyp,a.x-cxp) - Math.atan2(b.y-cyp,b.x-cxp));
-        ctx.beginPath();
-        ctx.moveTo(gp[0].x, gp[0].y);
-        for (let i = 1; i < gp.length; i++) ctx.lineTo(gp[i].x, gp[i].y);
-        ctx.closePath();
-        ctx.fill();
-    });
-}
-
-function drawSelection(obj) {
-    const wv = obj.geo.vertices.map(v => transformVert(v, obj));
-    const pv = wv.map(v => project(v));
-    ctx.strokeStyle = '#ffdc32';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([5, 3]);
-    obj.geo.faces.forEach(face => {
-        ctx.beginPath();
-        face.forEach((vi, i) => {
-            if (i === 0) ctx.moveTo(pv[vi].x, pv[vi].y);
-            else ctx.lineTo(pv[vi].x, pv[vi].y);
-        });
-        ctx.closePath();
-        ctx.stroke();
-    });
-    ctx.setLineDash([]);
-}
-
-function drawSunMarker(sun) {
-    const sunPos = { x: sun.x*500, y: Math.abs(sun.y)*500 + 100, z: sun.z*500 };
-    const p = project(sunPos);
-    if (p.z < 10) return;
-    const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 24);
-    g.addColorStop(0, 'rgba(255,220,50,0.9)');
-    g.addColorStop(1, 'rgba(255,220,50,0)');
-    ctx.fillStyle = g;
-    ctx.beginPath(); ctx.arc(p.x, p.y, 24, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#ffdc32';
-    ctx.beginPath(); ctx.arc(p.x, p.y, 7, 0, Math.PI*2); ctx.fill();
-}
-
-/* ================= FRAME RENDERING ================= */
-function drawFrame(fr) {
-    const t = state.frame.thickness;
-    const style = state.frame.style;
-    
-    if (style === 'wood') {
-        // Outer shadow
-        ctx.shadowColor = 'rgba(0,0,0,0.6)';
-        ctx.shadowBlur = 20;
-        ctx.shadowOffsetY = 8;
-        ctx.fillStyle = '#3a2416';
-        ctx.fillRect(fr.x - 2, fr.y - 2, fr.w + 4, fr.h + 4);
-        ctx.shadowBlur = 0;
-        ctx.shadowOffsetY = 0;
-        
-        // Main wood frame with gradient
-        const grad = ctx.createLinearGradient(fr.x - t, fr.y - t, fr.x + fr.w + t, fr.y + fr.h + t);
-        grad.addColorStop(0, '#8b5a2b');
-        grad.addColorStop(0.3, '#a0703d');
-        grad.addColorStop(0.5, '#6b4423');
-        grad.addColorStop(0.7, '#a0703d');
-        grad.addColorStop(1, '#5c3a1e');
-        ctx.fillStyle = grad;
-        
-        // Draw frame as 4 trapezoids for 3D effect
-        // Top
-        ctx.beginPath();
-        ctx.moveTo(fr.x - t, fr.y - t);
-        ctx.lineTo(fr.x + fr.w + t, fr.y - t);
-        ctx.lineTo(fr.x + fr.w, fr.y);
-        ctx.lineTo(fr.x, fr.y);
-        ctx.closePath();
-        ctx.fill();
-        // Bottom
-        ctx.beginPath();
-        ctx.moveTo(fr.x, fr.y + fr.h);
-        ctx.lineTo(fr.x + fr.w, fr.y + fr.h);
-        ctx.lineTo(fr.x + fr.w + t, fr.y + fr.h + t);
-        ctx.lineTo(fr.x - t, fr.y + fr.h + t);
-        ctx.closePath();
-        ctx.fill();
-        // Left
-        ctx.beginPath();
-        ctx.moveTo(fr.x - t, fr.y - t);
-        ctx.lineTo(fr.x, fr.y);
-        ctx.lineTo(fr.x, fr.y + fr.h);
-        ctx.lineTo(fr.x - t, fr.y + fr.h + t);
-        ctx.closePath();
-        ctx.fill();
-        // Right
-        ctx.beginPath();
-        ctx.moveTo(fr.x + fr.w, fr.y);
-        ctx.lineTo(fr.x + fr.w + t, fr.y - t);
-        ctx.lineTo(fr.x + fr.w + t, fr.y + fr.h + t);
-        ctx.lineTo(fr.x + fr.w, fr.y + fr.h);
-        ctx.closePath();
-        ctx.fill();
-        
-        // Inner bevel (light highlight)
-        ctx.strokeStyle = 'rgba(255,220,150,0.4)';
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(fr.x - 0.5, fr.y - 0.5, fr.w + 1, fr.h + 1);
-        
-        // Outer edge (dark)
-        ctx.strokeStyle = 'rgba(0,0,0,0.6)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(fr.x - t, fr.y - t, fr.w + t*2, fr.h + t*2);
-        
-        // Wood grain texture (subtle lines)
-        ctx.strokeStyle = 'rgba(60,30,10,0.15)';
-        ctx.lineWidth = 0.5;
-        for (let i = 0; i < 8; i++) {
-            const offset = (i / 8) * t;
-            // Top
-            ctx.beginPath();
-            ctx.moveTo(fr.x - t + offset, fr.y - t + offset);
-            ctx.lineTo(fr.x + fr.w + t - offset, fr.y - t + offset);
-            ctx.stroke();
-        }
-        
-    } else if (style === 'mat') {
-        // Gallery mat: white mat + thin dark frame
-        ctx.shadowColor = 'rgba(0,0,0,0.5)';
-        ctx.shadowBlur = 15;
-        ctx.shadowOffsetY = 5;
-        
-        // Outer dark frame
-        ctx.fillStyle = '#1a1a1a';
-        ctx.fillRect(fr.x - t, fr.y - t, fr.w + t*2, fr.h + t*2);
-        ctx.shadowBlur = 0;
-        ctx.shadowOffsetY = 0;
-        
-        // White mat
-        const matInset = Math.max(4, t * 0.6);
-        ctx.fillStyle = '#f5f1e8';
-        ctx.fillRect(fr.x - matInset, fr.y - matInset, fr.w + matInset*2, fr.h + matInset*2);
-        
-        // Inner bevel on mat
-        ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(fr.x - 0.5, fr.y - 0.5, fr.w + 1, fr.h + 1);
-        
-        // Subtle texture on mat
-        ctx.fillStyle = 'rgba(180,160,120,0.05)';
-        for (let i = 0; i < 20; i++) {
-            const x = fr.x - matInset + Math.random() * (fr.w + matInset*2);
-            const y = fr.y - matInset + Math.random() * (fr.h + matInset*2);
-            ctx.fillRect(x, y, 1, 1);
-        }
-        
-    } else if (style === 'modern') {
-        // Minimal: thin crisp border
-        ctx.shadowColor = 'rgba(0,0,0,0.4)';
-        ctx.shadowBlur = 10;
-        ctx.shadowOffsetY = 3;
-        
-        ctx.fillStyle = '#0d1117';
-        ctx.fillRect(fr.x - t, fr.y - t, fr.w + t*2, fr.h + t*2);
-        ctx.shadowBlur = 0;
-        ctx.shadowOffsetY = 0;
-        
-        // Crisp inner border
-        ctx.strokeStyle = '#e6edf3';
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(fr.x - 0.5, fr.y - 0.5, fr.w + 1, fr.h + 1);
-        
-        // Outer subtle border
-        ctx.strokeStyle = 'rgba(230,237,243,0.2)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(fr.x - t + 0.5, fr.y - t + 0.5, fr.w + t*2 - 1, fr.h + t*2 - 1);
-    }
-}
-
-function drawThirds(fr) {
-    ctx.strokeStyle = 'rgba(255,220,50,0.4)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 4]);
-    for (let i = 1; i < 3; i++) {
-        // Vertical
-        const x = fr.x + (fr.w * i / 3);
-        ctx.beginPath();
-        ctx.moveTo(x, fr.y);
-        ctx.lineTo(x, fr.y + fr.h);
-        ctx.stroke();
-        // Horizontal
-        const y = fr.y + (fr.h * i / 3);
-        ctx.beginPath();
-        ctx.moveTo(fr.x, y);
-        ctx.lineTo(fr.x + fr.w, y);
-        ctx.stroke();
-    }
-    ctx.setLineDash([]);
-    
-    // Intersection points
-    ctx.fillStyle = 'rgba(255,220,50,0.7)';
-    for (let i = 1; i < 3; i++) {
-        for (let j = 1; j < 3; j++) {
-            const x = fr.x + (fr.w * i / 3);
-            const y = fr.y + (fr.h * j / 3);
-            ctx.beginPath();
-            ctx.arc(x, y, 3, 0, Math.PI*2);
-            ctx.fill();
-        }
-    }
-}
-
-function drawGolden(fr) {
-    ctx.strokeStyle = 'rgba(212,153,34,0.5)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([3, 3]);
-    const phi = 1.618;
-    const inv = 1 / phi;
-    
-    // Vertical golden lines
-    const x1 = fr.x + fr.w * inv;
-    const x2 = fr.x + fr.w * (1 - inv);
-    ctx.beginPath();
-    ctx.moveTo(x1, fr.y); ctx.lineTo(x1, fr.y + fr.h);
-    ctx.moveTo(x2, fr.y); ctx.lineTo(x2, fr.y + fr.h);
-    // Horizontal golden lines
-    const y1 = fr.y + fr.h * inv;
-    const y2 = fr.y + fr.h * (1 - inv);
-    ctx.moveTo(fr.x, y1); ctx.lineTo(fr.x + fr.w, y1);
-    ctx.moveTo(fr.x, y2); ctx.lineTo(fr.x + fr.w, y2);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    
-    // Golden spiral (approximation)
-    ctx.strokeStyle = 'rgba(212,153,34,0.6)';
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([]);
-    drawGoldenSpiral(fr);
-}
-
-function drawGoldenSpiral(fr) {
-    // Simple approximation using quarter-circle arcs
-    let x = fr.x, y = fr.y, w = fr.w, h = fr.h;
-    const phi = 1.618;
-    ctx.beginPath();
-    for (let i = 0; i < 6; i++) {
-        const r = Math.min(w, h);
-        let cx_, cy_, startA, endA;
-        if (i % 4 === 0) { cx_ = x + r; cy_ = y + r; startA = Math.PI; endA = Math.PI * 1.5; }
-        else if (i % 4 === 1) { cx_ = x + w - r; cy_ = y + r; startA = Math.PI * 1.5; endA = Math.PI * 2; }
-        else if (i % 4 === 2) { cx_ = x + w - r; cy_ = y + h - r; startA = 0; endA = Math.PI * 0.5; }
-        else { cx_ = x + r; cy_ = y + h - r; startA = Math.PI * 0.5; endA = Math.PI; }
-        ctx.arc(cx_, cy_, r, startA, endA);
-        // Shrink the rectangle for next iteration
-        const newW = w / phi;
-        const newH = h / phi;
-        if (i % 4 === 0) { x = x; y = y + (h - newH); w = newW; h = newH; }
-        else if (i % 4 === 1) { x = x + (w - newW); y = y; w = newW; h = newH; }
-        else if (i % 4 === 2) { x = x + (w - newW); y = y + (h - newH); w = newW; h = newH; }
-        else { x = x; y = y; w = newW; h = newH; }
-    }
-    ctx.stroke();
-}
-
-function drawCrosshair(fr) {
-    ctx.strokeStyle = 'rgba(248,81,73,0.6)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([2, 4]);
-    const cx_ = fr.x + fr.w / 2;
-    const cy_ = fr.y + fr.h / 2;
-    ctx.beginPath();
-    ctx.moveTo(cx_, fr.y); ctx.lineTo(cx_, fr.y + fr.h);
-    ctx.moveTo(fr.x, cy_); ctx.lineTo(fr.x + fr.w, cy_);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    
-    // Center dot
-    ctx.fillStyle = 'rgba(248,81,73,0.8)';
-    ctx.beginPath();
-    ctx.arc(cx_, cy_, 3, 0, Math.PI*2);
-    ctx.fill();
-}
-
-/* ================= GUIDES ================= */
-function drawGrid() {
-    if (!state.guides.grid) return;
-    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-    ctx.lineWidth = 1;
-    const step = 80, range = 5;
-    for (let i = -range; i <= range; i++) {
-        const a = project({ x: i*step, y: 0, z: -range*step });
-        const b = project({ x: i*step, y: 0, z: range*step });
-        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-        const c = project({ x: -range*step, y: 0, z: i*step });
-        const d = project({ x: range*step, y: 0, z: i*step });
-        ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(d.x, d.y); ctx.stroke();
-    }
-}
-
-function drawHorizon() {
-    if (!state.guides.horizon) return;
-    ctx.strokeStyle = 'rgba(248,81,73,0.7)';
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([6, 4]);
-    ctx.beginPath();
-    ctx.moveTo(0, cy);
-    ctx.lineTo(W, cy);
-    ctx.stroke();
-    ctx.setLineDash([]);
-}
-
-function drawVanishingPoints() {
-    if (!state.guides.vps) return;
-    const far = 5000;
-    const vps = [];
-    if (state.mode === 1) {
-        vps.push(project({ x: 0, y: 0, z: far }));
-    } else {
-        vps.push(project({ x: -far, y: 0, z: far }));
-        vps.push(project({ x: far, y: 0, z: far }));
-        if (state.mode === 3) vps.push(project({ x: 0, y: far, z: 0 }));
-    }
-    vps.forEach((p, i) => {
-        if (p.x < -50 || p.x > W+50 || p.y < -50 || p.y > H+50) return;
-        ctx.fillStyle = '#58a6ff';
-        ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI*2); ctx.fill();
-        ctx.strokeStyle = 'white'; ctx.lineWidth = 1.5; ctx.stroke();
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 10px sans-serif';
-        ctx.fillText('VP'+(i+1), p.x+10, p.y-10);
-    });
-    if (state.guides.dist) {
-        const d1 = project({ x: -state.cam.radius, y: 0, z: 0 });
-        const d2 = project({ x: state.cam.radius, y: 0, z: 0 });
-        [d1, d2].forEach((p, i) => {
-            if (p.x < -50 || p.x > W+50) return;
-            ctx.fillStyle = '#d29922';
-            ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2); ctx.fill();
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 10px sans-serif';
-            ctx.fillText('D'+(i+1), p.x+8, p.y-8);
-        });
-    }
-}
-
-/* ================= TOUCH GESTURES ================= */
-let touches = {};
-let lastPinchDist = 0;
-let lastPinchCenter = null;
-
-canvas.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    for (const t of e.changedTouches) touches[t.identifier] = { x: t.clientX, y: t.clientY };
-    if (e.touches.length === 2) {
-        const [a, b] = [e.touches[0], e.touches[1]];
-        lastPinchDist = Math.hypot(a.clientX-b.clientX, a.clientY-b.clientY);
-        lastPinchCenter = { x: (a.clientX+b.clientX)/2, y: (a.clientY+b.clientY)/2 };
-    }
-}, { passive: false });
-
-canvas.addEventListener('touchmove', (e) => {
-    e.preventDefault();
-    if (e.touches.length === 1) {
-        const t = e.touches[0];
-        const prev = touches[t.identifier];
-        if (prev) {
-            const dx = t.clientX - prev.x;
-            const dy = t.clientY - prev.y;
-            state.cam.theta -= dx * 0.008;
-            state.cam.phi = Math.max(-1.2, Math.min(1.2, state.cam.phi - dy * 0.008));
-            render();
-        }
-        touches[t.identifier] = { x: t.clientX, y: t.clientY };
-    } else if (e.touches.length === 2) {
-        const [a, b] = [e.touches[0], e.touches[1]];
-        const dist = Math.hypot(a.clientX-b.clientX, a.clientY-b.clientY);
-        const center = { x: (a.clientX+b.clientX)/2, y: (a.clientY+b.clientY)/2 };
-        if (lastPinchDist > 0) {
-            const ratio = lastPinchDist / dist;
-            state.cam.radius = Math.max(200, Math.min(2000, state.cam.radius * ratio));
-        }
-        if (lastPinchCenter) {
-            const dx = center.x - lastPinchCenter.x;
-            const dy = center.y - lastPinchCenter.y;
-            state.objects.forEach(o => {
-                o.pos.x -= dx * 1.5;
-                o.pos.z -= dy * 1.5;
-            });
-        }
-        lastPinchDist = dist;
-        lastPinchCenter = center;
-        render();
-    }
-}, { passive: false });
-
-canvas.addEventListener('touchend', (e) => {
-    for (const t of e.changedTouches) delete touches[t.identifier];
-    if (e.touches.length < 2) { lastPinchDist = 0; lastPinchCenter = null; }
-});
-
-let mouseDown = false, lastMouse = null;
-canvas.addEventListener('mousedown', (e) => {
-    mouseDown = true;
-    lastMouse = { x: e.clientX, y: e.clientY };
-});
-canvas.addEventListener('mousemove', (e) => {
-    if (!mouseDown) return;
-    const dx = e.clientX - lastMouse.x;
-    const dy = e.clientY - lastMouse.y;
-    state.cam.theta -= dx * 0.008;
-    state.cam.phi = Math.max(-1.2, Math.min(1.2, state.cam.phi - dy * 0.008));
-    lastMouse = { x: e.clientX, y: e.clientY };
-    render();
-});
-canvas.addEventListener('mouseup', () => mouseDown = false);
-canvas.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    state.cam.radius = Math.max(200, Math.min(2000, state.cam.radius + e.deltaY * 0.8));
-    render();
-}, { passive: false });
-
-/* ================= NAV & PANELS ================= */
-document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.onclick = () => {
-        const id = btn.dataset.panel;
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b === btn));
-        document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
-        const panel = document.getElementById('panel-' + id);
-        if (panel) {
-            panel.classList.add('open');
-            if (id === 'transform') renderTransformPanel();
-        }
-    };
-});
-
-canvas.addEventListener('click', () => {
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
-});
-
-document.getElementById('fabAdd').onclick = () => {
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.panel === 'scene'));
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
-    document.getElementById('panel-scene').classList.add('open');
+document.querySelectorAll('#modeCtrl button').forEach(b=>{
+b.onclick=()=>{
+state.mode=+b.dataset.mode;
+document.querySelectorAll('#modeCtrl button').forEach(x=>x.classList.toggle('active',x===b));
+document.getElementById('modeBadge').textContent=state.mode+'-POINT';
+render();
 };
-
-document.querySelectorAll('#modeCtrl button').forEach(b => {
-    b.onclick = () => {
-        state.mode = +b.dataset.mode;
-        document.querySelectorAll('#modeCtrl button').forEach(x => x.classList.toggle('active', x === b));
-        document.getElementById('modeBadge').textContent = state.mode + '-POINT';
-        render();
-    };
 });
 
-document.querySelectorAll('.prim-btn').forEach(b => {
-    b.onclick = () => addObject(b.dataset.prim);
+document.querySelectorAll('.prim-btn').forEach(b=>{b.onclick=()=>addObject(b.dataset.prim)});
+
+document.querySelectorAll('[data-guide]').forEach(cb=>{
+cb.onchange=()=>{state.guides[cb.dataset.guide]=cb.checked;render()};
 });
 
-document.querySelectorAll('[data-guide]').forEach(cb => {
-    cb.onchange = () => {
-        state.guides[cb.dataset.guide] = cb.checked;
-        render();
-    };
-});
+document.getElementById('azimuth').oninput=(e)=>{state.azimuth=+e.target.value;document.getElementById('azVal').textContent=state.azimuth+'°';render()};
+document.getElementById('altitude').oninput=(e)=>{state.altitude=+e.target.value;document.getElementById('altVal').textContent=state.altitude+'°';document.getElementById('altDisplay').textContent=state.altitude+'°';render()};
+document.getElementById('facetToggle').onchange=(e)=>{state.facetShading=e.target.checked;render()};
+document.getElementById('shadowToggle').onchange=(e)=>{state.castShadows=e.target.checked;render()};
+document.getElementById('wireframeToggle').onchange=(e)=>{state.wireframe=e.target.checked;render()};
 
-document.getElementById('azimuth').oninput = (e) => {
-    state.azimuth = +e.target.value;
-    document.getElementById('azVal').textContent = state.azimuth + '°';
-    render();
+document.querySelectorAll('.frame-opt').forEach(opt=>{
+opt.onclick=()=>{
+state.frame.style=opt.dataset.style;
+document.querySelectorAll('.frame-opt').forEach(o=>o.classList.toggle('active',o===opt));
+render();
 };
-document.getElementById('altitude').oninput = (e) => {
-    state.altitude = +e.target.value;
-    document.getElementById('altVal').textContent = state.altitude + '°';
-    document.getElementById('altDisplay').textContent = state.altitude + '°';
-    render();
-};
-document.getElementById('facetToggle').onchange = (e) => { state.facetShading = e.target.checked; render(); };
-document.getElementById('shadowToggle').onchange = (e) => { state.castShadows = e.target.checked; render(); };
-
-/* ================= FRAME CONTROLS ================= */
-document.querySelectorAll('.frame-opt').forEach(opt => {
-    opt.onclick = () => {
-        state.frame.style = opt.dataset.style;
-        document.querySelectorAll('.frame-opt').forEach(o => o.classList.toggle('active', o === opt));
-        render();
-    };
 });
 
-document.getElementById('frameThick').oninput = (e) => {
-    state.frame.thickness = +e.target.value;
-    document.getElementById('frameThickVal').textContent = state.frame.thickness;
-    render();
-};
+document.getElementById('frameThick').oninput=(e)=>{state.frame.thickness=+e.target.value;document.getElementById('frameThickVal').textContent=state.frame.thickness;render()};
 
-document.querySelectorAll('.ratio-btn').forEach(b => {
-    b.onclick = () => {
-        state.frame.ratio = b.dataset.ratio;
-        document.querySelectorAll('.ratio-btn').forEach(x => x.classList.toggle('active', x === b));
-        render();
-    };
+document.querySelectorAll('.ratio-btn').forEach(b=>{
+b.onclick=()=>{
+state.frame.ratio=b.dataset.ratio;
+document.querySelectorAll('.ratio-btn').forEach(x=>x.classList.toggle('active',x===b));
+render();
+};
 });
 
-document.getElementById('thirdsToggle').onchange = (e) => { state.frame.thirds = e.target.checked; render(); };
-document.getElementById('goldenToggle').onchange = (e) => { state.frame.golden = e.target.checked; render(); };
-document.getElementById('crossToggle').onchange = (e) => { state.frame.cross = e.target.checked; render(); };
+document.getElementById('thirdsToggle').onchange=(e)=>{state.frame.thirds=e.target.checked;render()};
+document.getElementById('goldenToggle').onchange=(e)=>{state.frame.golden=e.target.checked;render()};
+document.getElementById('crossToggle').onchange=(e)=>{state.frame.cross=e.target.checked;render()};
 
-/* ================= OBJECT LIST ================= */
-function refreshObjList() {
-    const list = document.getElementById('objList');
-    const empty = document.getElementById('emptyState');
-    list.innerHTML = '';
-    if (state.objects.length === 0) {
-        empty.style.display = 'block';
-    } else {
-        empty.style.display = 'none';
-        state.objects.forEach((o, i) => {
-            const d = document.createElement('div');
-            d.className = 'obj-item' + (i === state.selected ? ' selected' : '');
-            d.innerHTML = `<span>${o.type.toUpperCase()} #${i+1}</span><button class="del">×</button>`;
-            d.onclick = (e) => {
-                if (e.target.classList.contains('del')) {
-                    state.selected = i;
-                    deleteSelected();
-                } else {
-                    selectObject(i);
-                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.panel === 'transform'));
-                    document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
-                    document.getElementById('panel-transform').classList.add('open');
-                    renderTransformPanel();
-                }
-            };
-            list.appendChild(d);
-        });
-    }
-    document.getElementById('objCount').textContent = state.objects.length;
+document.getElementById('saveBtn').onclick=saveJSON;
+document.getElementById('loadBtn').onclick=()=>document.getElementById('fileIn').click();
+document.getElementById('resetBtn').onclick=resetScene;
+document.getElementById('fileIn').onchange=loadJSON;
+
+function updateSelectionIndicator(){
+const ind=document.getElementById('selIndicator');
+const name=document.getElementById('selName');
+if(state.selected>=0&&state.objects[state.selected]){
+name.textContent=state.objects[state.selected].type.toUpperCase()+' #'+(state.selected+1);
+ind.classList.add('visible');
+}else{
+ind.classList.remove('visible');
+}
 }
 
-function refreshAll() {
-    refreshObjList();
-    render();
+function refreshObjList(){
+const list=document.getElementById('objList');
+const empty=document.getElementById('emptyState');
+list.innerHTML='';
+if(state.objects.length===0){empty.style.display='block'}
+else{
+empty.style.display='none';
+state.objects.forEach((o,i)=>{
+const d=document.createElement('div');
+d.className='obj-item'+(i===state.selected?' selected':'');
+d.innerHTML=`<span>${o.type.toUpperCase()} #${i+1}</span>`;
+const del=document.createElement('button');
+del.className='del';del.textContent='×';
+del.onclick=(e)=>{e.stopPropagation();state.selected=i;deleteSelected()};
+d.appendChild(del);
+d.onclick=(e)=>{if(e.target===del)return;selectObject(i)};
+list.appendChild(d);
+});
+}
+document.getElementById('objCount').textContent=state.objects.length;
 }
 
-/* ================= JSON ================= */
-function saveJSON() {
-    const data = {
-        mode: state.mode, azimuth: state.azimuth, altitude: state.altitude,
-        guides: state.guides, frame: state.frame,
-        objects: state.objects.map(o => ({ type: o.type, pos: o.pos, scale: o.scale, rotY: o.rotY, color: o.color }))
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'perspective_scene.json';
-    a.click();
+function refreshAll(){refreshObjList();render()}
+
+function saveJSON(){
+const data={mode:state.mode,azimuth:state.azimuth,altitude:state.altitude,guides:state.guides,frame:state.frame,objects:state.objects.map(o=>({type:o.type,pos:o.pos,scale:o.scale,rotY:o.rotY,color:o.color}))};
+const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='perspective_scene.json';a.click();
 }
-function loadJSON(e) {
-    const f = e.target.files[0];
-    if (!f) return;
-    const r = new FileReader();
-    r.onload = (ev) => {
-        const d = JSON.parse(ev.target.result);
-        state.mode = d.mode || 1;
-        state.azimuth = d.azimuth || 45;
-        state.altitude = d.altitude || 35;
-        state.guides = d.guides || state.guides;
-        if (d.frame) Object.assign(state.frame, d.frame);
-        state.objects = (d.objects || []).map(o => ({ ...o, id: Date.now()+Math.random(), geo: getGeometry(o.type) }));
-        state.selected = -1;
-        document.getElementById('azimuth').value = state.azimuth;
-        document.getElementById('altitude').value = state.altitude;
-        document.getElementById('azVal').textContent = state.azimuth + '°';
-        document.getElementById('altVal').textContent = state.altitude + '°';
-        document.getElementById('frameThick').value = state.frame.thickness;
-        document.getElementById('frameThickVal').textContent = state.frame.thickness;
-        document.querySelectorAll('#modeCtrl button').forEach(b => b.classList.toggle('active', +b.dataset.mode === state.mode));
-        document.querySelectorAll('.frame-opt').forEach(o => o.classList.toggle('active', o.dataset.style === state.frame.style));
-        document.querySelectorAll('.ratio-btn').forEach(b => b.classList.toggle('active', b.dataset.ratio === state.frame.ratio));
-        document.getElementById('modeBadge').textContent = state.mode + '-POINT';
-        refreshAll();
-    };
-    r.readAsText(f);
+function loadJSON(e){
+const f=e.target.files[0];if(!f)return;
+const r=new FileReader();
+r.onload=(ev)=>{
+const d=JSON.parse(ev.target.result);
+state.mode=d.mode||1;state.azimuth=d.azimuth||45;state.altitude=d.altitude||35;
+state.guides=d.guides||state.guides;
+if(d.frame)Object.assign(state.frame,d.frame);
+state.objects=(d.objects||[]).map(o=>({...o,id:Date.now()+Math.random(),geo:getGeometry(o.type)}));
+state.selected=-1;
+document.getElementById('azimuth').value=state.azimuth;
+document.getElementById('altitude').value=state.altitude;
+document.getElementById('azVal').textContent=state.azimuth+'°';
+document.getElementById('altVal').textContent=state.altitude+'°';
+document.getElementById('frameThick').value=state.frame.thickness;
+document.getElementById('frameThickVal').textContent=state.frame.thickness;
+document.querySelectorAll('#modeCtrl button').forEach(b=>b.classList.toggle('active',+b.dataset.mode===state.mode));
+document.querySelectorAll('.frame-opt').forEach(o=>o.classList.toggle('active',o.dataset.style===state.frame.style));
+document.querySelectorAll('.ratio-btn').forEach(b=>b.classList.toggle('active',b.dataset.ratio===state.frame.ratio));
+document.getElementById('modeBadge').textContent=state.mode+'-POINT';
+refreshAll();
+};
+r.readAsText(f);
 }
 
-/* ================= QUIZ ================= */
-const quizData = [
-    { q: "In 1-Point Perspective, where do orthogonal lines converge?", opts: ["Horizon Line", "Central Vanishing Point", "Ground Plane", "Station Point"], ans: 1 },
-    { q: "What are Distance Points (D1/D2) used for?", opts: ["Measuring height", "Accurate foreshortening & circles", "Finding sun angle", "3-point views"], ans: 1 },
-    { q: "In 2-Point perspective, how many VPs are on the horizon?", opts: ["One", "Two", "Three", "None"], ans: 1 },
-    { q: "In 3-Point looking up (Worm's Eye), verticals converge to?", opts: ["Remain parallel", "Nadir point", "Zenith point", "Horizon"], ans: 2 },
-    { q: "If Sun Altitude is 90°, what happens to shadows?", opts: ["Longest", "Disappear underneath", "Point left", "Infinite"], ans: 1 }
+const quizData=[
+{q:"In 1-Point Perspective, where do orthogonal lines converge?",opts:["Horizon Line","Central Vanishing Point","Ground Plane","Station Point"],ans:1},
+{q:"What are Distance Points (D1/D2) used for?",opts:["Measuring height","Accurate foreshortening & circles","Finding sun angle","3-point views"],ans:1},
+{q:"In 2-Point perspective, how many VPs are on the horizon?",opts:["One","Two","Three","None"],ans:1},
+{q:"In 3-Point looking up (Worm's Eye), verticals converge to?",opts:["Remain parallel","Nadir point","Zenith point","Horizon"],ans:2},
+{q:"If Sun Altitude is 90°, what happens to shadows?",opts:["Longest","Disappear underneath","Point left","Infinite"],ans:1}
 ];
-function loadQuiz() {
-    const b = document.getElementById('quizBox');
-    const q = quizData[state.quiz.current];
-    b.innerHTML = `
-        <div class="q-num">Question ${state.quiz.current+1} / 5</div>
-        <div class="q-text">${q.q}</div>
-        ${q.opts.map((o, i) => `<button class="quiz-opt" onclick="checkAnswer(${i})">${o}</button>`).join('')}
-    `;
+function loadQuiz(){
+const b=document.getElementById('quizBox');
+const q=quizData[state.quiz.current];
+b.innerHTML=`<div class="q-num">Question ${state.quiz.current+1} / 5</div><div class="q-text">${q.q}</div>${q.opts.map((o,i)=>`<button class="quiz-opt" data-idx="${i}">${o}</button>`).join('')}`;
+b.querySelectorAll('.quiz-opt').forEach(btn=>{
+btn.onclick=()=>checkAnswer(+btn.dataset.idx);
+});
 }
-function checkAnswer(i) {
-    const q = quizData[state.quiz.current];
-    const opts = document.querySelectorAll('.quiz-opt');
-    opts.forEach((o, idx) => {
-        o.disabled = true;
-        if (idx === q.ans) o.classList.add('correct');
-        if (idx === i && i !== q.ans) o.classList.add('wrong');
-    });
-    if (i === q.ans) {
-        state.quiz.score++;
-        document.getElementById('scoreVal').textContent = state.quiz.score;
-    }
-    setTimeout(() => {
-        if (state.quiz.current < 4) {
-            state.quiz.current++;
-            loadQuiz();
-        } else {
-            document.getElementById('quizBox').innerHTML = `
-                <div class="q-num">Module Complete</div>
-                <div class="q-text">Final Score: <strong style="color:var(--accent)">${state.quiz.score}/5</strong></div>
-                <button class="btn primary" onclick="resetQuiz()">Retake Quiz</button>
-            `;
-        }
-    }, 1200);
+function checkAnswer(i){
+const q=quizData[state.quiz.current];
+const opts=document.querySelectorAll('.quiz-opt');
+opts.forEach((o,idx)=>{
+o.disabled=true;o.style.pointerEvents='none';
+if(idx===q.ans)o.classList.add('correct');
+if(idx===i&&i!==q.ans)o.classList.add('wrong');
+});
+if(i===q.ans){state.quiz.score++;document.getElementById('scoreVal').textContent=state.quiz.score}
+setTimeout(()=>{
+if(state.quiz.current<4){state.quiz.current++;loadQuiz()}
+else{document.getElementById('quizBox').innerHTML=`<div class="q-num">Module Complete</div><div class="q-text">Final Score: <strong style="color:var(--accent)">${state.quiz.score}/5</strong></div><button class="btn primary" id="retakeBtn">Retake Quiz</button>`;document.getElementById('retakeBtn').onclick=resetQuiz}
+},1200);
 }
-function resetQuiz() {
-    state.quiz = { current: 0, score: 0 };
-    document.getElementById('scoreVal').textContent = 0;
-    loadQuiz();
-}
+function resetQuiz(){state.quiz={current:0,score:0};document.getElementById('scoreVal').textContent=0;loadQuiz()}
 
-/* ================= INIT ================= */
 resize();
 loadQuiz();
 refreshAll();
 addObject('cube');
-state.objects[0].pos.z = 250;
 refreshAll();
 
-let hintHidden = false;
-canvas.addEventListener('touchstart', () => {
-    if (!hintHidden) {
-        document.getElementById('gestureHint').style.opacity = '0';
-        setTimeout(() => document.getElementById('gestureHint').style.display = 'none', 300);
-        hintHidden = true;
-    }
-}, { once: true });
+let hintHidden=false;
+canvas.addEventListener('touchstart',()=>{
+if(!hintHidden){
+const h=document.getElementById('gestureHint');
+h.style.transition='opacity 0.3s';h.style.opacity='0';
+setTimeout(()=>h.style.display='none',300);
+hintHidden=true;
+}
+},{once:true});
 </script>
 </body>
 </html>
