@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Perspective: A Visual Course</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Serif:wght@600&display=swap">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+button{font:inherit;cursor:pointer}
+.tab{min-height:44px;padding:0 14px;border-radius:8px;border:1px solid #8A8F94;background:transparent;color:#EDE6D6;font-size:15px;font-weight:600}
+.tab.on{background:#EDE6D6;color:#1B1F24;border-color:#EDE6D6}
+.pill{min-height:44px;padding:0 14px;border-radius:8px;border:1px solid #1F4E79;background:#fff;color:#1F4E79;font-size:15px;font-weight:600}
+.pill.on{background:#1F4E79;color:#fff}
+.pill{flex:none;white-space:nowrap}
+.pill:disabled{opacity:.45;cursor:default}
+.lessons{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+.card{background:#fff;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.card h2,.card h3{margin:0;font-family:'IBM Plex Serif',serif;color:#1B1F24}
+.card p,.card li,.card label{font-size:16px;line-height:1.5;color:#1B1F24;margin:0}
+.opt{display:flex;justify-content:space-between;gap:12px;align-items:center;width:100%;min-height:48px;padding:10px 14px;border-radius:8px;border:1px solid #AEB5BC;background:#fff;color:#1B1F24;font-size:16px;text-align:left}
+.opt.ok{border:2px solid #1D6B3A;background:#E3F2E8}
+.opt.bad{border:2px solid #A63D2F;background:#FBE9E6}
+.opt.dim{background:#F3F4F5;color:#4A5560}
+.btn{min-height:48px;padding:0 20px;border:0;border-radius:8px;background:#1F4E79;color:#fff;font-size:16px;font-weight:600}
+input[type=range]{width:100%;min-height:44px;accent-color:#1F4E79}
+</style>
+</head>
+<body>
+<div id="dc-root"></div>
+<template id="dc-template">
+<div style="min-height:100%;background:#ECEEF0;font-family:'IBM Plex Sans',sans-serif">
+<div style="background:#2E3236;padding:32px 20px 20px">
+<div style="max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:8px">
+<div style="font-size:13px;letter-spacing:0.14em;color:#CFC6AE;font-weight:600">VISUAL COURSE</div>
+<h1 style="margin:0;font-family:'IBM Plex Serif',serif;font-size:40px;line-height:1.1;color:#EDE6D6">Perspective</h1>
+<p style="margin:0;font-size:16px;line-height:1.45;color:#D8D2C3">Learn to draw depth. Based on A. P. Baryshnikov’s textbook “Perspective”.</p>
+<nav aria-label="Sections" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="3"><button type="button" class="{{t.cls}}" aria-pressed="{{t.on}}" onClick="{{t.pick}}">{{t.label}}</button></sc-for>
+</nav>
+</div>
+</div>
+<main style="max-width:720px;margin:0 auto;padding:20px;display:flex;flex-direction:column;gap:16px">
+
+<sc-if value="{{isDraw}}" hint-placeholder-val="{{ false }}">
+<div class="card">
+<h2>Draw a box in perspective</h2>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<sc-for list="{{modePills}}" as="m" hint-placeholder-count="2"><button type="button" class="{{m.cls}}" aria-pressed="{{m.on}}" onClick="{{m.pick}}">{{m.label}}</button></sc-for>
+</div>
+<svg viewBox="{{vb}}" role="img" aria-label="A box in perspective. Drag the dots, the box or the horizon line, or use the sliders below." onPointerDown="{{down}}" onPointerMove="{{move}}" onPointerUp="{{up}}" onPointerCancel="{{up}}" style="width:100%;height:auto;background:#F6F7F8;border-radius:6px;display:block;touch-action:none;cursor:grab">
+<line x1="-3000" y1="{{eye}}" x2="3000" y2="{{eye}}" stroke="#1B1F24" stroke-width="1.5"/>
+<path d="{{con}}" stroke="#B5832A" stroke-width="1" stroke-dasharray="4 3" fill="none"/>
+<g fill="#D9E4EE" stroke="#1F4E79" stroke-width="2" stroke-linejoin="round">
+<polygon points="{{top}}"/><polygon points="{{bottom}}"/><polygon points="{{left}}"/><polygon points="{{right}}"/>
+<polygon points="{{front}}"/>
+</g>
+<circle cx="{{hx1}}" cy="{{eye}}" r="{{hr}}" fill="#1F4E79" stroke="#fff" stroke-width="2"/>
+<circle cx="{{hx3}}" cy="{{hy3}}" r="{{r3}}" fill="#1F4E79" stroke="#fff" stroke-width="2"/>
+<rect x="{{rsx}}" y="{{rsy}}" width="{{rsz}}" height="{{rsz}}" fill="#B5832A" stroke="#fff" stroke-width="1.5"/>
+<circle cx="{{hx2}}" cy="{{eye}}" r="{{r2}}" fill="#1F4E79" stroke="#fff" stroke-width="2"/>
+<text x="{{labX}}" y="{{labY}}" font-size="{{fs}}" font-family="IBM Plex Sans" fill="#1B1F24">Horizon line (eye level)</text>
+</svg>
+<label for="eye">Eye level: {{eye}}</label>
+<input id="eye" type="range" min="30" max="230" value="{{eye}}" onChange="{{setEye}}">
+<sc-if value="{{isOne}}" hint-placeholder-val="{{ true }}">
+<label for="vx">Vanishing point position: {{vx}}</label>
+<input id="vx" type="range" min="20" max="340" value="{{vx}}" onChange="{{setVx}}">
+</sc-if>
+<sc-if value="{{isTwo}}" hint-placeholder-val="{{ false }}">
+<label for="v1">Left vanishing point: {{v1}}</label>
+<input id="v1" type="range" min="5" max="140" value="{{v1}}" onChange="{{setV1}}">
+<label for="v2">Right vanishing point: {{v2}}</label>
+<input id="v2" type="range" min="220" max="355" value="{{v2}}" onChange="{{setV2}}">
+</sc-if>
+<sc-if value="{{isThree}}" hint-placeholder-val="{{ false }}">
+<label for="v3">Third point height: {{v3}}</label>
+<input id="v3" type="range" min="5" max="235" value="{{v3}}" onChange="{{setV3}}">
+</sc-if>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<button type="button" class="pill" aria-pressed="{{lines}}" onClick="{{toggleLines}}">{{linesLabel}}</button>
+<button type="button" class="pill" onClick="{{zoomIn}}">Zoom in</button>
+<button type="button" class="pill" onClick="{{zoomOut}}">Zoom out</button>
+<button type="button" class="pill" onClick="{{resetView}}">Reset view</button>
+<button type="button" class="pill" onClick="{{resetAll}}">Reset drawing</button>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+<button type="button" class="pill" onClick="{{exportSvg}}">Export SVG</button>
+<button type="button" class="pill" onClick="{{saveFile}}">Save file</button>
+<label for="fl">Load file:</label><input id="fl" type="file" accept=".json" onChange="{{loadFile}}">
+</div>
+<label for="code">Scene code (copy it to share, paste it to load)</label>
+<textarea id="code" rows="3" value="{{code}}" onChange="{{setCode}}" style="width:100%;font:16px/1.4 monospace;padding:8px;border:1px solid #AEB5BC;border-radius:6px"></textarea>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<button type="button" class="pill" onClick="{{makeCode}}">Make scene code</button>
+<button type="button" class="pill" onClick="{{loadCode}}">Load scene code</button>
+</div>
+<p aria-live="polite">{{note}}</p>
+<p>Drag the dots, the box, the orange square (resize) or the horizon line. Drag empty space to pan. Sliders work too. {{hint}}</p>
+</div>
+</sc-if>
+
+<sc-if value="{{isLessons}}" hint-placeholder-val="{{ true }}">
+<div class="lessons" role="group" aria-label="Choose a lesson">
+<sc-for list="{{lessonPills}}" as="l" hint-placeholder-count="5"><button type="button" class="{{l.cls}}" aria-pressed="{{l.on}}" onClick="{{l.pick}}">{{l.label}}</button></sc-for>
+</div>
+<div class="card">
+<h2>{{cur.title}}</h2>
+<p>{{cur.intro}}</p>
+<ul style="margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{cur.points}}" as="pt" hint-placeholder-count="3"><li>{{pt.text}}</li></sc-for>
+</ul>
+<div><button type="button" class="pill" onClick="{{goDraw}}">Try it in Draw</button></div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+<button type="button" class="pill" disabled="{{isFirst}}" onClick="{{prev}}">Previous</button>
+<span style="font-size:15px;color:#4A5560">{{lessonPos}}</span>
+<button type="button" class="pill" disabled="{{isLast}}" onClick="{{next}}">Next</button>
+</div>
+</sc-if>
+
+<sc-if value="{{isDist}}" hint-placeholder-val="{{ false }}">
+<div class="card">
+<h2>How far to stand</h2>
+<p>From chapter 13. You see clearly only inside a narrow cone, about 28° to 37° from top to bottom. Stand far enough back for the whole subject to fit inside it.</p>
+<svg viewBox="0 0 360 200" role="img" aria-label="Side view: your eye, the cone of clear vision and the subject." style="width:100%;height:auto;background:#F6F7F8;border-radius:6px;display:block">
+<rect x="0" y="185" width="360" height="15" fill="#E6E1D6"/>
+<path d="{{dist.cone}}" fill="#1F4E79" fill-opacity="0.12" stroke="#1F4E79" stroke-width="1" stroke-dasharray="4 3"/>
+<path d="{{dist.needPath}}" stroke="#7A5516" stroke-width="2" fill="none"/>
+<text x="{{dist.nx}}" y="160" font-size="12" text-anchor="middle" font-family="IBM Plex Sans" fill="#7A5516">{{dist.needLabel}}</text>
+<rect x="{{dist.sx}}" y="{{dist.sy}}" width="{{dist.sw}}" height="{{dist.sh}}" rx="3" fill="{{dist.col}}"/>
+<circle cx="{{dist.ex}}" cy="{{dist.ey}}" r="5" fill="#1B1F24"/>
+<text x="{{dist.ex}}" y="{{dist.ly}}" font-size="12" text-anchor="middle" font-family="IBM Plex Sans" fill="#1B1F24">You</text>
+</svg>
+<p aria-live="polite"><strong>{{dist.msg}}</strong></p>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<sc-for list="{{dist.presets}}" as="pr" hint-placeholder-count="4"><button type="button" class="{{pr.cls}}" aria-pressed="{{pr.on}}" onClick="{{pr.pick}}">{{pr.label}}</button></sc-for>
+</div>
+<label for="dh">Subject height: {{dist.Hcm}} cm</label>
+<input id="dh" type="range" min="20" max="1000" step="5" value="{{dist.Hcm}}" onChange="{{dist.setH}}">
+<label for="da">Clear-vision angle: {{dist.A}}°</label>
+<input id="da" type="range" min="28" max="37" step="1" value="{{dist.A}}" onChange="{{dist.setA}}">
+<label for="dd">Your distance: {{dist.D}} m</label>
+<input id="dd" type="range" min="0.2" max="{{dist.maxD}}" step="0.1" value="{{dist.Dv}}" onChange="{{dist.setD}}">
+</div>
+<div class="card">
+<h3>Rules from the book</h3>
+<ul style="margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px">
+<li>At 37° stand about 1.5 times the subject’s height away. At 28° stand about 2 times.</li>
+<li>The angle differs between people, so it is a range, not one number.</li>
+<li>Keep one fixed viewpoint. Do not move your head while you draw, or parts seen from different places will not fit together.</li>
+</ul>
+</div>
+</sc-if>
+
+<sc-if value="{{isAn}}" hint-placeholder-val="{{ false }}">
+<div class="card">
+<h2>Find the viewpoint</h2>
+<p>Chapter 5 analyses real paintings this way. Find the principal point P, where the edges that run into depth meet. Its height is the horizon, the painter’s eye level. Tap or drag to place the marker.</p>
+<svg viewBox="0 0 360 240" role="img" aria-label="A room in one-point perspective with a marker you place." onPointerDown="{{an.down}}" onPointerMove="{{an.move}}" onPointerUp="{{an.up}}" onPointerCancel="{{an.up}}" style="width:100%;height:auto;border-radius:6px;display:block;touch-action:none;cursor:crosshair">
+<g stroke="#5E666E" stroke-width="1.2" stroke-linejoin="round">
+<path d="{{an.ceil}}" fill="#F1F2F3"/><path d="{{an.left}}" fill="#DCE1E5"/><path d="{{an.right}}" fill="#E8EBEE"/><path d="{{an.floor}}" fill="#E6E1D6"/><path d="{{an.back}}" fill="#F6F7F8"/>
+</g>
+<path d="{{an.floorLines}}" stroke="#8A8F94" stroke-width="0.8" fill="none"/>
+<path d="{{an.details}}" fill="#D9E4EE" stroke="#1F4E79" stroke-width="1.2" stroke-linejoin="round"/>
+<path d="{{an.hintLines}}" stroke="#B5832A" stroke-width="1.4" stroke-dasharray="5 4" fill="none"/>
+<path d="{{an.answer}}" stroke="#7A5516" stroke-width="1.2" stroke-dasharray="3 3" fill="none"/>
+<line x1="0" y1="{{an.gy}}" x2="360" y2="{{an.gy}}" stroke="#1F4E79" stroke-width="1" stroke-dasharray="6 4"/>
+<circle cx="{{an.px}}" cy="{{an.py}}" r="{{an.pr}}" fill="#1B1F24" stroke="#fff" stroke-width="2"/>
+<text x="{{an.px}}" y="{{an.pty}}" font-size="13" font-weight="600" text-anchor="middle" font-family="IBM Plex Sans" fill="#1B1F24" fill-opacity="{{an.show}}">P</text>
+<path d="{{an.marker}}" stroke="#1F4E79" stroke-width="2.5" fill="none"/>
+</svg>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<button type="button" class="btn" onClick="{{an.check}}">Check answer</button>
+<button type="button" class="pill" aria-pressed="{{an.hint}}" onClick="{{an.toggleHint}}">{{an.hintLabel}}</button>
+<button type="button" class="pill" onClick="{{an.next}}">New picture</button>
+</div>
+<p aria-live="polite"><strong>{{an.msg}}</strong></p>
+<label for="agx">Marker across: {{an.gxr}}</label>
+<input id="agx" type="range" min="0" max="360" value="{{an.gxr}}" onChange="{{an.setX}}">
+<label for="agy">Marker height (your horizon): {{an.gyr}}</label>
+<input id="agy" type="range" min="0" max="240" value="{{an.gyr}}" onChange="{{an.setY}}">
+</div>
+<div class="card">
+<h3>On a real painting</h3>
+<p>Lay a ruler along two edges that run straight into depth, such as a floor board and a table edge. Where they cross is P. The horizon runs level through P. Then ask: where did the painter stand, and why there?</p>
+</div>
+</sc-if>
+
+<sc-if value="{{isCr}}" hint-placeholder-val="{{ false }}">
+<div class="card">
+<h2>Figures in depth</h2>
+<p>From chapter 5. All four people are the same real height. Figure I is drawn for you. Drag the orange squares to set the heights of II, III and IV.</p>
+<svg viewBox="0 0 360 240" role="img" aria-label="Four standing figures at different depths, with a horizon line." onPointerDown="{{cr.down}}" onPointerMove="{{cr.move}}" onPointerUp="{{cr.up}}" onPointerCancel="{{cr.up}}" style="width:100%;height:auto;background:#F6F7F8;border-radius:6px;display:block;touch-action:none">
+<rect x="0" y="{{cr.Hy}}" width="360" height="{{cr.gh}}" fill="#E6E1D6"/>
+<line x1="0" y1="{{cr.Hy}}" x2="360" y2="{{cr.Hy}}" stroke="#1B1F24" stroke-width="1.5"/>
+<text x="6" y="{{cr.hly}}" font-size="12" font-family="IBM Plex Sans" fill="#1B1F24">Horizon (eye level)</text>
+<path d="{{cr.hint}}" stroke="#B5832A" stroke-width="1.2" stroke-dasharray="5 4" fill="none"/>
+<path d="{{cr.ref}}" fill="#1F4E79"/>
+<path d="{{cr.guess}}" fill="#D9E4EE" stroke="#1F4E79" stroke-width="1.5"/>
+<path d="{{cr.ghost}}" fill="none" stroke="#7A5516" stroke-width="1.5" stroke-dasharray="3 3"/>
+<path d="{{cr.handles}}" fill="#B5832A" stroke="#fff" stroke-width="1.5"/>
+<text x="{{cr.t0.x}}" y="{{cr.t0.y}}" font-size="13" font-weight="600" text-anchor="middle" font-family="IBM Plex Sans" fill="#1B1F24">I</text>
+<text x="{{cr.t1.x}}" y="{{cr.t1.y}}" font-size="13" font-weight="600" text-anchor="middle" font-family="IBM Plex Sans" fill="#1B1F24">II</text>
+<text x="{{cr.t2.x}}" y="{{cr.t2.y}}" font-size="13" font-weight="600" text-anchor="middle" font-family="IBM Plex Sans" fill="#1B1F24">III</text>
+<text x="{{cr.t3.x}}" y="{{cr.t3.y}}" font-size="13" font-weight="600" text-anchor="middle" font-family="IBM Plex Sans" fill="#1B1F24">IV</text>
+</svg>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<button type="button" class="btn" onClick="{{cr.check}}">Check heights</button>
+<button type="button" class="pill" aria-pressed="{{cr.hintOn}}" onClick="{{cr.toggleHint}}">{{cr.hintLabel}}</button>
+<button type="button" class="pill" onClick="{{cr.reset}}">Start again</button>
+</div>
+<p aria-live="polite"><strong>{{cr.msg}}</strong></p>
+<label for="ch">Viewer’s eye level: {{cr.eyeLabel}}</label>
+<input id="ch" type="range" min="40" max="190" value="{{cr.Hy}}" onChange="{{cr.setEye}}">
+<label for="c1">Height of II: {{cr.g1}}</label>
+<input id="c1" type="range" min="8" max="200" value="{{cr.g1}}" onChange="{{cr.set1}}">
+<label for="c2">Height of III: {{cr.g2}}</label>
+<input id="c2" type="range" min="8" max="200" value="{{cr.g2}}" onChange="{{cr.set2}}">
+<label for="c3">Height of IV: {{cr.g3}}</label>
+<input id="c3" type="range" min="8" max="200" value="{{cr.g3}}" onChange="{{cr.set3}}">
+</div>
+<div class="card">
+<h3>The rule</h3>
+<p>When the viewer stands on the same ground as the people, the horizon crosses every figure at the same point of its body. To carry a height into depth, draw lines from the feet and the head of figure I to any point on the horizon. Between those two lines, a vertical gives the true height at that depth.</p>
+</div>
+</sc-if>
+
+<sc-if value="{{isRays}}" hint-placeholder-val="{{ false }}">
+<div class="card">
+<h2>Light, shadow and reflection</h2>
+<svg viewBox="0 0 360 240" role="img" aria-label="A pillar on the ground with a cast shadow and a reflection. Sliders change the sun direction and height." style="width:100%;height:auto;background:#F6F7F8;border-radius:6px;display:block">
+<rect x="0" y="110" width="360" height="130" fill="#DCE1E5"/>
+<polygon points="{{shadow}}" fill="#2E3236" fill-opacity="0.55"/>
+<rect x="140" y="170" width="20" height="{{rfH}}" fill="#1F4E79" fill-opacity="0.3"/>
+<rect x="140" y="100" width="20" height="70" fill="#D9E4EE" stroke="#1F4E79" stroke-width="2"/>
+<line x1="{{sunX}}" y1="{{sunY}}" x2="150" y2="100" stroke="#B5832A" stroke-width="1.5" stroke-dasharray="4 3"/>
+<circle cx="{{sunX}}" cy="{{sunY}}" r="12" fill="#E0B654" stroke="#7A5516" stroke-width="1.5"/>
+</svg>
+<label for="az">Sun direction: {{az}}°</label>
+<input id="az" type="range" min="10" max="170" value="{{az}}" onChange="{{setAz}}">
+<label for="alt">Sun height: {{alt}}°</label>
+<input id="alt" type="range" min="10" max="80" value="{{alt}}" onChange="{{setAlt}}">
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<button type="button" class="pill" aria-pressed="{{shOn}}" onClick="{{toggleSh}}">{{shLabel}}</button>
+<button type="button" class="pill" aria-pressed="{{rfOn}}" onClick="{{toggleRf}}">{{rfLabel}}</button>
+</div>
+<p>A low sun makes a long shadow. A high sun makes a short one. This is a simplified ground view. The reflection in flat water has the same height as the object, below its base.</p>
+</div>
+</sc-if>
+
+<sc-if value="{{isQuiz}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="flex-direction:row;justify-content:space-between;align-items:center">
+<div><h2>Practice</h2><p>Your first answer counts.</p></div>
+<div style="font-size:28px;font-weight:600;color:#1F4E79" aria-live="polite">{{score}} / {{total}}</div>
+</div>
+<sc-for list="{{questions}}" as="q" hint-placeholder-count="5">
+<div class="card">
+<h3>{{q.q}}</h3>
+<sc-for list="{{q.options}}" as="o" hint-placeholder-count="4"><button type="button" class="{{o.cls}}" disabled="{{q.done}}" onClick="{{o.pick}}"><span>{{o.text}}</span><strong>{{o.mark}}</strong></button></sc-for>
+<sc-if value="{{q.done}}" hint-placeholder-val="{{ false }}"><p><strong>Why:</strong> {{q.why}}</p></sc-if>
+</div>
+</sc-for>
+<div><button type="button" class="btn" onClick="{{retake}}">Retake practice</button></div>
+</sc-if>
+
+</main>
+</div>
+</template>
+<script>
+(function () {
+  class DCLogic { constructor() { this.props = {}; this.state = {}; } setState(p) { this.state = { ...this.state, ...p }; schedule(); } forceUpdate() { schedule(); } }
+  window.DCLogic = DCLogic;
+  // Downloads: save a file straight from the browser.
+  const downloads = { save: async ({ filename, data }) => {
+    const blob = data instanceof Blob ? data : new Blob([data], { type: /\.svg$/.test(filename) ? 'image/svg+xml' : 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); return { saved: true }; } };
+  window.claude = { use: async (n) => (n === 'downloads' ? downloads : null) };
+
+  const HOLE = /\{\{\s*([\w$.]+)\s*\}\}/g;
+  const get = (p, sc) => { p = p.trim(); if (p === 'true') return true; if (p === 'false') return false; if (/^-?\d+(\.\d+)?$/.test(p)) return Number(p);
+    return p.split('.').reduce((o, k) => (o == null ? undefined : o[k]), sc); };
+  const whole = (v) => { const m = /^\{\{\s*([\w$.]+)\s*\}\}$/.exec(v); return m && m[1]; };
+  const interp = (v, sc) => v.replace(HOLE, (_, p) => { const x = get(p, sc); return x == null ? '' : String(x); });
+  const EV = { onclick: 'click', onchange: 'input', onpointerdown: 'pointerdown', onpointermove: 'pointermove', onpointerup: 'pointerup', onpointercancel: 'pointercancel' };
+
+  function listen(el, type) { el._ls = el._ls || {}; if (el._ls[type]) return; el._ls[type] = true;
+    el.addEventListener(type, (e) => { const f = el._h && el._h[type]; if (f) f(e); }); }
+
+  function build(n, sc, out) {
+    if (n.nodeType === 3) { out.push(document.createTextNode(interp(n.nodeValue, sc))); return; }
+    if (n.nodeType !== 1) return;
+    const tag = n.localName;
+    if (tag === 'sc-for') { const list = get(whole(n.getAttribute('list')) || '', sc) || []; const as = n.getAttribute('as');
+      list.forEach((it, i) => n.childNodes.forEach((ch) => build(ch, { ...sc, [as]: it, $index: i }, out))); return; }
+    if (tag === 'sc-if') { if (get(whole(n.getAttribute('value')) || '', sc)) n.childNodes.forEach((ch) => build(ch, sc, out)); return; }
+    const el = n.cloneNode(false); el._h = {};
+    for (const a of [...n.attributes]) {
+      const name = a.name.toLowerCase(), w = whole(a.value);
+      if (EV[name]) { el.removeAttribute(a.name); const f = w && get(w, sc); if (typeof f === 'function') { el._h[EV[name]] = f; listen(el, EV[name]); } continue; }
+      if (name.startsWith('hint-')) { el.removeAttribute(a.name); continue; }
+      if (w) { const v = get(w, sc);
+        if (name === 'disabled') { el.removeAttribute(a.name); if (v) el.setAttribute('disabled', ''); continue; }
+        el.setAttribute(a.name, v == null ? '' : String(v)); if (name === 'value') el._val = v == null ? '' : String(v); continue; }
+      el.setAttribute(a.name, interp(a.value, sc));
+    }
+    const kids = []; n.childNodes.forEach((ch) => build(ch, sc, kids)); kids.forEach((k) => el.appendChild(k));
+    out.push(el);
+  }
+
+  function same(a, b) { return a.nodeType === b.nodeType && a.nodeName === b.nodeName && a.namespaceURI === b.namespaceURI && (a.type || '') === (b.type || ''); }
+  function patch(parent, fresh) {
+    const old = [...parent.childNodes];
+    fresh.forEach((f, i) => {
+      const o = old[i];
+      if (!o || !same(o, f)) { if (o) parent.replaceChild(f, o); else parent.appendChild(f); if (f._val !== undefined) f.value = f._val; return; }
+      if (o.nodeType === 3) { if (o.nodeValue !== f.nodeValue) o.nodeValue = f.nodeValue; return; }
+      for (const a of [...o.attributes]) if (!f.hasAttribute(a.name)) o.removeAttribute(a.name);
+      for (const a of [...f.attributes]) if (o.getAttribute(a.name) !== a.value) o.setAttribute(a.name, a.value);
+      o._h = f._h; for (const t in f._h) listen(o, t);
+      if (f._val !== undefined && o.type !== 'file' && o.value !== f._val) o.value = f._val;
+      patch(o, [...f.childNodes]);
+    });
+    for (let i = fresh.length; i < old.length; i++) parent.removeChild(old[i]);
+  }
+
+  let comp, root, tpl, pending = false;
+  function render() { pending = false; const sc = comp.renderVals(); const out = []; tpl.content.childNodes.forEach((n) => build(n, sc, out)); patch(root, out); }
+  function schedule() { if (!root) return; render(); }
+  window.__dcBoot = (Component) => { tpl = document.getElementById('dc-template'); root = document.getElementById('dc-root'); comp = new Component(); render(); };
+})();
+</script>
+<script>
+
+class Component extends DCLogic {
+renderVals() {
+const s = this.state || {};
+const tab = s.tab ?? 'lessons', li = s.lesson ?? 0;
+const eye = s.eye ?? 70, vx = s.vx ?? 230, lines = s.lines ?? true;
+const az = s.az ?? 60, alt = s.alt ?? 40, shOn = s.shOn ?? true, rfOn = s.rfOn ?? true;
+const ans = s.ans || {};
+const P = (a) => a.map((p) => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+const mode = s.mode ?? 1;
+const bx = s.bx ?? 60, by = s.by ?? 115, bw = s.bw ?? 90, bh = s.bh ?? 80;
+const x0 = bx, x1 = bx + bw, y0 = by, y1 = by + bh, xc = bx + bw / 2, k = 0.55;
+const v1 = Math.min(s.v1 ?? 20, xc - 40), v2 = Math.max(s.v2 ?? 335, xc + 40);
+const v3r = s.v3 ?? 20, v3 = v3r > y0 - 25 && v3r < y1 + 25 ? (v3r < (y0 + y1) / 2 ? y0 - 25 : y1 + 25) : v3r;
+const z = s.zoom ?? 1, pcx = s.pcx ?? 180, pcy = s.pcy ?? 120;
+const vbw = 360 / z, vbh = 240 / z, vbx = pcx - vbw / 2, vby = pcy - vbh / 2;
+const B = (x, y) => [vx + k * (x - vx), eye + k * (y - eye)];
+const X = (a, b, c, d) => { const r = [b[0]-a[0], b[1]-a[1]], q = [d[0]-c[0], d[1]-c[1]]; const den = r[0]*q[1] - r[1]*q[0]; if (Math.abs(den) < 1e-6) return a; const u = ((c[0]-a[0])*q[1] - (c[1]-a[1])*q[0]) / den; return [a[0] + u*r[0], a[1] + u*r[1]]; };
+const at = (c, v, t) => [c[0] + t * (v[0] - c[0]), c[1] + t * (v[1] - c[1])];
+const V1 = [v1, eye], V2 = [v2, eye], V3 = [xc, v3], Ct = [xc, y0], Cb = [xc, y1];
+const seg = (c, v) => 'M' + c[0] + ' ' + c[1] + 'L' + v[0] + ' ' + v[1];
+let geo, pts;
+if (mode === 1) {
+const f = [[x0,y0],[x1,y0],[x1,y1],[x0,y1]], bk = f.map((p) => B(p[0], p[1]));
+pts = f.concat(bk);
+geo = { front: P(f), top: eye < y0 ? P([f[0], f[1], bk[1], bk[0]]) : '', bottom: eye > y1 ? P([f[3], f[2], bk[2], bk[3]]) : '', right: vx > x1 ? P([f[1], f[2], bk[2], bk[1]]) : '', left: vx < x0 ? P([f[0], f[3], bk[3], bk[0]]) : '', con: lines ? f.map((p) => seg(p, [vx, eye])).join('') : '' };
+} else {
+const Lt = at(Ct, V1, 0.45), Rt = at(Ct, V2, 0.4);
+const Lb = mode === 3 ? X(Cb, V1, Lt, V3) : at(Cb, V1, 0.45), Rb = mode === 3 ? X(Cb, V2, Rt, V3) : at(Cb, V2, 0.4);
+pts = [Ct, Cb, Lt, Lb, Rt, Rb];
+geo = { front: '', left: P([Ct, Lt, Lb, Cb]), right: P([Ct, Rt, Rb, Cb]),
+top: eye < y0 ? P([Ct, Lt, X(Lt, V2, Rt, V1), Rt]) : '',
+bottom: eye > y1 ? P([Cb, Lb, X(Lb, V2, Rb, V1), Rb]) : '',
+con: lines ? [Ct, Cb].map((c) => seg(c, V1) + seg(c, V2)).join('') + (mode === 3 ? [Ct, Lt, Rt].map((c) => seg(c, V3)).join('') : '') : '' };
+}
+const bb = [Math.min(...pts.map((p) => p[0])), Math.min(...pts.map((p) => p[1])), Math.max(...pts.map((p) => p[0])), Math.max(...pts.map((p) => p[1]))];
+const hs = mode === 1 ? [['vp', vx, eye], ['rs', x1, y1]] : [['v1', v1, eye], ['v2', v2, eye], ['rs', xc, y1]].concat(mode === 3 ? [['v3', xc, v3]] : []);
+const cl = (v, a, b) => Math.max(a, Math.min(b, v));
+const rect = (e) => e.currentTarget.getBoundingClientRect();
+const svgPt = (e) => { const r = rect(e); return [vbx + (e.clientX - r.left) * vbw / r.width, vby + (e.clientY - r.top) * vbh / r.height]; };
+const down = (e) => { const p = svgPt(e); let best = null, bd = 32 / z;
+hs.forEach((h) => { const d = Math.hypot(p[0] - h[1], p[1] - h[2]); if (d < bd) { bd = d; best = h[0]; } });
+if (!best && p[0] > bb[0] && p[0] < bb[2] && p[1] > bb[1] && p[1] < bb[3]) best = 'box';
+if (!best && Math.abs(p[1] - eye) < 16 / z) best = 'h';
+this._drag = best || 'pan'; this._last = [e.clientX, e.clientY];
+try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {} };
+const move = (e) => { const d = this._drag; if (!d) return; const r = rect(e);
+const dx = (e.clientX - this._last[0]) * vbw / r.width, dy = (e.clientY - this._last[1]) * vbh / r.height;
+const p = svgPt(e).map(Math.round), ny = cl(p[1], 30, 230);
+if (d === 'pan' || d === 'box') { this._last = [e.clientX, e.clientY]; }
+if (d === 'pan') this.setState({ pcx: cl(pcx - dx, -100, 460), pcy: cl(pcy - dy, -60, 300) });
+else if (d === 'box') this.setState({ bx: cl(bx + dx, -100, 400), by: cl(by + dy, 0, 230) });
+else if (d === 'vp') this.setState({ vx: cl(p[0], 10, 350), eye: ny });
+else if (d === 'v1') this.setState({ v1: cl(p[0], 5, xc - 40), eye: ny });
+else if (d === 'v2') this.setState({ v2: cl(p[0], xc + 40, 355), eye: ny });
+else if (d === 'v3') this.setState({ v3: cl(p[1], 5, 235) });
+else if (d === 'rs') this.setState(mode === 1 ? { bw: cl(p[0] - bx, 30, 200), bh: cl(p[1] - by, 30, 160) } : { bh: cl(p[1] - by, 30, 160) });
+else this.setState({ eye: ny }); };
+const up = () => { this._drag = null; };
+const modePills = [[1, 'One point'], [2, 'Two points'], [3, 'Three points']].map((m) => ({ label: m[1], on: mode === m[0], cls: mode === m[0] ? 'pill on' : 'pill', pick: () => this.setState({ mode: m[0] }) }));
+const scene = { v: 1, mode, eye, vx, v1, v2, v3, bx, by, bw, bh, lines };
+const apply = (o) => { if (!o || typeof o !== 'object') throw new Error('bad'); const n = (v, a, b, d) => (typeof v === 'number' && isFinite(v)) ? cl(v, a, b, d) : d;
+this.setState({ mode: [1, 2, 3].includes(o.mode) ? o.mode : 1, eye: n(o.eye, 30, 230, 70), vx: n(o.vx, 10, 350, 230), v1: n(o.v1, 5, 300, 20), v2: n(o.v2, 60, 355, 335), v3: n(o.v3, 5, 235, 20), bx: n(o.bx, -100, 400, 60), by: n(o.by, 0, 230, 115), bw: n(o.bw, 30, 200, 90), bh: n(o.bh, 30, 160, 80), lines: o.lines !== false, note: 'Scene loaded.' }); };
+const save = async (name, data) => { try { const dl = await claude.use('downloads'); if (!dl) throw new Error('none'); await dl.save({ filename: name, data }); this.setState({ note: 'Saved ' + name + '.' }); } catch (err) { this.setState({ note: (err && err.code === 'declined') ? 'Save cancelled.' : 'Saving is not available here.' }); } };
+const svgStr = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + [vbx, vby, vbw, vbh].join(' ') + '" width="720" height="480"><rect x="' + vbx + '" y="' + vby + '" width="' + vbw + '" height="' + vbh + '" fill="#F6F7F8"/><line x1="-3000" y1="' + eye + '" x2="3000" y2="' + eye + '" stroke="#1B1F24" stroke-width="1.5"/><path d="' + geo.con + '" stroke="#B5832A" stroke-dasharray="4 3" fill="none"/><g fill="#D9E4EE" stroke="#1F4E79" stroke-width="2" stroke-linejoin="round">' + ['top', 'bottom', 'left', 'right', 'front'].map((nm) => '<polygon points="' + geo[nm] + '"/>').join('') + '</g></svg>';
+const tabs = [['lessons','Lessons'],['draw','Draw'],['dist','Distance'],['an','Analyse'],['cr','Crowd'],['rays','Light'],['quiz','Practice']].map((t) => ({ label: t[1], on: tab === t[0], cls: tab === t[0] ? 'tab on' : 'tab', pick: () => this.setState({ tab: t[0] }) }));
+const L = [
+{ label: "1. Seeing", title: "How we see: the basic setup", intro: "Book figures 19 to 25. Perspective starts from a fixed eye and a flat picture.", points: ["Normal vision with both eyes covers about 70° to the left and right, 45° up and 65° down.", "The setup has a picture plane, a point of sight, a horizon line and a principal point P straight in front of the eye.", "A distance point D lies on the horizon, as far from P as the eye is from the picture.", "The closer the eye is to the picture, the more the drawing distorts."] },
+{ label: "2. Lines", title: "Lines in perspective", intro: "Book figures 26 to 32. Each kind of line has its own rule.", points: ["Horizontal lines perpendicular to the picture run to the principal point P.", "Horizontal lines parallel to each other run to one common point on the horizon.", "Vertical lines stay vertical.", "Horizontal lines at 45° to the picture run to the distance points D1 and D2."] },
+{ label: "3. Scales", title: "Scales and distance", intro: "Book figures 33 to 37, 43 and 71A. Scales give true sizes in the drawing.", points: ["Draw separate scales for width, height and depth.", "The distance from the eye to the picture should equal the diagonal of the picture.", "You may use half or a quarter of that distance, such as PD/2 or PD/4. Then reduce every size measured in depth by the same factor.", "A longer distance gives a calmer, less distorted view."] },
+{ label: "4. Shapes", title: "Plane figures", intro: "Book figures 35 to 42, 67, 89 to 91 and 101. Flat shapes lie on a grid.", points: ["A square grid comes from its sides and diagonals. The diagonals run to the distance points.", "A circle sits inside a square. Mark 8 points and join them with a smooth curve.", "Octagons, hexagons and parquet floors are built from the same grid.", "A garden or floor plan can be laid over a frontal grid of squares."] },
+{ label: "5. Angled", title: "Angled views", intro: "Book figures 44 to 46 and 55 to 58. Objects turned to the picture need more points.", points: ["Lines at any angle run to vanishing points F1 and F2 on the horizon.", "Division points measure depth along those lines.", "Draw the plan above the horizon so the helper lines do not tangle.", "Enlarge small plans on the picture so the points are easier to place."] },
+{ label: "6. Methods", title: "Methods of construction", intro: "Book figures 47 to 58, 63, 74 to 80 and 85 to 93. The book shows several ways to the same result.", points: ["Architects’ method: build the picture from a plan.", "Pozzo’s method and Dürer’s radial method also start from a plan and a facade.", "The lowered plan method moves the plan down, below the picture, so its points are easier to place.", "The small picture method draws a small version first, then enlarges it.", "The dividing scale and the no-vanishing-point methods help when points fall off the page."] },
+{ label: "7. Slopes", title: "Sloping lines and stairs", intro: "Book figures 49 to 57. Stairs are lines that rise and fall.", points: ["Rising lines run to a point above the horizon. Falling lines run to a point below it.", "Rising lines that run in one direction have their points on a vertical line through that direction’s point on the horizon.", "Draw the stair profile first, then place the steps by the height scale."] },
+{ label: "8. Forms", title: "Complex forms", intro: "Book figures 96 to 100 and 102. Hard shapes start as simple boxes.", points: ["Fit the object inside a prism. Use planes through the prism to place key parts.", "Vases and other round forms are drawn as circles at different heights.", "A person or an animal can be placed in a box the same way.", "Figures of equal height shrink with depth by the height scale."] },
+{ label: "9. Shadows", title: "Light and shadow", intro: "Book figures 130 to 179. Shadows are found with light rays and a base point.", points: ["Sun rays are parallel. The sun can be in front of you, behind you, or its rays can run parallel to the picture.", "For a vertical line, draw a ray from the sun through its top, and a line from the sun’s base point through its foot. The shadow ends where the two cross.", "A lamp is a point source. Its rays spread from one point.", "A face gets darker as the angle between it and the light rays gets smaller.", "On a cone, light changes to shadow along the lines of the cone.", "Light weakens with the square of the distance. Twice as far gives a quarter of the light."] },
+{ label: "10. Mirrors", title: "Reflections", intro: "Book figures 180 to 186. Reflections are found by mirroring the object.", points: ["In still water, each point’s reflection lies as far below the water level as the point is above it.", "In a mirror, the image lies as far behind the mirror as the object is in front.", "Vertical, tilted and flat mirrors each need their own construction.", "A person’s reflection in a mirror follows the same rule point by point."] }
+];
+const lessonPills = L.map((l, i) => ({ label: l.label, on: i === li, cls: i === li ? 'pill on' : 'pill', pick: () => this.setState({ lesson: i }) }));
+const cur = { title: L[li].title, intro: L[li].intro, points: L[li].points.map((t) => ({ text: t })) };
+const H = 70, Ln = Math.min(130, H / Math.tan(alt * Math.PI / 180)), a = az * Math.PI / 180;
+const sdx = -Math.cos(a) * Ln, sdy = -Math.sin(a) * Ln * 0.4, gx = 150, gy = 170;
+const shadow = shOn ? P([[gx-10,gy],[gx+10,gy],[gx+10+sdx,gy+sdy],[gx-10+sdx,gy+sdy]]) : '';
+const Q = [
+{ q: "1. About how wide is normal vision to each side with both eyes?", o: ["About 70°", "About 45°", "About 90°", "About 30°"], c: 0, why: "Figure 19 shows about 70° left and right, 45° up and 65° down." },
+{ q: "2. Where do horizontal lines perpendicular to the picture meet?", o: ["At any point on the ground", "At the principal point P", "At a distance point", "They do not meet"], c: 1, why: "They run straight into depth, so they meet at P on the horizon." },
+{ q: "3. Where do horizontal lines at 45° to the picture meet?", o: ["At the principal point", "At the distance points D1 and D2", "On the picture edge", "Below the horizon"], c: 1, why: "Figure 32 shows 45° lines running to D1 or D2." },
+{ q: "4. How far should the eye be from the picture?", o: ["As far as the picture’s diagonal", "As far as its width", "Half its height", "Anywhere, it has no effect"], c: 0, why: "Figure 71A states that the distance equals the diagonal of the picture." },
+{ q: "5. You use PD/2 instead of the full distance. What else must you do?", o: ["Nothing", "Reduce all depth sizes by the same factor", "Double the horizon height", "Move P to the edge"], c: 1, why: "Figure 43 says every size measured in depth is reduced the same way." },
+{ q: "6. What does the small picture method do?", o: ["Builds the drawing small, then enlarges it", "Removes the horizon", "Draws shadows only", "Replaces the plan"], c: 0, why: "Figures 76, 77 and 85 to 88 work on a small picture, then scale up." },
+{ q: "7. Light is at twice the distance. How much light is left?", o: ["Half", "A quarter", "The same", "Double"], c: 1, why: "Light weakens with the square of the distance, so 2 × 2 = 4." },
+{ q: "8. On a cone, where does light change to shadow?", o: ["Along the lines of the cone", "At the base only", "Across the middle", "Nowhere"], c: 0, why: "The plate with figures 178A and 179 notes that the change runs along the cone’s lines." },
+{ q: "9. How do you start drawing a horse or a person in perspective?", o: ["Fit them inside a prism", "Draw the shadow first", "Draw the horizon last", "Use a mirror"], c: 0, why: "Figures 96 and 97 inscribe the subject in a prism with helper planes." }
+];
+const cl2 = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const f1 = (n) => n.toFixed(1);
+const svgAt = (e, w, h) => { const r = e.currentTarget.getBoundingClientRect(); return [(e.clientX - r.left) * w / r.width, (e.clientY - r.top) * h / r.height]; };
+const person = (x, fy, h) => { const r = h * 0.09, top = fy - h, bw = h * 0.26;
+  return 'M' + f1(x - r) + ' ' + f1(top + r) + 'a' + f1(r) + ' ' + f1(r) + ' 0 1 0 ' + f1(2 * r) + ' 0a' + f1(r) + ' ' + f1(r) + ' 0 1 0 ' + f1(-2 * r) + ' 0Z'
+    + 'M' + f1(x - bw / 2) + ' ' + f1(top + 2.2 * r) + 'H' + f1(x + bw / 2) + 'V' + f1(fy) + 'H' + f1(x - bw / 2) + 'Z'; };
+const poly = (a) => 'M' + a.map((q) => f1(q[0]) + ' ' + f1(q[1])).join('L') + 'Z';
+
+// Idea 2: viewing distance (chapter 13)
+const dist = (() => {
+  const Hcm = s.dH ?? 175, A = s.dA ?? 37, Hm = Hcm / 100, t = Math.tan(A * Math.PI / 360);
+  const need = Hm / (2 * t), maxD = Math.max(5, Math.ceil(need * 1.6));
+  const D = cl2(s.dD ?? 2, 0.2, maxD), fits = D >= need - 0.05;
+  const sc = Math.min(290 / Math.max(D, need), 150 / Hm), gy = 185, sxr = 320;
+  const ex = sxr - D * sc, ey = gy - Hm / 2 * sc, nx = sxr - need * sc, half = t * (350 - ex);
+  const sw = Math.max(6, Math.min(40, Hm * sc * 0.3));
+  const presets = [['Vase', 30], ['Person', 175], ['Door', 210], ['House', 800]].map((q) => ({ label: q[0] + ' ' + q[1] + ' cm', on: Hcm === q[1], cls: Hcm === q[1] ? 'pill on' : 'pill', pick: () => this.setState({ dH: q[1] }) }));
+  return { Hcm, A, D: f1(D), Dv: D, maxD, presets,
+    cone: 'M' + f1(ex) + ' ' + f1(ey) + 'L350 ' + f1(ey - half) + 'L350 ' + f1(ey + half) + 'Z',
+    sx: f1(sxr - sw / 2), sy: f1(gy - Hm * sc), sw: f1(sw), sh: f1(Hm * sc), col: fits ? '#1F4E79' : '#B5832A',
+    ex: f1(ex), ey: f1(ey), ly: f1(ey - 10), nx: f1(nx), needPath: 'M' + f1(nx) + ' 185V166',
+    needLabel: fits ? 'Minimum' : 'Stand here',
+    msg: fits ? 'The whole subject fits in clear view. The minimum distance is ' + f1(need) + ' m, about ' + f1(need / Hm) + ' times its height.'
+              : 'Too close. Part of the subject falls outside clear view. Step back to at least ' + f1(need) + ' m.',
+    setH: (e) => this.setState({ dH: Number(e.target.value) }), setA: (e) => this.setState({ dA: Number(e.target.value) }), setD: (e) => this.setState({ dD: Number(e.target.value) }) };
+})();
+
+// Idea 4: find the viewpoint (chapter 5)
+const an = (() => {
+  const seed = s.anSeed ?? 1; let r = (seed * 7919) % 233280;
+  const rnd = () => { r = (r * 9301 + 49297) % 233280; return r / 233280; };
+  const px = 110 + rnd() * 140, py = 70 + rnd() * 80, k = 0.34 + rnd() * 0.12;
+  const bk = (x, y, f) => [px + (f ?? k) * (x - px), py + (f ?? k) * (y - py)];
+  const TL = bk(0, 0), TR = bk(360, 0), BR = bk(360, 240), BL = bk(0, 240);
+  let fl = '';
+  for (let x = 0; x <= 360; x += 45) { const e = bk(x, 240); fl += 'M' + x + ' 240L' + f1(e[0]) + ' ' + f1(e[1]); }
+  for (let i = 1; i < 12; i++) { const f = 1 / (1 + 0.5 * i); if (f <= k) break; const y = py + f * (240 - py); fl += 'M' + f1(px - f * px) + ' ' + f1(y) + 'H' + f1(px + f * (360 - px)); }
+  const wb = BR[0] - BL[0], hb = BL[1] - TL[1];
+  const door = poly([[BL[0] + 0.6 * wb, BL[1] - 0.62 * hb], [BL[0] + 0.78 * wb, BL[1] - 0.62 * hb], [BL[0] + 0.78 * wb, BL[1]], [BL[0] + 0.6 * wb, BL[1]]]);
+  const win = poly([bk(0, 50, 0.85), bk(0, 50, 0.6), bk(0, 140, 0.6), bk(0, 140, 0.85)]);
+  const pic = poly([bk(360, 70, 0.8), bk(360, 70, 0.55), bk(360, 130, 0.55), bk(360, 130, 0.8)]);
+  const gx = s.anGx ?? 40, gy = s.anGy ?? 30, checked = !!s.anChecked, hint = !!s.anHint;
+  const ext = (a, b, m) => 'M' + f1(a[0]) + ' ' + f1(a[1]) + 'L' + f1(a[0] + (b[0] - a[0]) * m) + ' ' + f1(a[1] + (b[1] - a[1]) * m);
+  const err = Math.hypot(gx - px, gy - py), herr = Math.abs(gy - py);
+  const set = (x, y) => this.setState({ anGx: cl2(x, 0, 360), anGy: cl2(y, 0, 240), anChecked: false });
+  return { ceil: poly([[0, 0], [360, 0], TR, TL]), left: poly([[0, 0], TL, BL, [0, 240]]), right: poly([[360, 0], TR, BR, [360, 240]]),
+    floor: poly([[0, 240], [360, 240], BR, BL]), back: poly([TL, TR, BR, BL]), floorLines: fl, details: door + win + pic,
+    hintLines: hint ? ext([0, 0], [px, py], 1.25) + ext([360, 240], [px, py], 1.25) : '',
+    answer: checked ? ext([0, 240], [px, py], 1) + ext([360, 0], [px, py], 1) + ext([0, 0], [px, py], 1) + ext([360, 240], [px, py], 1) + 'M0 ' + f1(py) + 'H360' : '',
+    px: f1(px), py: f1(py), pr: checked ? 6 : 0, pty: f1(py - 11), show: checked ? 1 : 0,
+    gx: f1(gx), gy: f1(gy), gxr: Math.round(gx), gyr: Math.round(gy), hint, hintLabel: hint ? 'Hide hint' : 'Show hint',
+    marker: 'M' + f1(gx - 14) + ' ' + f1(gy) + 'H' + f1(gx - 4) + 'M' + f1(gx + 4) + ' ' + f1(gy) + 'H' + f1(gx + 14) + 'M' + f1(gx) + ' ' + f1(gy - 14) + 'V' + f1(gy - 4) + 'M' + f1(gx) + ' ' + f1(gy + 4) + 'V' + f1(gy + 14),
+    msg: !checked ? 'Place the marker where the edges into depth would meet.'
+      : (err < 6 ? 'Very close. You found P.' : err < 15 ? 'Close. Look again at where the edges meet.' : 'Not yet. Extend two floor or ceiling edges until they cross.') + ' Your horizon is ' + Math.round(herr) + ' units off.',
+    down: (e) => { this._anDrag = true; const q = svgAt(e, 360, 240); set(q[0], q[1]); try { e.currentTarget.setPointerCapture(e.pointerId); } catch (x) {} },
+    move: (e) => { if (!this._anDrag) return; const q = svgAt(e, 360, 240); set(q[0], q[1]); },
+    up: () => { this._anDrag = false; },
+    check: () => this.setState({ anChecked: true }), toggleHint: () => this.setState({ anHint: !hint }),
+    next: () => this.setState({ anSeed: seed + 1, anChecked: false, anHint: false, anGx: 40, anGy: 30 }),
+    setX: (e) => set(Number(e.target.value), gy), setY: (e) => set(gx, Number(e.target.value)) };
+})();
+
+// Idea 5: figures in depth (chapter 5)
+const cr = (() => {
+  const Hy = s.crH ?? 113, h0 = 120, fx0 = 60, fy0 = 225, Vx = 345;
+  const rs = [0.62, 0.38, 0.2], xs = [150, 228, 296];
+  const G = s.crG || [60, 60, 60], checked = !!s.crChecked, hintOn = !!s.crHint;
+  const figs = rs.map((r, i) => { const fy = Hy + (fy0 - Hy) * r, right = h0 * r; return { x: xs[i], fy, right, g: G[i], err: Math.abs(G[i] - right) / right }; });
+  let hint = '';
+  if (hintOn || checked) {
+    hint = 'M' + fx0 + ' ' + fy0 + 'L' + Vx + ' ' + Hy + 'M' + fx0 + ' ' + (fy0 - h0) + 'L' + Vx + ' ' + Hy;
+    figs.forEach((f) => { const t = (fy0 - f.fy) / (fy0 - Hy), xa = fx0 + t * (Vx - fx0), yh = fy0 - h0 + t * (Hy - fy0 + h0);
+      hint += 'M' + f1(xa) + ' ' + f1(f.fy) + 'V' + f1(yh) + 'M' + f1(xa) + ' ' + f1(f.fy) + 'H' + f1(f.x) + 'M' + f1(xa) + ' ' + f1(yh) + 'H' + f1(f.x); });
+  }
+  const setG = (i, v) => { const cur = ((this.state && this.state.crG) || [60, 60, 60]).slice(); cur[i] = Math.round(cl2(v, 8, 200)); this.setState({ crG: cur, crChecked: false }); };
+  const cross = (fy0 - Hy) / h0, allOk = figs.every((f) => f.err < 0.08);
+  const where = cross >= 1 ? 'The horizon is above every head, so the viewer is higher than the people.' : 'The horizon crosses each person at ' + Math.round(cross * 100) + '% of their height from the feet.';
+  return { Hy, gh: 240 - Hy, hly: Hy - 6, checked, hintOn, hintLabel: hintOn ? 'Hide construction lines' : 'Show construction lines',
+    eyeLabel: cross >= 1 ? 'above the heads' : cross > 0.8 ? 'standing, near head height' : 'low, sitting',
+    ref: person(fx0, fy0, h0), guess: figs.map((f) => person(f.x, f.fy, f.g)).join(''),
+    ghost: checked ? figs.map((f) => person(f.x, f.fy, f.right)).join('') : '',
+    handles: figs.map((f) => 'M' + f1(f.x - 7) + ' ' + f1(f.fy - f.g - 7) + 'h14v14h-14Z').join(''), hint,
+    t0: { x: fx0, y: fy0 - h0 - 8 }, t1: { x: xs[0], y: f1(Math.min(figs[0].fy - figs[0].g, figs[0].fy - figs[0].right) - 12) },
+    t2: { x: xs[1], y: f1(Math.min(figs[1].fy - figs[1].g, figs[1].fy - figs[1].right) - 12) }, t3: { x: xs[2], y: f1(Math.min(figs[2].fy - figs[2].g, figs[2].fy - figs[2].right) - 12) },
+    g1: G[0], g2: G[1], g3: G[2],
+    msg: !checked ? 'Set the three heights, then check.' : (allOk ? 'Well done. All three heights are right. ' : 'Some heights are off: ' + ['II', 'III', 'IV'].map((n, i) => n + ' ' + Math.round(figs[i].err * 100) + '%').join(', ') + '. The dashed outlines show the right heights. ') + where,
+    down: (e) => { const q = svgAt(e, 360, 240); let best = -1, bd = 28; figs.forEach((f, i) => { const d = Math.hypot(q[0] - f.x, q[1] - (f.fy - f.g)); if (d < bd) { bd = d; best = i; } }); this._crDrag = best; if (best >= 0) { try { e.currentTarget.setPointerCapture(e.pointerId); } catch (x) {} } },
+    move: (e) => { const i = this._crDrag; if (i == null || i < 0) return; const q = svgAt(e, 360, 240); setG(i, figs[i].fy - q[1]); },
+    up: () => { this._crDrag = -1; },
+    check: () => this.setState({ crChecked: true }), toggleHint: () => this.setState({ crHint: !hintOn }),
+    reset: () => this.setState({ crG: [60, 60, 60], crChecked: false, crHint: false }),
+    setEye: (e) => this.setState({ crH: Number(e.target.value), crChecked: false }),
+    set1: (e) => setG(0, Number(e.target.value)), set2: (e) => setG(1, Number(e.target.value)), set3: (e) => setG(2, Number(e.target.value)) };
+})();
+
+const questions = Q.map((q, qi) => {
+const done = ans[qi] !== undefined;
+return { q: q.q, done, why: q.why, options: q.o.map((t, oi) => {
+const right = oi === q.c, mine = ans[qi] === oi;
+return { text: t, mark: done && right ? 'Correct' : (done && mine ? 'Your answer' : ''), cls: !done ? 'opt' : (right ? 'opt ok' : (mine ? 'opt bad' : 'opt dim')),
+pick: () => { const cur = (this.state && this.state.ans) || {}; if (cur[qi] === undefined) this.setState({ ans: { ...cur, [qi]: oi } }); } };
+}) };
+});
+const score = Q.filter((q, qi) => ans[qi] === q.c).length;
+return {
+tabs, isLessons: tab === 'lessons', isDraw: tab === 'draw', isDist: tab === 'dist', isAn: tab === 'an', isCr: tab === 'cr', dist, an, cr,
+isFirst: li === 0, isLast: li === L.length - 1, lessonPos: (li + 1) + ' of ' + L.length,
+prev: () => this.setState({ lesson: Math.max(0, li - 1) }), next: () => this.setState({ lesson: Math.min(L.length - 1, li + 1) }),
+goDraw: () => this.setState({ tab: 'draw' }), isRays: tab === 'rays', isQuiz: tab === 'quiz',
+eye, vx, v1, v2, v3, lines, linesLabel: lines ? 'Hide construction lines' : 'Show construction lines',
+...geo, vb: [vbx, vby, vbw, vbh].join(' '), hx1: mode === 1 ? vx : v1, hx2: v2, hx3: xc, hy3: v3, hr: 8 / z, r2: mode >= 2 ? 8 / z : 0, r3: mode === 3 ? 8 / z : 0,
+rsx: (mode === 1 ? x1 : xc) - 6 / z, rsy: y1 - 6 / z, rsz: 12 / z,
+modePills, down, move, up, isOne: mode === 1, isTwo: mode >= 2, isThree: mode === 3,
+hint: mode === 1 ? 'Raise the eye level above the box to see its top.' : (mode === 2 ? 'Each side of the box runs to its own point. Vertical edges stay vertical.' : 'The third point makes vertical edges meet. Above the box suits an upward view.'),
+setV1: (e) => this.setState({ v1: cl(Number(e.target.value), 5, xc - 40) }),
+setV2: (e) => this.setState({ v2: cl(Number(e.target.value), xc + 40, 355) }),
+setV3: (e) => this.setState({ v3: Number(e.target.value) }),
+zoomIn: () => this.setState({ zoom: Math.min(4, z * 1.5) }), zoomOut: () => this.setState({ zoom: Math.max(1, z / 1.5) }),
+resetView: () => this.setState({ zoom: 1, pcx: 180, pcy: 120 }),
+resetAll: () => this.setState({ mode: 1, eye: 70, vx: 230, v1: 20, v2: 335, v3: 20, bx: 60, by: 115, bw: 90, bh: 80, lines: true, zoom: 1, pcx: 180, pcy: 120, note: '' }),
+exportSvg: () => save('perspective-drawing.svg', svgStr),
+saveFile: () => save('perspective-scene.json', JSON.stringify(scene, null, 2)),
+loadFile: (e) => { const f = e.target.files && e.target.files[0]; if (!f || f.size > 100000) { this.setState({ note: 'Choose a small scene file.' }); return; } const r = new FileReader(); r.onload = () => { try { apply(JSON.parse(r.result)); } catch (err) { this.setState({ note: 'That file is not a valid scene.' }); } }; r.readAsText(f); },
+makeCode: () => { const c = JSON.stringify(scene); this.setState({ code: c, note: 'Scene code ready. Copy it from the box.' }); try { navigator.clipboard.writeText(c).catch(() => {}); } catch (err) {} },
+loadCode: () => { try { apply(JSON.parse(s.code || '')); } catch (err) { this.setState({ note: 'That code is not a valid scene.' }); } },
+setCode: (e) => this.setState({ code: e.target.value }), code: s.code ?? '', note: s.note ?? '',
+labY: eye - 6 / z, labX: vbx + 8 / z, fs: 13 / z,
+setEye: (e) => this.setState({ eye: Number(e.target.value) }),
+setVx: (e) => this.setState({ vx: Number(e.target.value) }),
+toggleLines: () => this.setState({ lines: !lines }),
+lessonPills, cur,
+az, alt, shadow, shOn, rfOn, rfH: rfOn ? 70 : 0,
+sunX: 180 + Math.cos(a) * 150, sunY: 20 + (80 - alt) * 0.5,
+shLabel: shOn ? 'Hide shadow' : 'Show shadow', rfLabel: rfOn ? 'Hide reflection' : 'Show reflection',
+setAz: (e) => this.setState({ az: Number(e.target.value) }),
+setAlt: (e) => this.setState({ alt: Number(e.target.value) }),
+toggleSh: () => this.setState({ shOn: !shOn }), toggleRf: () => this.setState({ rfOn: !rfOn }),
+questions, score, total: Q.length, retake: () => this.setState({ ans: {} })
+};
+}
+}
+
+window.__dcBoot(Component);
+</script>
+</body>
+</html>
