@@ -1,0 +1,2007 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2E3236">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Perspective">
+<title>Perspective: A Visual Course</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Serif:wght@600&display=swap">
+<style>
+body{margin:0;background:#ECEEF0}
+*{box-sizing:border-box}
+button{font:inherit;cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+button:active{transform:scale(.97)}
+button:focus-visible,summary:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #E0B654;outline-offset:2px}
+.app{min-height:100vh;display:flex;flex-direction:column;background:#ECEEF0;font-family:'IBM Plex Sans',sans-serif;color:#1B1F24;-webkit-tap-highlight-color:transparent}
+.topbar{position:sticky;top:0;z-index:5;background:#2E3236;color:#EDE6D6;padding:calc(10px + env(safe-area-inset-top)) 16px 10px}
+.tb-in{max-width:720px;margin:0 auto;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.brand{font-family:'IBM Plex Serif',serif;font-size:20px;font-weight:600;margin:0}
+.ttl{font-size:15px;font-weight:600;color:#CFC6AE}
+.main{flex:1;width:100%;max-width:720px;margin:0 auto;padding:12px 12px 20px;display:flex;flex-direction:column;gap:12px}
+.bnav{position:sticky;bottom:0;z-index:5;background:#fff;border-top:1px solid #D5D9DD;padding-bottom:env(safe-area-inset-bottom)}
+.bn-in{max-width:720px;margin:0 auto;display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
+.bn{min-height:58px;min-width:0;padding:0 1px;border:0;background:none;color:#4A5560;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11.5px;font-weight:600}
+.bn svg{width:24px;height:24px}
+.bn.on{color:#1F4E79}
+.bn.on svg{background:#DCE7F2;border-radius:12px;width:44px;padding:0 10px}
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:#DDE2E7;border-radius:12px;padding:3px;gap:3px}
+.seg button{min-height:44px;border:0;border-radius:10px;background:transparent;color:#1B1F24;font-size:15px;font-weight:600;padding:0 4px}
+.seg button.on{background:#fff;color:#1F4E79;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.icons{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.icons::-webkit-scrollbar{display:none}
+.ib{flex:none;min-width:72px;min-height:64px;border:1px solid #C5CBD1;border-radius:12px;background:#fff;color:#1F4E79;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;font-weight:600;padding:6px 8px;white-space:nowrap}
+.ib svg{width:26px;height:26px}
+.exgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible}
+.exgrid .ib{min-width:0;white-space:normal;text-align:center;line-height:1.15;padding:6px 4px}
+.ib.on{background:#1F4E79;color:#fff;border-color:#1F4E79}
+.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px}
+.tl{min-height:60px;border:0;border-radius:12px;background:#fff;color:#1F4E79;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:12px;font-weight:600;padding:4px}
+.tl svg{width:24px;height:24px}
+.tl.on{background:#1F4E79;color:#fff}
+.canvas{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.canvas svg,svg[role=img]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.status{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:12px;background:#fff;font-size:15px;line-height:1.45}
+.dot{width:10px;height:10px;border-radius:5px;flex:none;margin-top:6px}
+.small{font-size:15px;line-height:1.5;color:#4A5560;margin:0}
+details.sheet{background:#fff;border-radius:12px}
+details.sheet summary{min-height:52px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;font-weight:600;font-size:16px;list-style:none;cursor:pointer;-webkit-user-select:none;user-select:none}
+details.sheet summary::-webkit-details-marker{display:none}
+details.sheet summary svg{width:20px;height:20px;transition:transform .2s}
+details.sheet[open] summary svg{transform:rotate(180deg)}
+.sheet-body{padding:0 16px 16px;display:flex;flex-direction:column;gap:10px}
+.sheet-body label,.sheet-body p{font-size:16px;line-height:1.5;margin:0}
+.pill{min-height:44px;padding:0 16px;border-radius:10px;border:1px solid #1F4E79;background:#fff;color:#1F4E79;font-size:15px;font-weight:600}
+.pill.on{background:#1F4E79;color:#fff}
+.pill{flex:none;white-space:nowrap}
+.pill:disabled{opacity:.45;cursor:default}
+.lessons{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.card{background:#fff;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.card h2,.card h3{margin:0;font-family:'IBM Plex Serif',serif;color:#1B1F24}
+.card h2{font-size:22px}
+.card p,.card li,.card label{font-size:16px;line-height:1.5;color:#1B1F24;margin:0}
+.opt{display:flex;justify-content:space-between;gap:12px;align-items:center;width:100%;min-height:52px;padding:10px 14px;border-radius:12px;border:1px solid #AEB5BC;background:#fff;color:#1B1F24;font-size:16px;text-align:left}
+.opt.ok{border:2px solid #1D6B3A;background:#E3F2E8}
+.opt.bad{border:2px solid #A63D2F;background:#FBE9E6}
+.opt.dim{background:#F3F4F5;color:#4A5560}
+.btn{min-height:48px;padding:0 20px;border:0;border-radius:12px;background:#1F4E79;color:#fff;font-size:16px;font-weight:600}
+input[type=range]{width:100%;min-height:44px;accent-color:#1F4E79}
+@media (prefers-reduced-motion: reduce){button:active{transform:none}details.sheet summary svg{transition:none}}
+</style>
+</head>
+<body>
+<div id="dc-root"></div>
+<template id="dc-template">
+<div class="app">
+<header class="topbar"><div class="tb-in"><h1 class="brand">Perspective</h1><span class="ttl">{{secTitle}}</span></div></header>
+<main class="main">
+<sc-if value="{{isEx}}" hint-placeholder-val="{{ false }}">
+<div class="icons exgrid" role="group" aria-label="Choose an exercise">
+<sc-for list="{{exPills}}" as="m" hint-placeholder-count="6"><button type="button" class="{{m.cls}}" aria-pressed="{{m.on}}" onClick="{{m.pick}}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{m.icon}}"/></svg><span>{{m.label}}</span></button></sc-for>
+</div>
+</sc-if>
+
+
+<sc-if value="{{isDraw}}" hint-placeholder-val="{{ false }}">
+<div class="seg" role="group" aria-label="Perspective type">
+<sc-for list="{{modePills}}" as="m" hint-placeholder-count="3"><button type="button" class="{{m.cls}}" aria-pressed="{{m.on}}" onClick="{{m.pick}}">{{m.label}}</button></sc-for>
+</div>
+<div class="icons" role="group" aria-label="Shape">
+<sc-for list="{{shapePills}}" as="sh" hint-placeholder-count="7"><button type="button" class="{{sh.cls}}" aria-pressed="{{sh.on}}" onClick="{{sh.pick}}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{sh.icon}}"/></svg><span>{{sh.label}}</span></button></sc-for>
+</div>
+<div class="canvas">
+<svg viewBox="{{vb}}" role="img" aria-label="A shape in perspective. Drag the dots, the box or the horizon line, or use the sliders under Adjust." onPointerDown="{{down}}" onPointerMove="{{move}}" onPointerUp="{{up}}" onPointerCancel="{{up}}" style="width:100%;height:auto;background:#F6F7F8;display:block;touch-action:none;cursor:grab">
+<line x1="-3000" y1="{{eye}}" x2="3000" y2="{{eye}}" stroke="#1B1F24" stroke-width="1.5"/>
+<path d="{{floorGrid}}" stroke="#C5CBD1" stroke-width="0.8" fill="none"/>
+<path d="{{con}}" stroke="#B5832A" stroke-width="1" stroke-dasharray="4 3" fill="none"/>
+<g fill="#D9E4EE" stroke="#1F4E79" stroke-width="2" stroke-linejoin="round">
+<polygon points="{{top}}"/><polygon points="{{bottom}}"/><polygon points="{{left}}"/><polygon points="{{right}}"/>
+<polygon points="{{front}}"/>
+</g>
+<path d="{{shp.f3}}" fill="#AFC4DA"/><path d="{{shp.f2}}" fill="#C3D3E3"/><path d="{{shp.f1}}" fill="#D9E4EE"/><path d="{{shp.f0}}" fill="#EEF3F8"/>
+<path d="{{shp.con}}" stroke="#8A8F94" stroke-width="1" stroke-dasharray="3 3" fill="none"/>
+<path d="{{shp.edges}}" stroke="#1F4E79" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" fill="none"/>
+<path d="{{hiddenD}}" stroke="#1F4E79" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+<path d="{{hidCon}}" stroke="#B5832A" stroke-width="1" stroke-dasharray="2 3" fill="none"/>
+<path d="{{hidDots}}" fill="#fff" stroke="#1F4E79" stroke-width="1.5"/>
+<circle cx="{{hx1}}" cy="{{eye}}" r="{{hr}}" fill="#1F4E79" stroke="#fff" stroke-width="2"/>
+<circle cx="{{hx3}}" cy="{{hy3}}" r="{{r3}}" fill="#1F4E79" stroke="#fff" stroke-width="2"/>
+<rect x="{{rsx}}" y="{{rsy}}" width="{{rsz}}" height="{{rsz}}" fill="#B5832A" stroke="#fff" stroke-width="1.5"/>
+<circle cx="{{hx2}}" cy="{{eye}}" r="{{r2}}" fill="#1F4E79" stroke="#fff" stroke-width="2"/>
+<text x="{{labX}}" y="{{labY}}" font-size="{{fs}}" font-family="IBM Plex Sans" fill="#1B1F24">Horizon line (eye level)</text>
+<circle cx="{{dc.cx}}" cy="{{dc.cy}}" r="{{dc.r37}}" fill="none" stroke="#1D6B3A" stroke-width="1.5" stroke-dasharray="6 4"/>
+<circle cx="{{dc.cx}}" cy="{{dc.cy}}" r="{{dc.r60}}" fill="none" stroke="#A63D2F" stroke-width="1.5" stroke-dasharray="6 4"/>
+<path d="{{dc.pmark}}" fill="#1B1F24"/>
+<path d="{{dc.dpts}}" fill="#7A5516"/>
+</svg>
+</div>
+<div class="status" aria-live="polite"><span class="dot" style="background:{{dc.col}}"></span><div style="display:flex;flex-direction:column;gap:2px"><strong style="color:{{dc.col}};font-size:16px">{{dc.head}}</strong><span class="small">{{dc.detail}}</span><span class="small">{{dc.propMsg}}</span><sc-if value="{{hasDepthMsg}}" hint-placeholder-val="{{ false }}"><span class="small" style="color:#1F4E79;font-weight:600">{{depthMsg}}</span></sc-if></div></div>
+<sc-if value="{{dc.anyFix}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<sc-if value="{{dc.canFixView}}" hint-placeholder-val="{{ false }}"><button type="button" class="btn" style="flex:1 1 140px" onClick="{{dc.fixView}}">Fix the view</button></sc-if>
+<sc-if value="{{dc.canFix}}" hint-placeholder-val="{{ false }}"><button type="button" class="btn" style="flex:1 1 140px" onClick="{{dc.fix}}">{{dc.fixLabel}}</button></sc-if>
+</div>
+</sc-if>
+<div class="tools" role="toolbar" aria-label="View tools">
+<sc-for list="{{toolBtns}}" as="tb" hint-placeholder-count="7"><button type="button" class="{{tb.cls}}" aria-pressed="{{tb.pressed}}" onClick="{{tb.act}}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{tb.icon}}"/></svg><span>{{tb.label}}</span></button></sc-for>
+</div>
+<sc-if value="{{dc.showCone}}" hint-placeholder-val="{{ false }}">
+<p class="small">Green circle: clear vision, 37°. Red circle: the 60° limit of normal vision. Keep the shape inside the green circle for a natural look. Brown dots: the distance points (one point) or division points (two points) that measure true sizes.</p>
+</sc-if>
+<p class="small"><strong>{{shapeName}}.</strong> {{shapeTip}} Drag the dots, the shape or the horizon. Drag empty space to move around.</p>
+<details class="sheet">
+<summary><span>Adjust</span><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></summary>
+<div class="sheet-body">
+<label for="eye">Eye level: {{eye}}</label>
+<input id="eye" type="range" min="30" max="230" value="{{eye}}" onChange="{{setEye}}">
+<sc-if value="{{isOne}}" hint-placeholder-val="{{ true }}">
+<label for="vx">Vanishing point position: {{vx}}</label>
+<input id="vx" type="range" min="20" max="340" value="{{vx}}" onChange="{{setVx}}">
+<label for="pd1">Your distance from the picture: {{dc.pd1}}</label>
+<input id="pd1" type="range" min="60" max="3000" step="10" value="{{dc.pd1}}" onChange="{{dc.setPd}}">
+</sc-if>
+<sc-if value="{{isTwo}}" hint-placeholder-val="{{ false }}">
+<label for="v1">Left vanishing point: {{v1}}</label>
+<input id="v1" type="range" min="-1500" max="140" value="{{v1}}" onChange="{{setV1}}">
+<label for="v2">Right vanishing point: {{v2}}</label>
+<input id="v2" type="range" min="220" max="1860" value="{{v2}}" onChange="{{setV2}}">
+</sc-if>
+<sc-if value="{{isThree}}" hint-placeholder-val="{{ false }}">
+<label for="v3">Third point height: {{v3}}</label>
+<input id="v3" type="range" min="-1500" max="1700" value="{{v3}}" onChange="{{setV3}}">
+</sc-if>
+<p class="small">{{hint}}</p>
+</div>
+</details>
+<details class="sheet">
+<summary><span>Save and share</span><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></summary>
+<div class="sheet-body">
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<button type="button" class="pill" onClick="{{exportSvg}}">Export SVG</button>
+<button type="button" class="pill" onClick="{{saveFile}}">Save file</button>
+</div>
+<label for="fl">Load a saved file</label>
+<input id="fl" type="file" accept=".json" onChange="{{loadFile}}" style="min-height:44px">
+<label for="code">Scene code (copy it to share, paste it to load)</label>
+<textarea id="code" rows="3" value="{{code}}" onChange="{{setCode}}" style="width:100%;font:16px/1.4 monospace;padding:8px;border:1px solid #AEB5BC;border-radius:8px"></textarea>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<button type="button" class="pill" onClick="{{makeCode}}">Make scene code</button>
+<button type="button" class="pill" onClick="{{loadCode}}">Load scene code</button>
+</div>
+<p aria-live="polite">{{note}}</p>
+</div>
+</details>
+</sc-if>
+
+<sc-if value="{{isSc}}" hint-placeholder-val="{{ false }}">
+<div class="card">
+<h2>True sizes on all three axes</h2>
+<p>{{sc.intro}}</p>
+<div style="display:grid;grid-template-columns:minmax(0,1fr);gap:8px">
+<div class="seg" style="grid-template-columns:repeat(3,minmax(0,1fr))" role="group" aria-label="Box position">
+<sc-for list="{{sc.modePills}}" as="mp" hint-placeholder-count="2"><button type="button" class="{{mp.cls}}" aria-pressed="{{mp.on}}" onClick="{{mp.pick}}">{{mp.label}}</button></sc-for>
+</div>
+<div class="seg" style="grid-template-columns:repeat(2,minmax(0,1fr))" role="group" aria-label="Watch or practise">
+<sc-for list="{{sc.playPills}}" as="pp" hint-placeholder-count="2"><button type="button" class="{{pp.cls}}" aria-pressed="{{pp.on}}" onClick="{{pp.pick}}">{{pp.label}}</button></sc-for>
+</div>
+</div>
+<div class="lessons" role="group" aria-label="Steps">
+<sc-for list="{{sc.stepPills}}" as="sp" hint-placeholder-count="5"><button type="button" class="{{sp.cls}}" aria-pressed="{{sp.on}}" onClick="{{sp.pick}}">{{sp.label}}</button></sc-for>
+</div>
+<svg viewBox="{{sc.vb}}" role="img" aria-label="{{sc.aria}}" onPointerDown="{{sc.down}}" onPointerMove="{{sc.move}}" onPointerUp="{{sc.up}}" onPointerCancel="{{sc.up}}" style="width:100%;height:auto;background:#F6F7F8;border-radius:6px;display:block;touch-action:none">
+<rect x="0" y="{{sc.gy}}" width="360" height="{{sc.gh}}" fill="#ECE8DF"/>
+<path d="{{sc.ghost}}" fill="none" stroke="#7E9BB5" stroke-width="1" stroke-dasharray="3 3"/>
+<path d="{{sc.box}}" fill="#D9E4EE" stroke="#1F4E79" stroke-width="2" stroke-linejoin="round"/>
+<path d="{{sc.boxTop}}" fill="#EEF3F8" stroke="#1F4E79" stroke-width="2" stroke-linejoin="round"/>
+<path d="{{sc.hid}}" stroke="#1F4E79" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+<line x1="0" y1="{{sc.hy}}" x2="360" y2="{{sc.hy}}" stroke="#1B1F24" stroke-width="1.5"/>
+<line x1="0" y1="{{sc.gy}}" x2="360" y2="{{sc.gy}}" stroke="#1B1F24" stroke-width="1.5"/>
+<path d="{{sc.ruler}}" stroke="#1B1F24" stroke-width="1" fill="none"/>
+<path d="{{sc.done}}" stroke="#8A8F94" stroke-width="1" stroke-dasharray="4 3" fill="none"/>
+<path d="{{sc.now}}" stroke="#B5832A" stroke-width="1.8" fill="none"/>
+<path d="{{sc.marks}}" stroke="#A63D2F" stroke-width="4" stroke-linecap="round" fill="none"/>
+<path d="{{sc.dots}}" fill="#1F4E79"/>
+<path d="{{sc.corner}}" fill="#A63D2F"/>
+<circle cx="{{sc.ringX}}" cy="{{sc.ringY}}" r="{{sc.ringR}}" fill="none" stroke="#A63D2F" stroke-width="2.5" stroke-dasharray="4 3"/>
+<text x="{{sc.mlx}}" y="{{sc.mly}}" font-size="13" font-weight="600" text-anchor="{{sc.mla}}" font-family="IBM Plex Sans" fill="#A63D2F">{{sc.mlText}}</text>
+<circle cx="180" cy="{{sc.pY}}" r="5" fill="#1B1F24"/>
+<text x="180" y="{{sc.pLy}}" font-size="13" font-weight="600" text-anchor="middle" font-family="IBM Plex Sans" fill="#1B1F24">P</text>
+<path d="{{sc.pts}}" fill="#7A5516"/>
+<text x="{{sc.l1.x}}" y="{{sc.ply}}" font-size="13" font-weight="600" text-anchor="middle" font-family="IBM Plex Sans" fill="#7A5516">{{sc.l1.t}}</text>
+<text x="{{sc.l2.x}}" y="{{sc.ply}}" font-size="13" font-weight="600" text-anchor="middle" font-family="IBM Plex Sans" fill="#7A5516">{{sc.l2.t}}</text>
+<text x="{{sc.l3.x}}" y="{{sc.mpy}}" font-size="13" font-weight="600" text-anchor="middle" font-family="IBM Plex Sans" fill="#7A5516">{{sc.l3.t}}</text>
+<text x="{{sc.l5.x}}" y="{{sc.l5.y}}" font-size="13" font-weight="600" text-anchor="middle" font-family="IBM Plex Sans" fill="#7A5516">{{sc.l5.t}}</text>
+<text x="{{sc.l6.x}}" y="{{sc.l6.y}}" font-size="13" font-weight="600" text-anchor="middle" font-family="IBM Plex Sans" fill="#7A5516">{{sc.l6.t}}</text>
+<text x="{{sc.l4.x}}" y="{{sc.mpy}}" font-size="13" font-weight="600" text-anchor="middle" font-family="IBM Plex Sans" fill="#7A5516">{{sc.l4.t}}</text>
+<path d="{{sc.handles}}" fill="#B5832A" stroke="#fff" stroke-width="1.5"/>
+<text x="354" y="{{sc.hly}}" font-size="12" text-anchor="end" font-family="IBM Plex Sans" fill="#1B1F24">Horizon</text>
+<text x="6" y="{{sc.gly}}" font-size="12" font-family="IBM Plex Sans" fill="#1B1F24">Ground line: true sizes, ticks every 1 m</text>
+</svg>
+<p style="font-size:14px;color:#4A5560;display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:0">
+<span><span style="display:inline-block;width:12px;height:12px;background:#A63D2F;margin-right:4px;vertical-align:-1px"></span>True size</span>
+<span><span style="display:inline-block;width:12px;height:12px;background:#B5832A;margin-right:4px;vertical-align:-1px"></span>This step</span>
+<span><span style="display:inline-block;width:12px;height:12px;background:#1F4E79;border-radius:6px;margin-right:4px;vertical-align:-1px"></span>Points found</span>
+</p>
+<h3>{{sc.title}}</h3>
+<p aria-live="polite"><strong>{{sc.instr}}</strong></p>
+<sc-if value="{{sc.hasMsg}}" hint-placeholder-val="{{ false }}"><p aria-live="polite">{{sc.msg}}</p></sc-if>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<button type="button" class="pill" disabled="{{sc.isFirst}}" onClick="{{sc.prev}}">Previous</button>
+<button type="button" class="btn" style="width:auto" disabled="{{sc.isLast}}" onClick="{{sc.next}}">Next step</button>
+<sc-if value="{{sc.isWatch}}" hint-placeholder-val="{{ true }}"><button type="button" class="pill" onClick="{{sc.replay}}">Replay</button></sc-if>
+<sc-if value="{{sc.isTry}}" hint-placeholder-val="{{ false }}"><button type="button" class="pill" onClick="{{sc.newTask}}">New box</button></sc-if>
+<sc-if value="{{sc.isFinal}}" hint-placeholder-val="{{ false }}"><button type="button" class="pill" aria-pressed="{{sc.hidOn}}" onClick="{{sc.toggleHid}}">{{sc.hidLabel}}</button></sc-if>
+<button type="button" class="pill" aria-pressed="{{sc.whyOn}}" onClick="{{sc.toggleWhy}}">{{sc.whyLabel}}</button>
+</div>
+<sc-if value="{{sc.whyOn}}" hint-placeholder-val="{{ false }}"><p style="background:#F3F4F5;border-radius:6px;padding:12px">{{sc.why}}</p></sc-if>
+<p style="font-size:15px;color:#4A5560">{{sc.tip}}</p>
+<sc-if value="{{sc.hasNote}}" hint-placeholder-val="{{ false }}"><p><strong>{{sc.check}}</strong></p></sc-if>
+</div>
+<details class="card">
+<summary style="min-height:44px;display:flex;align-items:center;font-weight:600;cursor:pointer">More settings</summary>
+<sc-if value="{{sc.isOne}}" hint-placeholder-val="{{ true }}">
+<label for="scw">Width: {{sc.wL}} m</label>
+<input id="scw" type="range" min="0.5" max="4" step="0.1" value="{{sc.w}}" onChange="{{sc.setW}}">
+<label for="scd">Depth: {{sc.dL}} m</label>
+<input id="scd" type="range" min="0.5" max="6" step="0.1" value="{{sc.d}}" onChange="{{sc.setD}}">
+<label for="scz">Distance behind the picture: {{sc.z0L}} m</label>
+<input id="scz" type="range" min="0" max="6" step="0.1" value="{{sc.z0}}" onChange="{{sc.setZ}}">
+<label for="scx">Left edge, from the centre: {{sc.xLL}} m</label>
+<input id="scx" type="range" min="-5" max="3" step="0.1" value="{{sc.xL}}" onChange="{{sc.setX}}">
+<div><button type="button" class="pill" aria-pressed="{{sc.half}}" onClick="{{sc.toggleHalf}}">{{sc.halfLabel}}</button></div>
+</sc-if>
+<sc-if value="{{sc.isTwo}}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{sc.isThree}}" hint-placeholder-val="{{ false }}">
+<label for="sct">Tilt, looking up: {{sc.tilt}}°</label>
+<input id="sct" type="range" min="10" max="50" step="1" value="{{sc.tilt}}" onChange="{{sc.setTilt}}">
+</sc-if>
+<label for="sca">Turn: {{sc.ang}}°</label>
+<input id="sca" type="range" min="25" max="65" step="1" value="{{sc.ang}}" onChange="{{sc.setA}}">
+<label for="scb">Right side: {{sc.wL}} m</label>
+<input id="scb" type="range" min="0.5" max="4" step="0.1" value="{{sc.w}}" onChange="{{sc.setW}}">
+<label for="scl">Left side: {{sc.dL}} m</label>
+<input id="scl" type="range" min="0.5" max="5" step="0.1" value="{{sc.d}}" onChange="{{sc.setD}}">
+<label for="scxa">Near corner, from the centre: {{sc.xAL}} m</label>
+<input id="scxa" type="range" min="-3" max="3" step="0.1" value="{{sc.xA}}" onChange="{{sc.setXA}}">
+</sc-if>
+<label for="sch">Height: {{sc.hL}} m</label>
+<input id="sch" type="range" min="0.5" max="4" step="0.1" value="{{sc.h}}" onChange="{{sc.setH}}">
+<label for="sce">Eye height: {{sc.eyeL}} m</label>
+<input id="sce" type="range" min="0.5" max="4" step="0.1" value="{{sc.eye}}" onChange="{{sc.setE}}">
+<label for="scp">Eye distance from the picture: {{sc.PDL}} m</label>
+<input id="scp" type="range" min="3" max="{{sc.pdMax}}" step="0.1" value="{{sc.PD}}" onChange="{{sc.setP}}">
+</details>
+</sc-if>
+
+<sc-if value="{{isDist}}" hint-placeholder-val="{{ false }}">
+<div class="card">
+<h2>How far to stand</h2>
+<p>From chapter 13. You see clearly only inside a narrow cone, about 28° to 37° from top to bottom. Stand far enough back for the whole subject to fit inside it.</p>
+<svg viewBox="0 0 360 200" role="img" aria-label="Side view: your eye, the cone of clear vision and the subject." style="width:100%;height:auto;background:#F6F7F8;border-radius:6px;display:block">
+<rect x="0" y="185" width="360" height="15" fill="#E6E1D6"/>
+<path d="{{dist.cone}}" fill="#1F4E79" fill-opacity="0.12" stroke="#1F4E79" stroke-width="1" stroke-dasharray="4 3"/>
+<path d="{{dist.needPath}}" stroke="#7A5516" stroke-width="2" fill="none"/>
+<text x="{{dist.nx}}" y="160" font-size="12" text-anchor="middle" font-family="IBM Plex Sans" fill="#7A5516">{{dist.needLabel}}</text>
+<rect x="{{dist.sx}}" y="{{dist.sy}}" width="{{dist.sw}}" height="{{dist.sh}}" rx="3" fill="{{dist.col}}"/>
+<circle cx="{{dist.ex}}" cy="{{dist.ey}}" r="5" fill="#1B1F24"/>
+<text x="{{dist.ex}}" y="{{dist.ly}}" font-size="12" text-anchor="middle" font-family="IBM Plex Sans" fill="#1B1F24">You</text>
+</svg>
+<p aria-live="polite"><strong>{{dist.msg}}</strong></p>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<sc-for list="{{dist.presets}}" as="pr" hint-placeholder-count="4"><button type="button" class="{{pr.cls}}" aria-pressed="{{pr.on}}" onClick="{{pr.pick}}">{{pr.label}}</button></sc-for>
+</div>
+<label for="dh">Subject height: {{dist.Hcm}} cm</label>
+<input id="dh" type="range" min="20" max="1000" step="5" value="{{dist.Hcm}}" onChange="{{dist.setH}}">
+<label for="da">Clear-vision angle: {{dist.A}}°</label>
+<input id="da" type="range" min="28" max="37" step="1" value="{{dist.A}}" onChange="{{dist.setA}}">
+<label for="dd">Your distance: {{dist.D}} m</label>
+<input id="dd" type="range" min="0.2" max="{{dist.maxD}}" step="0.1" value="{{dist.Dv}}" onChange="{{dist.setD}}">
+</div>
+<div class="card">
+<h3>Rules from the book</h3>
+<ul style="margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px">
+<li>At 37° stand about 1.5 times the subject’s height away. At 28° stand about 2 times.</li>
+<li>The angle differs between people, so it is a range, not one number.</li>
+<li>Keep one fixed viewpoint. Do not move your head while you draw, or parts seen from different places will not fit together.</li>
+</ul>
+</div>
+</sc-if>
+
+<sc-if value="{{isAn}}" hint-placeholder-val="{{ false }}">
+<div class="card">
+<h2>Find the viewpoint</h2>
+<p>Chapter 5 analyses real paintings this way. Find the principal point P, where the edges that run into depth meet. Its height is the horizon, the painter’s eye level. Tap or drag to place the marker.</p>
+<svg viewBox="0 0 360 240" role="img" aria-label="A room in one-point perspective with a marker you place." onPointerDown="{{an.down}}" onPointerMove="{{an.move}}" onPointerUp="{{an.up}}" onPointerCancel="{{an.up}}" style="width:100%;height:auto;border-radius:6px;display:block;touch-action:none;cursor:crosshair">
+<g stroke="#5E666E" stroke-width="1.2" stroke-linejoin="round">
+<path d="{{an.ceil}}" fill="#F1F2F3"/><path d="{{an.left}}" fill="#DCE1E5"/><path d="{{an.right}}" fill="#E8EBEE"/><path d="{{an.floor}}" fill="#E6E1D6"/><path d="{{an.back}}" fill="#F6F7F8"/>
+</g>
+<path d="{{an.floorLines}}" stroke="#8A8F94" stroke-width="0.8" fill="none"/>
+<path d="{{an.details}}" fill="#D9E4EE" stroke="#1F4E79" stroke-width="1.2" stroke-linejoin="round"/>
+<path d="{{an.hintLines}}" stroke="#B5832A" stroke-width="1.4" stroke-dasharray="5 4" fill="none"/>
+<path d="{{an.answer}}" stroke="#7A5516" stroke-width="1.2" stroke-dasharray="3 3" fill="none"/>
+<line x1="0" y1="{{an.gy}}" x2="360" y2="{{an.gy}}" stroke="#1F4E79" stroke-width="1" stroke-dasharray="6 4"/>
+<circle cx="{{an.px}}" cy="{{an.py}}" r="{{an.pr}}" fill="#1B1F24" stroke="#fff" stroke-width="2"/>
+<text x="{{an.px}}" y="{{an.pty}}" font-size="13" font-weight="600" text-anchor="middle" font-family="IBM Plex Sans" fill="#1B1F24" fill-opacity="{{an.show}}">P</text>
+<path d="{{an.marker}}" stroke="#1F4E79" stroke-width="2.5" fill="none"/>
+</svg>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<button type="button" class="btn" onClick="{{an.check}}">Check answer</button>
+<button type="button" class="pill" aria-pressed="{{an.hint}}" onClick="{{an.toggleHint}}">{{an.hintLabel}}</button>
+<button type="button" class="pill" onClick="{{an.next}}">New picture</button>
+</div>
+<p aria-live="polite"><strong>{{an.msg}}</strong></p>
+<label for="agx">Marker across: {{an.gxr}}</label>
+<input id="agx" type="range" min="0" max="360" value="{{an.gxr}}" onChange="{{an.setX}}">
+<label for="agy">Marker height (your horizon): {{an.gyr}}</label>
+<input id="agy" type="range" min="0" max="240" value="{{an.gyr}}" onChange="{{an.setY}}">
+</div>
+<div class="card">
+<h3>On a real painting</h3>
+<p>Lay a ruler along two edges that run straight into depth, such as a floor board and a table edge. Where they cross is P. The horizon runs level through P. Then ask: where did the painter stand, and why there?</p>
+</div>
+</sc-if>
+
+<sc-if value="{{isExOwn}}" hint-placeholder-val="{{ false }}">
+
+<sc-if value="{{exDu}}" hint-placeholder-val="{{ true }}">
+<div class="card">
+<h2>Dürer’s frame</h2>
+<p>From chapter 1. Dürer drew through a pane of glass with a grid on it. Each point of the object lands on the glass where the ray from the eye to that point crosses it. That tracing is the perspective drawing.</p>
+<h3 style="font-size:16px">Seen from above</h3>
+<svg viewBox="0 0 360 200" role="img" aria-label="Top view: the eye, the glass and the object, with rays from the eye to the object’s corners." style="width:100%;height:auto;background:#F6F7F8;border-radius:6px;display:block">
+<path d="{{du.planCube}}" fill="#D9E4EE" stroke="#1F4E79" stroke-width="2"/>
+<path d="{{du.rays}}" stroke="#B5832A" stroke-width="1" stroke-dasharray="4 3" fill="none"/>
+<line x1="120" y1="{{du.gz}}" x2="240" y2="{{du.gz}}" stroke="#1F4E79" stroke-width="4"/>
+<path d="{{du.hits}}" fill="#7A5516"/>
+<circle cx="{{du.eyeX}}" cy="{{du.eyeZ}}" r="6" fill="#1B1F24"/>
+<text x="{{du.eyeX}}" y="{{du.eyeLy}}" font-size="12" text-anchor="middle" font-family="IBM Plex Sans" fill="#1B1F24">Eye</text>
+<text x="246" y="{{du.gzl}}" font-size="12" font-family="IBM Plex Sans" fill="#1B1F24">Glass</text>
+</svg>
+<h3 style="font-size:16px">What you trace on the glass</h3>
+<svg viewBox="0 0 360 240" role="img" aria-label="The glass with its grid and the traced box." style="width:100%;height:auto;background:#F6F7F8;border-radius:6px;display:block">
+<path d="{{du.grid}}" stroke="#C5CBD1" stroke-width="1" fill="none"/>
+<line x1="0" y1="{{du.hy}}" x2="360" y2="{{du.hy}}" stroke="#1B1F24" stroke-width="1.5"/>
+<text x="6" y="{{du.hly}}" font-size="12" font-family="IBM Plex Sans" fill="#1B1F24">Horizon = your eye height</text>
+<path d="{{du.sides}}" fill="#D9E4EE" stroke="#1F4E79" stroke-width="2" stroke-linejoin="round"/>
+<path d="{{du.top}}" fill="#EEF3F8" stroke="#1F4E79" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="{{du.pX}}" cy="{{du.hy}}" r="5" fill="#1F4E79"/>
+<text x="{{du.pX}}" y="{{du.pLy}}" font-size="12" text-anchor="middle" font-family="IBM Plex Sans" fill="#1B1F24">P</text>
+</svg>
+<label for="dux">Eye left or right: {{du.exL}}</label>
+<input id="dux" type="range" min="-1.5" max="1.5" step="0.1" value="{{du.ex}}" onChange="{{du.setX}}">
+<label for="duy">Eye height: {{du.eyL}}</label>
+<input id="duy" type="range" min="0.3" max="2.5" step="0.1" value="{{du.ey}}" onChange="{{du.setY}}">
+<label for="dud">Eye distance from the glass: {{du.DL}}</label>
+<input id="dud" type="range" min="1" max="4" step="0.1" value="{{du.D}}" onChange="{{du.setD}}">
+<label for="dur">Turn the object: {{du.rot}}°</label>
+<input id="dur" type="range" min="0" max="90" step="5" value="{{du.rot}}" onChange="{{du.setR}}">
+<p>{{du.msg}}</p>
+</div>
+</sc-if>
+
+<sc-if value="{{exTb}}" hint-placeholder-val="{{ false }}">
+<div class="card">
+<h2>Tall building: the tilted picture</h2>
+<p>From chapter 7. To see the top of a tall building you tilt your head, and the picture plane tilts with it. Then vertical edges are no longer parallel to the picture, so they meet at a third point.</p>
+<svg viewBox="0 0 360 240" role="img" aria-label="A tall building seen from the ground with a tilted picture plane." style="width:100%;height:auto;background:#F6F7F8;border-radius:6px;display:block">
+<line x1="0" y1="{{tb.hy}}" x2="360" y2="{{tb.hy}}" stroke="#1B1F24" stroke-width="1.5"/>
+<text x="6" y="{{tb.hly}}" font-size="12" font-family="IBM Plex Sans" fill="#1B1F24">{{tb.hLabel}}</text>
+<path d="{{tb.faces}}" fill="#D9E4EE" stroke="#1F4E79" stroke-width="2" stroke-linejoin="round"/>
+<path d="{{tb.roof}}" fill="#EEF3F8" stroke="#1F4E79" stroke-width="2" stroke-linejoin="round"/>
+<path d="{{tb.floors}}" stroke="#7E9BB5" stroke-width="1" fill="none"/>
+<path d="{{tb.con}}" stroke="#B5832A" stroke-width="1.2" stroke-dasharray="5 4" fill="none"/>
+<circle cx="180" cy="{{tb.vy}}" r="{{tb.vr}}" fill="#7A5516"/>
+<text x="190" y="{{tb.vly}}" font-size="12" font-family="IBM Plex Sans" fill="#7A5516">{{tb.vLabel}}</text>
+</svg>
+<label for="tbt">Look up or down: {{tb.tiltL}}</label>
+<input id="tbt" type="range" min="-40" max="60" step="1" value="{{tb.tilt}}" onChange="{{tb.setT}}">
+<label for="tbh">Eye height: {{tb.eyeL}}</label>
+<input id="tbh" type="range" min="1.6" max="70" step="0.2" value="{{tb.eyeH}}" onChange="{{tb.setH}}">
+<div><button type="button" class="pill" aria-pressed="{{tb.lines}}" onClick="{{tb.toggle}}">{{tb.linesLabel}}</button></div>
+<p aria-live="polite"><strong>{{tb.msg}}</strong></p>
+</div>
+</sc-if>
+
+<sc-if value="{{exCe}}" hint-placeholder-val="{{ false }}">
+<div class="card">
+<h2>Painted ceiling</h2>
+<p>From chapter 12. Andrea Pozzo painted columns on a flat ceiling so they seem to rise into the sky. You look straight up. The painting is built for one spot on the floor.</p>
+<svg viewBox="0 0 360 240" role="img" aria-label="Looking straight up at a flat ceiling painted with columns." style="width:100%;height:auto;background:#DCE8F2;border-radius:6px;display:block">
+<path d="{{ce.frame}}" fill="none" stroke="#5E666E" stroke-width="3"/>
+<path d="{{ce.rings}}" fill="none" stroke="#1F4E79" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="{{ce.cols}}" stroke="#1F4E79" stroke-width="6" stroke-linecap="round" fill="none"/>
+<path d="{{ce.ghost}}" stroke="#B5832A" stroke-width="1.5" stroke-dasharray="4 3" fill="none"/>
+</svg>
+<label for="cex">Your place on the floor: {{ce.vxL}}</label>
+<input id="cex" type="range" min="-3" max="3" step="0.25" value="{{ce.vx}}" onChange="{{ce.setX}}">
+<div><button type="button" class="pill" aria-pressed="{{ce.ghostOn}}" onClick="{{ce.toggle}}">{{ce.ghostLabel}}</button></div>
+<p aria-live="polite"><strong>{{ce.msg}}</strong></p>
+<p>Blue is the painting. The dashed orange lines show how real columns would look from where you stand.</p>
+</div>
+</sc-if>
+
+</sc-if>
+
+<sc-if value="{{isRf}}" hint-placeholder-val="{{ false }}">
+<div class="card">
+<h2>Reflections</h2>
+<p>{{rf.intro}}</p>
+<div style="display:grid;grid-template-columns:minmax(0,1fr);gap:8px">
+<div class="seg" style="grid-template-columns:repeat(2,minmax(0,1fr))" role="group" aria-label="Reflecting surface">
+<sc-for list="{{rf.modes}}" as="rm" hint-placeholder-count="4"><button type="button" class="{{rm.cls}}" aria-pressed="{{rm.on}}" onClick="{{rm.pick}}">{{rm.label}}</button></sc-for>
+</div>
+<div class="seg" style="grid-template-columns:repeat(2,minmax(0,1fr))" role="group" aria-label="Watch or practise">
+<sc-for list="{{rf.playPills}}" as="rp" hint-placeholder-count="2"><button type="button" class="{{rp.cls}}" aria-pressed="{{rp.on}}" onClick="{{rp.pick}}">{{rp.label}}</button></sc-for>
+</div>
+</div>
+<div class="lessons" role="group" aria-label="Steps">
+<sc-for list="{{rf.stepPills}}" as="rs" hint-placeholder-count="5"><button type="button" class="{{rs.cls}}" aria-pressed="{{rs.on}}" onClick="{{rs.pick}}">{{rs.label}}</button></sc-for>
+</div>
+<svg viewBox="{{rf.vb}}" role="img" aria-label="A box and its reflection, built step by step. Drag the box to move it." onPointerDown="{{rf.down}}" onPointerMove="{{rf.move}}" onPointerUp="{{rf.up}}" onPointerCancel="{{rf.up}}" style="width:100%;height:auto;background:#F6F7F8;border-radius:10px;display:block;touch-action:none">
+<defs><clipPath id="rfclip"><path d="{{rf.clip}}"/></clipPath></defs>
+<path d="{{rf.water}}" fill="#CFE0EC"/>
+<path d="{{rf.floor}}" fill="#E6E1D6"/>
+<path d="{{rf.wall}}" fill="#EEF0F2" stroke="#8A8F94" stroke-width="1"/>
+<path d="{{rf.grid}}" stroke="#C5CBD1" stroke-width="0.8" fill="none"/>
+<path d="{{rf.mirror}}" fill="#DCE8F2" stroke="#5E666E" stroke-width="3"/>
+<g clip-path="{{rf.clipRef}}">
+<g opacity="0.6">
+<path d="{{rf.rgrid}}" stroke="#AFC4DA" stroke-width="0.8" fill="none"/>
+<path d="{{rf.r_lr}}" fill="#AFC4DA" stroke="#5E7FA0" stroke-width="1.2" stroke-linejoin="round"/>
+<path d="{{rf.r_fb}}" fill="#C3D3E3" stroke="#5E7FA0" stroke-width="1.2" stroke-linejoin="round"/>
+<path d="{{rf.r_tb}}" fill="#D9E4EE" stroke="#5E7FA0" stroke-width="1.2" stroke-linejoin="round"/>
+</g>
+<path d="{{rf.ghost}}" fill="none" stroke="#7E9BB5" stroke-width="1" stroke-dasharray="3 3"/>
+<path d="{{rf.allDots}}" fill="#5E7FA0"/>
+</g>
+<line x1="0" y1="{{rf.hy}}" x2="360" y2="{{rf.hy}}" stroke="#1B1F24" stroke-width="1.2"/>
+<path d="{{rf.o_lr}}" fill="#C3D3E3" stroke="#1F4E79" stroke-width="1.8" stroke-linejoin="round"/>
+<path d="{{rf.o_fb}}" fill="#D9E4EE" stroke="#1F4E79" stroke-width="1.8" stroke-linejoin="round"/>
+<path d="{{rf.o_tb}}" fill="#EEF3F8" stroke="#1F4E79" stroke-width="1.8" stroke-linejoin="round"/>
+<path d="{{rf.done}}" stroke="#8A8F94" stroke-width="1" stroke-dasharray="4 3" fill="none"/>
+<path d="{{rf.now}}" stroke="#B5832A" stroke-width="1.8" fill="none"/>
+<path d="{{rf.marks}}" stroke="#A63D2F" stroke-width="4" stroke-linecap="round" fill="none"/>
+<path d="{{rf.dots}}" fill="#1F4E79"/>
+<path d="{{rf.corner}}" fill="#A63D2F" stroke="#fff" stroke-width="1.5"/>
+<circle cx="180" cy="{{rf.hy}}" r="4" fill="#1B1F24"/>
+<text x="180" y="{{rf.pLy}}" font-size="13" font-weight="600" text-anchor="middle" font-family="IBM Plex Sans" fill="#1B1F24">P</text>
+<path d="{{rf.fnDot}}" fill="#7A5516"/>
+<text x="{{rf.fnX}}" y="{{rf.fnLy}}" font-size="13" font-weight="600" text-anchor="middle" font-family="IBM Plex Sans" fill="#7A5516">{{rf.fnLab}}</text>
+<circle cx="{{rf.ringX}}" cy="{{rf.ringY}}" r="{{rf.ringR}}" fill="none" stroke="#A63D2F" stroke-width="2.5" stroke-dasharray="4 3"/>
+<text x="{{rf.hlx}}" y="{{rf.hly}}" text-anchor="{{rf.hla}}" font-size="12" font-family="IBM Plex Sans" fill="#1B1F24">Horizon</text>
+</svg>
+<p style="font-size:14px;color:#4A5560;display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:0">
+<span><span style="display:inline-block;width:12px;height:12px;background:#A63D2F;border-radius:6px;margin-right:4px;vertical-align:-1px"></span>Corner to reflect</span>
+<span><span style="display:inline-block;width:12px;height:12px;background:#B5832A;margin-right:4px;vertical-align:-1px"></span>This step</span>
+<span><span style="display:inline-block;width:12px;height:4px;background:#A63D2F;margin-right:4px;vertical-align:3px"></span>Equal lengths</span>
+<span><span style="display:inline-block;width:12px;height:12px;background:#1F4E79;border-radius:6px;margin-right:4px;vertical-align:-1px"></span>Points found</span>
+</p>
+<h3>{{rf.title}}</h3>
+<p aria-live="polite"><strong>{{rf.instr}}</strong></p>
+<sc-if value="{{rf.hasMsg}}" hint-placeholder-val="{{ false }}"><p aria-live="polite">{{rf.msg}}</p></sc-if>
+<sc-if value="{{rf.hasNote}}" hint-placeholder-val="{{ false }}"><p><strong>{{rf.note}}</strong></p></sc-if>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<button type="button" class="pill" disabled="{{rf.isFirst}}" onClick="{{rf.prev}}">Previous</button>
+<button type="button" class="btn" style="width:auto" disabled="{{rf.isLast}}" onClick="{{rf.next}}">Next step</button>
+<sc-if value="{{rf.isWatch}}" hint-placeholder-val="{{ true }}"><button type="button" class="pill" onClick="{{rf.replay}}">Replay</button></sc-if>
+<sc-if value="{{rf.isTry}}" hint-placeholder-val="{{ false }}"><button type="button" class="pill" onClick="{{rf.newTask}}">New box</button></sc-if>
+<button type="button" class="pill" aria-pressed="{{rf.whyOn}}" onClick="{{rf.toggleWhy}}">{{rf.whyLabel}}</button>
+</div>
+<sc-if value="{{rf.whyOn}}" hint-placeholder-val="{{ false }}"><p style="background:#F3F4F5;border-radius:6px;padding:12px">{{rf.why}}</p></sc-if>
+<p style="font-size:15px;color:#4A5560">{{rf.tip}}</p>
+</div>
+<details class="card">
+<summary style="min-height:44px;display:flex;align-items:center;font-weight:600;cursor:pointer">More settings</summary>
+<label for="rfe">Eye height: {{rf.E}} m</label>
+<input id="rfe" type="range" min="0.4" max="3" step="0.1" value="{{rf.E}}" onChange="{{rf.setE}}">
+<label for="rfx">Box across: {{rf.ox}} m</label>
+<input id="rfx" type="range" min="-2.4" max="{{rf.xMax}}" step="0.05" value="{{rf.ox}}" onChange="{{rf.setX}}">
+<label for="rfz">Box distance: {{rf.oz}} m</label>
+<input id="rfz" type="range" min="{{rf.zMin}}" max="{{rf.zMax}}" step="0.05" value="{{rf.oz}}" onChange="{{rf.setZ}}">
+<sc-if value="{{rf.isTurn}}" hint-placeholder-val="{{ false }}">
+<label for="rfa">Mirror turn: {{rf.A}}°</label>
+<input id="rfa" type="range" min="15" max="35" step="1" value="{{rf.A}}" onChange="{{rf.setA}}">
+</sc-if>
+<sc-if value="{{rf.isWater}}" hint-placeholder-val="{{ true }}">
+<label for="rfb">Pier height above the water: {{rf.hb}} m</label>
+<input id="rfb" type="range" min="0" max="1.5" step="0.1" value="{{rf.hb}}" onChange="{{rf.setB}}">
+</sc-if>
+</details>
+</sc-if>
+
+<sc-if value="{{isLt}}" hint-placeholder-val="{{ false }}">
+<div class="card">
+<h2>Light and shadow</h2>
+<p>{{lt.intro}}</p>
+<div style="display:grid;grid-template-columns:minmax(0,1fr);gap:8px">
+<div class="seg" role="group" aria-label="Light source">
+<sc-for list="{{lt.modes}}" as="lm" hint-placeholder-count="3"><button type="button" class="{{lm.cls}}" aria-pressed="{{lm.on}}" onClick="{{lm.pick}}">{{lm.label}}</button></sc-for>
+</div>
+<div class="icons exgrid" style="grid-template-columns:repeat(3,minmax(0,1fr))" role="group" aria-label="Object">
+<sc-for list="{{lt.shapes}}" as="ls" hint-placeholder-count="6"><button type="button" class="{{ls.cls}}" aria-pressed="{{ls.on}}" onClick="{{ls.pick}}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{ls.icon}}"/></svg><span>{{ls.label}}</span></button></sc-for>
+</div>
+<div class="seg" style="grid-template-columns:repeat(2,minmax(0,1fr))" role="group" aria-label="Watch or practise">
+<sc-for list="{{lt.playPills}}" as="lp" hint-placeholder-count="2"><button type="button" class="{{lp.cls}}" aria-pressed="{{lp.on}}" onClick="{{lp.pick}}">{{lp.label}}</button></sc-for>
+</div>
+</div>
+<div class="lessons" role="group" aria-label="Steps">
+<sc-for list="{{lt.stepPills}}" as="lx" hint-placeholder-count="6"><button type="button" class="{{lx.cls}}" aria-pressed="{{lx.on}}" onClick="{{lx.pick}}">{{lx.label}}</button></sc-for>
+</div>
+<svg viewBox="{{lt.vb}}" role="img" aria-label="A 3D object lit by the sun or a lamp, with its own shadow and its cast shadow, built step by step." onPointerDown="{{lt.down}}" onPointerMove="{{lt.move}}" onPointerUp="{{lt.up}}" onPointerCancel="{{lt.up}}" style="width:100%;height:auto;background:#EEF2F5;border-radius:10px;display:block;touch-action:none">
+<path d="{{lt.floor}}" fill="#E6E1D6"/>
+<path d="{{lt.grid}}" stroke="#D2CCBF" stroke-width="0.8" fill="none"/>
+<line x1="0" y1="{{lt.hy}}" x2="360" y2="{{lt.hy}}" stroke="#1B1F24" stroke-width="1.2"/>
+<path d="{{lt.shadowFill}}" fill="#4E5862" fill-opacity="0.75"/>
+<path d="{{lt.outline}}" fill="#4E5862" fill-opacity="0.12" stroke="#4E5862" stroke-width="1.2" stroke-dasharray="4 3"/>
+<path d="{{lt.lampPost}}" stroke="#5E666E" stroke-width="2" fill="none"/>
+<path d="{{lt.done}}" stroke="#8A8F94" stroke-width="1" stroke-dasharray="4 3" fill="none"/>
+<path d="{{lt.faint}}" stroke="#C9A25E" stroke-width="0.8" fill="none" opacity="0.7"/>
+<sc-for list="{{lt.faces}}" as="fc" hint-placeholder-count="5"><path d="{{fc.d}}" fill="{{fc.col}}" stroke="{{fc.col}}" stroke-width="0.6" stroke-linejoin="round"/></sc-for>
+<path d="{{lt.hid}}" stroke="#1F4E79" stroke-width="1" stroke-dasharray="4 3" fill="none" opacity="0.7"/>
+<path d="{{lt.edges}}" stroke="#1F4E79" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" fill="none"/>
+<path d="{{lt.term}}" stroke="#A63D2F" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+<path d="{{lt.edgeDots}}" fill="#A63D2F"/>
+<path d="{{lt.now}}" stroke="#B5832A" stroke-width="1.8" fill="none"/>
+<path d="{{lt.marks}}" stroke="#2E3236" stroke-width="4" stroke-linecap="round" fill="none"/>
+<path d="{{lt.dots}}" fill="#1F4E79"/>
+<path d="{{lt.sunRays}}" stroke="#B5832A" stroke-width="2" stroke-linecap="round" fill="none"/>
+<path d="{{lt.sun}}" fill="#E0B654" stroke="#7A5516" stroke-width="1.5"/>
+<path d="{{lt.lamp}}" fill="#F3D27A" stroke="#7A5516" stroke-width="1.5"/>
+<path d="{{lt.footDot}}" fill="#7A5516"/>
+<text x="{{lt.lx}}" y="{{lt.ly}}" font-size="13" font-weight="600" font-family="IBM Plex Sans" fill="#7A5516">{{lt.lLab}}</text>
+<text x="{{lt.fx2}}" y="{{lt.fy2}}" font-size="13" font-weight="600" font-family="IBM Plex Sans" fill="#7A5516">{{lt.fLab}}</text>
+<path d="{{lt.corner}}" fill="#A63D2F" stroke="#fff" stroke-width="1.5"/>
+<path d="{{lt.corner2}}" fill="#B5832A" stroke="#fff" stroke-width="1.5"/>
+<sc-for list="{{lt.labels}}" as="lb" hint-placeholder-count="3"><text x="{{lb.x}}" y="{{lb.y}}" font-size="12" font-weight="600" font-family="IBM Plex Sans" fill="#7A5516" stroke="#fff" stroke-width="3" paint-order="stroke">{{lb.t}}</text></sc-for>
+<circle cx="{{lt.ringX}}" cy="{{lt.ringY}}" r="{{lt.ringR}}" fill="none" stroke="#A63D2F" stroke-width="2.5" stroke-dasharray="4 3"/>
+<text x="354" y="{{lt.hly}}" text-anchor="end" font-size="12" font-family="IBM Plex Sans" fill="#1B1F24">Horizon</text>
+</svg>
+<p style="font-size:14px;color:#4A5560;display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:0">
+<span><span style="display:inline-block;width:12px;height:12px;background:#A63D2F;border-radius:6px;margin-right:4px;vertical-align:-1px"></span>Point to cast</span>
+<span><span style="display:inline-block;width:12px;height:12px;background:#B5832A;margin-right:4px;vertical-align:-1px"></span>This step</span>
+<span><span style="display:inline-block;width:12px;height:4px;background:#2E3236;margin-right:4px;vertical-align:3px"></span>Shadow of the edge</span>
+<span><span style="display:inline-block;width:12px;height:4px;background:#A63D2F;margin-right:4px;vertical-align:3px"></span>Line of light and shade</span>
+<span><span style="display:inline-block;width:12px;height:12px;background:#7F8C99;margin-right:4px;vertical-align:-1px"></span>Own shadow</span>
+<span><span style="display:inline-block;width:12px;height:12px;background:#4E5862;margin-right:4px;vertical-align:-1px"></span>Cast shadow</span>
+</p>
+<h3>{{lt.title}}</h3>
+<p aria-live="polite"><strong>{{lt.instr}}</strong></p>
+<sc-if value="{{lt.hasMsg}}" hint-placeholder-val="{{ false }}"><p aria-live="polite">{{lt.msg}}</p></sc-if>
+<sc-if value="{{lt.hasNote}}" hint-placeholder-val="{{ false }}"><p><strong>{{lt.note}}</strong></p></sc-if>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<button type="button" class="pill" disabled="{{lt.isFirst}}" onClick="{{lt.prev}}">Previous</button>
+<button type="button" class="btn" style="width:auto" disabled="{{lt.isLast}}" onClick="{{lt.next}}">Next step</button>
+<sc-if value="{{lt.isWatch}}" hint-placeholder-val="{{ true }}"><button type="button" class="pill" onClick="{{lt.replay}}">Replay</button></sc-if>
+<sc-if value="{{lt.isTry}}" hint-placeholder-val="{{ false }}"><button type="button" class="pill" onClick="{{lt.newTask}}">New scene</button></sc-if>
+<button type="button" class="pill" aria-pressed="{{lt.whyOn}}" onClick="{{lt.toggleWhy}}">{{lt.whyLabel}}</button>
+</div>
+<sc-if value="{{lt.whyOn}}" hint-placeholder-val="{{ false }}"><p style="background:#F3F4F5;border-radius:6px;padding:12px">{{lt.why}}</p></sc-if>
+<p style="font-size:15px;color:#4A5560">{{lt.tip}}</p>
+</div>
+<details class="card">
+<summary style="min-height:44px;display:flex;align-items:center;font-weight:600;cursor:pointer">More settings</summary>
+<sc-if value="{{lt.isSun}}" hint-placeholder-val="{{ true }}">
+<label for="lsx">Sun, left to right: {{lt.SX}}</label>
+<input id="lsx" type="range" min="8" max="352" step="1" value="{{lt.SX}}" onChange="{{lt.setSX}}">
+<label for="lsy">Sun height: {{lt.sunUp}}° above the horizon</label>
+<input id="lsy" type="range" min="{{lt.syMin}}" max="{{lt.syMax}}" step="1" value="{{lt.SY}}" onChange="{{lt.setSY}}">
+</sc-if>
+<sc-if value="{{lt.isLamp}}" hint-placeholder-val="{{ false }}">
+<label for="llx">Lamp, left to right: {{lt.LX}} m</label>
+<input id="llx" type="range" min="-3" max="3" step="0.05" value="{{lt.LX}}" onChange="{{lt.setLX}}">
+<label for="llz">Lamp distance: {{lt.LZ}} m</label>
+<input id="llz" type="range" min="3" max="8" step="0.05" value="{{lt.LZ}}" onChange="{{lt.setLZ}}">
+<label for="lly">Lamp height: {{lt.LY}} m</label>
+<input id="lly" type="range" min="{{lt.lyMin}}" max="4" step="0.05" value="{{lt.LY}}" onChange="{{lt.setLY}}">
+</sc-if>
+<label for="lte">Eye height: {{lt.E}} m</label>
+<input id="lte" type="range" min="0.8" max="2.6" step="0.1" value="{{lt.E}}" onChange="{{lt.setE}}">
+<label for="ltx">Object across: {{lt.ox}} m</label>
+<input id="ltx" type="range" min="-2.5" max="2" step="0.05" value="{{lt.ox}}" onChange="{{lt.setX}}">
+<label for="ltz">Object distance: {{lt.oz}} m</label>
+<input id="ltz" type="range" min="3.5" max="8" step="0.05" value="{{lt.oz}}" onChange="{{lt.setZ}}">
+</details>
+</sc-if>
+
+
+</main>
+<nav class="bnav" aria-label="Sections"><div class="bn-in">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="5"><button type="button" class="{{t.cls}}" aria-current="{{t.cur}}" onClick="{{t.pick}}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{t.icon}}"/></svg><span>{{t.label}}</span></button></sc-for>
+</div></nav>
+</div>
+</template>
+<script>
+(function () {
+  class DCLogic { constructor() { this.props = {}; this.state = {}; } setState(p) { this.state = { ...this.state, ...p }; schedule(); } forceUpdate() { schedule(); } }
+  window.DCLogic = DCLogic;
+  // Downloads: save a file straight from the browser.
+  const downloads = { save: async ({ filename, data }) => {
+    const blob = data instanceof Blob ? data : new Blob([data], { type: /\.svg$/.test(filename) ? 'image/svg+xml' : 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); return { saved: true }; } };
+  window.claude = { use: async (n) => (n === 'downloads' ? downloads : null) };
+
+  const HOLE = /\{\{\s*([\w$.]+)\s*\}\}/g;
+  const get = (p, sc) => { p = p.trim(); if (p === 'true') return true; if (p === 'false') return false; if (/^-?\d+(\.\d+)?$/.test(p)) return Number(p);
+    return p.split('.').reduce((o, k) => (o == null ? undefined : o[k]), sc); };
+  const whole = (v) => { const m = /^\{\{\s*([\w$.]+)\s*\}\}$/.exec(v); return m && m[1]; };
+  const interp = (v, sc) => v.replace(HOLE, (_, p) => { const x = get(p, sc); return x == null ? '' : String(x); });
+  const EV = { onclick: 'click', onchange: 'input', onpointerdown: 'pointerdown', onpointermove: 'pointermove', onpointerup: 'pointerup', onpointercancel: 'pointercancel' };
+
+  function listen(el, type) { el._ls = el._ls || {}; if (el._ls[type]) return; el._ls[type] = true;
+    el.addEventListener(type, (e) => { const f = el._h && el._h[type]; if (f) f(e); }); }
+
+  function build(n, sc, out) {
+    if (n.nodeType === 3) { out.push(document.createTextNode(interp(n.nodeValue, sc))); return; }
+    if (n.nodeType !== 1) return;
+    const tag = n.localName;
+    if (tag === 'sc-for') { const list = get(whole(n.getAttribute('list')) || '', sc) || []; const as = n.getAttribute('as');
+      list.forEach((it, i) => n.childNodes.forEach((ch) => build(ch, { ...sc, [as]: it, $index: i }, out))); return; }
+    if (tag === 'sc-if') { if (get(whole(n.getAttribute('value')) || '', sc)) n.childNodes.forEach((ch) => build(ch, sc, out)); return; }
+    const el = n.cloneNode(false); el._h = {};
+    for (const a of [...n.attributes]) {
+      const name = a.name.toLowerCase(), w = whole(a.value);
+      if (EV[name]) { el.removeAttribute(a.name); const f = w && get(w, sc); if (typeof f === 'function') { el._h[EV[name]] = f; listen(el, EV[name]); } continue; }
+      if (name.startsWith('hint-')) { el.removeAttribute(a.name); continue; }
+      if (w) { const v = get(w, sc);
+        if (v == null && name !== 'value') { el.removeAttribute(a.name); continue; }
+        if (name === 'disabled') { el.removeAttribute(a.name); if (v) el.setAttribute('disabled', ''); continue; }
+        el.setAttribute(a.name, v == null ? '' : String(v)); if (name === 'value') el._val = v == null ? '' : String(v); continue; }
+      el.setAttribute(a.name, interp(a.value, sc));
+    }
+    const kids = []; n.childNodes.forEach((ch) => build(ch, sc, kids)); kids.forEach((k) => el.appendChild(k));
+    out.push(el);
+  }
+
+  function same(a, b) { return a.nodeType === b.nodeType && a.nodeName === b.nodeName && a.namespaceURI === b.namespaceURI && (a.type || '') === (b.type || ''); }
+  function patch(parent, fresh) {
+    const old = [...parent.childNodes];
+    fresh.forEach((f, i) => {
+      const o = old[i];
+      if (!o || !same(o, f)) { if (o) parent.replaceChild(f, o); else parent.appendChild(f); if (f._val !== undefined) f.value = f._val; return; }
+      if (o.nodeType === 3) { if (o.nodeValue !== f.nodeValue) o.nodeValue = f.nodeValue; return; }
+      for (const a of [...o.attributes]) if (!f.hasAttribute(a.name) && a.name !== 'open') o.removeAttribute(a.name);
+      for (const a of [...f.attributes]) if (o.getAttribute(a.name) !== a.value) o.setAttribute(a.name, a.value);
+      o._h = f._h; for (const t in f._h) listen(o, t);
+      if (f._val !== undefined && o.type !== 'file' && o.value !== f._val) o.value = f._val;
+      patch(o, [...f.childNodes]);
+    });
+    for (let i = fresh.length; i < old.length; i++) parent.removeChild(old[i]);
+  }
+
+  let comp, root, tpl, pending = false;
+  function render() { pending = false; const sc = comp.renderVals(); const out = []; tpl.content.childNodes.forEach((n) => build(n, sc, out)); patch(root, out); }
+  function schedule() { if (!root) return; render(); }
+  window.__dcBoot = (Component) => { tpl = document.getElementById('dc-template'); root = document.getElementById('dc-root'); comp = new Component(); render(); };
+})();
+</script>
+<script>
+
+class Component extends DCLogic {
+renderVals() {
+const s = this.state || {};
+const tab = ['draw', 'sc', 'rf', 'lt', 'ex'].includes(s.tab) ? s.tab : 'draw';
+const eye = s.eye ?? 70, vx = s.vx ?? 230, lines = s.lines ?? true, showHid = !!s.hid;
+const az = s.az ?? 60, alt = s.alt ?? 40, shOn = s.shOn ?? true, rfOn = s.rfOn ?? true;
+const P = (a) => a.map((p) => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+const mode = s.mode ?? 1;
+const bx = s.bx ?? 60, by = s.by ?? 115, bw = s.bw ?? 90, bh = s.bh ?? 80;
+const x0 = bx, x1 = bx + bw, y0 = by, y1 = by + bh, xc = bx + bw / 2, k = s.kd ?? 0.55, fl = s.fl ?? 0.45, fr = s.fr ?? 0.4, pd1 = s.pd1 ?? 220, dz = s.dz ?? 0;
+const v1 = Math.min(s.v1 ?? 20, xc - 40), v2 = Math.max(s.v2 ?? 335, xc + 40);
+const v3r = s.v3 ?? 20, v3 = v3r > y0 - 25 && v3r < y1 + 25 ? (v3r < (y0 + y1) / 2 ? y0 - 25 : y1 + 25) : v3r;
+const z = s.zoom ?? 1, pcx = s.pcx ?? 180, pcy = s.pcy ?? 120;
+const vbw = 360 / z, vbh = 240 / z, vbx = pcx - vbw / 2, vby = pcy - vbh / 2;
+const B = (x, y) => [vx + k * (x - vx), eye + k * (y - eye)];
+const X = (a, b, c, d) => { const r = [b[0]-a[0], b[1]-a[1]], q = [d[0]-c[0], d[1]-c[1]]; const den = r[0]*q[1] - r[1]*q[0]; if (Math.abs(den) < 1e-6) return a; const u = ((c[0]-a[0])*q[1] - (c[1]-a[1])*q[0]) / den; return [a[0] + u*r[0], a[1] + u*r[1]]; };
+const at = (c, v, t) => [c[0] + t * (v[0] - c[0]), c[1] + t * (v[1] - c[1])];
+const V1 = [v1, eye], V2 = [v2, eye], V3 = [xc, v3], Ct = [xc, y0], Cb = [xc, y1];
+const seg = (c, v) => 'M' + c[0] + ' ' + c[1] + 'L' + v[0] + ' ' + v[1];
+let geo, pts, geo_c = null;
+if (mode === 1) {
+const f = [[x0,y0],[x1,y0],[x1,y1],[x0,y1]], bk = f.map((p) => B(p[0], p[1]));
+pts = f.concat(bk);
+geo = { front: P(f), top: eye < y0 ? P([f[0], f[1], bk[1], bk[0]]) : '', bottom: eye > y1 ? P([f[3], f[2], bk[2], bk[3]]) : '', right: vx > x1 ? P([f[1], f[2], bk[2], bk[1]]) : '', left: vx < x0 ? P([f[0], f[3], bk[3], bk[0]]) : '', con: lines ? f.map((p) => seg(p, [vx, eye])).join('') : '' };
+const vis1 = { front: true, back: false, top: eye < y0, bottom: eye > y1, right: vx > x1, left: vx < x0 };
+const E1 = [[f[0], f[1], 'front', 'top'], [f[1], f[2], 'front', 'right'], [f[2], f[3], 'front', 'bottom'], [f[3], f[0], 'front', 'left'], [bk[0], bk[1], 'back', 'top'], [bk[1], bk[2], 'back', 'right'], [bk[2], bk[3], 'back', 'bottom'], [bk[3], bk[0], 'back', 'left'], [f[0], bk[0], 'top', 'left'], [f[1], bk[1], 'top', 'right'], [f[2], bk[2], 'right', 'bottom'], [f[3], bk[3], 'bottom', 'left']];
+geo.hid = E1.filter((e) => !vis1[e[2]] && !vis1[e[3]]).map((e) => seg(e[0], e[1])).join('');
+geo.frame = { O: f[3], ax: [f[2], null, [1, 0]], ay: [f[0], null, [0, -1]], az: [bk[3], [vx, eye], null] };
+} else {
+const Lt = at(Ct, V1, fl), Rt = at(Ct, V2, fr);
+const Lb = mode === 3 ? X(Cb, V1, Lt, V3) : at(Cb, V1, fl), Rb = mode === 3 ? X(Cb, V2, Rt, V3) : at(Cb, V2, fr);
+geo_c = { Lb, Rb, Lt, Rt };
+pts = [Ct, Cb, Lt, Lb, Rt, Rb];
+geo = { front: '', left: P([Ct, Lt, Lb, Cb]), right: P([Ct, Rt, Rb, Cb]),
+top: eye < y0 ? P([Ct, Lt, X(Lt, V2, Rt, V1), Rt]) : '',
+bottom: eye > y1 ? P([Cb, Lb, X(Lb, V2, Rb, V1), Rb]) : '',
+con: lines ? [Ct, Cb].map((c) => seg(c, V1) + seg(c, V2)).join('') + (mode === 3 ? [Ct, Lt, Rt].map((c) => seg(c, V3)).join('') : '') : '' };
+const Ft = X(Lt, V2, Rt, V1), Fb = X(Lb, V2, Rb, V1);
+geo.hid = seg(Ft, Fb) + (eye < y0 ? '' : seg(Lt, Ft) + seg(Rt, Ft)) + (eye > y1 ? '' : seg(Lb, Fb) + seg(Rb, Fb));
+geo.frame = { O: Cb, ax: [Rb, V2, null], ay: [Ct, mode === 3 ? V3 : null, mode === 3 ? null : [0, -1]], az: [Lb, V1, null] };
+}
+// Shapes fitted inside the perspective box (book chapter 3: enclose a complex form in a box)
+const shape = s.shape ?? 'box';
+const shp = (() => {
+  const out = { f0: '', f1: '', f2: '', f3: '', edges: '', hid: '', con: '', hidCon: '', hidDots: '' };
+  const fr = geo.frame, O = fr.O;
+  const axis = (q) => { const E = q[0], V = q[1], dInf = q[2];
+    if (V) { const ex = E[0] - O[0], ey = E[1] - O[1], vx_ = V[0] - E[0], vy_ = V[1] - E[1], dd = vx_ * vx_ + vy_ * vy_;
+      const lam = dd > 1e-9 ? (ex * vx_ + ey * vy_) / dd : 0; return [lam * V[0], lam * V[1], lam]; }
+    const lam = ((E[0] - O[0]) * dInf[0] + (E[1] - O[1]) * dInf[1]) / (dInf[0] * dInf[0] + dInf[1] * dInf[1]); return [lam * dInf[0], lam * dInf[1], 0]; };
+  const AX = axis(fr.ax), AY = axis(fr.ay), AZ = axis(fr.az);
+  const img = (q) => { const hx = O[0] + q[0] * AX[0] + q[1] * AY[0] + q[2] * AZ[0], hy = O[1] + q[0] * AX[1] + q[1] * AY[1] + q[2] * AZ[1], hw = 1 + q[0] * AX[2] + q[1] * AY[2] + q[2] * AZ[2];
+    return hw > 1e-6 ? [hx / hw, hy / hw] : null; };
+  const fx = (n) => (Math.round(n * 10) / 10).toString();
+  const pathOf = (pts2, close) => 'M' + pts2.map((q) => fx(q[0]) + ' ' + fx(q[1])).join('L') + (close ? 'Z' : '');
+  const area = (pts2) => { let a = 0; for (let i = 0; i < pts2.length; i++) { const p1 = pts2[i], p2 = pts2[(i + 1) % pts2.length]; a += p1[0] * p2[1] - p2[0] * p1[1]; } return a / 2; };
+  const newell = (ps) => { const n = [0, 0, 0]; for (let i = 0; i < ps.length; i++) { const a = ps[i], b = ps[(i + 1) % ps.length];
+    n[0] += (a[1] - b[1]) * (a[2] + b[2]); n[1] += (a[2] - b[2]) * (a[0] + b[0]); n[2] += (a[0] - b[0]) * (a[1] + b[1]); } return n; };
+  // Build the solid in box coordinates: u across, v up, w into depth, each from 0 to 1
+  const V = [], F = [], con = [];
+  const addV = (q) => { V.push(q); return V.length - 1; };
+  const face = (idx, g, outDir) => { const n = newell(idx.map((i) => V[i])); if (n[0] * outDir[0] + n[1] * outDir[1] + n[2] * outDir[2] < 0) idx = idx.slice().reverse(); F.push({ idx, g }); };
+  const prism = (base) => { const n = base.length, b = base.map((q) => addV([q[0], 0, q[1]])), t = base.map((q) => addV([q[0], 1, q[1]]));
+    const cu = base.reduce((a, q) => a + q[0], 0) / n, cw = base.reduce((a, q) => a + q[1], 0) / n;
+    face(b, 'bottom', [0, -1, 0]); face(t, 'top', [0, 1, 0]);
+    for (let i = 0; i < n; i++) { const j = (i + 1) % n, mu = (base[i][0] + base[j][0]) / 2 - cu, mw = (base[i][1] + base[j][1]) / 2 - cw; face([b[i], b[j], t[j], t[i]], 'side' + i, [mu, 0, mw]); } };
+  const revolve = (rings, N) => { const ids = rings.map((rg) => { if (rg[1] < 1e-6) return [addV([0.5, rg[0], 0.5])];
+      const a = []; for (let j = 0; j < N; j++) { const t = j / N * 2 * Math.PI; a.push(addV([0.5 + rg[1] * Math.cos(t), rg[0], 0.5 + rg[1] * Math.sin(t)])); } return a; });
+    for (let i = 0; i + 1 < rings.length; i++) { const A = ids[i], B = ids[i + 1];
+      for (let j = 0; j < N; j++) { const jn = (j + 1) % N, t = (j + 0.5) / N * 2 * Math.PI, o = [Math.cos(t), 0, Math.sin(t)];
+        if (B.length === 1) face([A[j], A[jn], B[0]], 'body', o); else if (A.length === 1) face([A[0], B[jn], B[j]], 'body', o); else face([A[j], A[jn], B[jn], B[j]], 'body', o); } }
+    if (ids[0].length > 1) face(ids[0].slice(), 'bottom', [0, -1, 0]);
+    const last = ids[ids.length - 1]; if (last.length > 1) face(last.slice(), 'top', [0, 1, 0]); };
+  const square = (v) => [[0, v, 0], [1, v, 0], [1, v, 1], [0, v, 1]];
+  const box12 = () => { const c = [[0, 0, 0], [1, 0, 0], [1, 0, 1], [0, 0, 1]], t = c.map((q) => [q[0], 1, q[2]]);
+    for (let i = 0; i < 4; i++) { con.push([c[i], c[(i + 1) % 4]], [t[i], t[(i + 1) % 4]], [c[i], t[i]]); } };
+  const diag = (v) => { con.push([[0, v, 0], [1, v, 1]], [[1, v, 0], [0, v, 1]], [[0.5, v, 0], [0.5, v, 1]], [[0, v, 0.5], [1, v, 0.5]]); };
+  box12();
+  if (shape === 'box') prism([[0, 0], [1, 0], [1, 1], [0, 1]]);
+  if (shape === 'hex') { const h = []; for (let i = 0; i < 6; i++) { const t = i * Math.PI / 3; h.push([0.5 + 0.5 * Math.cos(t), 0.5 + 0.5 * Math.sin(t)]); } prism(h); diag(0); }
+  else if (shape === 'tri') { prism([[0, 0], [1, 0], [0, 1]]); for (let i = 1; i < 4; i++) con.push([[i / 4, 0, 0], [i / 4, 0, 1]]); for (let j = 1; j < 3; j++) con.push([[0, 0, j / 3], [1, 0, j / 3]]); }
+  else if (shape === 'pyr') { const b = square(0).map(addV), a = addV([0.5, 1, 0.5]); face(b, 'bottom', [0, -1, 0]);
+    for (let i = 0; i < 4; i++) { const j = (i + 1) % 4, m = [(V[b[i]][0] + V[b[j]][0]) / 2 - 0.5, 0.3, (V[b[i]][2] + V[b[j]][2]) / 2 - 0.5]; face([b[i], b[j], a], 'side' + i, m); }
+    diag(0); con.push([[0.5, 0, 0.5], [0.5, 1, 0.5]]); }
+  else if (shape === 'cyl') { revolve([[0, 0.5], [1, 0.5]], 40); diag(0); diag(1); }
+  else if (shape === 'cone') { revolve([[0, 0.5], [1, 0]], 40); diag(0); con.push([[0.5, 0, 0.5], [0.5, 1, 0.5]]); }
+  else if (shape === 'vase') { const prof = [[0, 0.3], [0.04, 0.3], [0.08, 0.36], [0.18, 0.46], [0.32, 0.5], [0.46, 0.46], [0.58, 0.36], [0.68, 0.24], [0.76, 0.18], [0.86, 0.18], [0.93, 0.22], [1, 0.27]];
+    revolve(prof, 40); diag(0); diag(0.32); diag(1); con.push([[0.5, 0, 0.5], [0.5, 1, 0.5]]); }
+  // Project, find visible faces and edges
+  const P2 = V.map(img);
+  if (P2.some((q) => !q)) return out;
+  const refQ = [[0, 0, 0], [0, 1, 0], [1, 1, 0], [1, 0, 0]]; // near face, ordered with its normal facing the viewer side (-w)
+  const nRef = newell(refQ), refOrdered = nRef[2] < 0 ? refQ : refQ.slice().reverse();
+  const sRef = Math.sign(area(refOrdered.map(img))) || 1;
+  const L = [-0.45, 0.8, -0.4], Ln = Math.hypot(L[0], L[1], L[2]);
+  const fills = [[], [], [], []], vis = F.map((fc) => area(fc.idx.map((i) => P2[i])) * sRef > 1e-6);
+  // The vase curves inward, so a front-facing part can still be behind a nearer part: hide those by depth
+  const depthOf = (q) => 1 + q[0] * AX[2] + q[1] * AY[2] + q[2] * AZ[2];
+  const inside = (pt, poly2) => { let c2 = false; for (let i = 0, j = poly2.length - 1; i < poly2.length; j = i++) { const a = poly2[i], b = poly2[j];
+    if ((a[1] > pt[1]) !== (b[1] > pt[1]) && pt[0] < (b[0] - a[0]) * (pt[1] - a[1]) / (b[1] - a[1]) + a[0]) c2 = !c2; } return c2; };
+  const vf = [];
+  if (shape === 'vase') F.forEach((fc, k) => { if (!vis[k]) return; const pp = fc.idx.map((i) => P2[i]);
+    const c3 = [0, 1, 2].map((d) => fc.idx.reduce((a, i) => a + V[i][d], 0) / fc.idx.length);
+    vf.push({ k, pp, d: depthOf(c3), c: [pp.reduce((a, q) => a + q[0], 0) / pp.length, pp.reduce((a, q) => a + q[1], 0) / pp.length] }); });
+  const hiddenAt = (pt, d, skip) => vf.some((o) => !skip.includes(o.k) && o.d < d - 1e-4 && inside(pt, o.pp));
+  if (shape === 'vase') vf.forEach((o) => { if (hiddenAt(o.c, o.d, [o.k])) vis[o.k] = false; });
+  F.forEach((fc, k) => { if (!vis[k]) return; const n = newell(fc.idx.map((i) => V[i])), nn = Math.hypot(n[0], n[1], n[2]) || 1;
+    const b = (n[0] * L[0] + n[1] * L[1] + n[2] * L[2]) / (nn * Ln); const bucket = b > 0.6 ? 0 : b > 0.25 ? 1 : b > -0.1 ? 2 : 3;
+    fills[bucket].push(pathOf(fc.idx.map((i) => P2[i]), true)); });
+  // Hidden corners, joined to every vanishing point of the box
+  const fvp = [fr.ax[1], fr.ay[1], fr.az[1]].filter(Boolean);
+  let hp = [];
+  if (['box', 'hex', 'tri', 'pyr'].includes(shape)) { const inc = V.map(() => []); F.forEach((fc, kk) => fc.idx.forEach((i) => inc[i].push(kk)));
+    hp = V.map((q, i) => (inc[i].length && inc[i].every((kk) => !vis[kk]) ? P2[i] : null)).filter(Boolean); }
+  else { const cv = [[0, 0, 0], [1, 0, 0], [1, 0, 1], [0, 0, 1], [0, 1, 0], [1, 1, 0], [1, 1, 1], [0, 1, 1]];
+    const cf = [[[0, 1, 2, 3], [0, -1, 0]], [[4, 5, 6, 7], [0, 1, 0]], [[0, 1, 5, 4], [0, 0, -1]], [[2, 3, 7, 6], [0, 0, 1]], [[0, 3, 7, 4], [-1, 0, 0]], [[1, 2, 6, 5], [1, 0, 0]]];
+    const cvis = cf.map((q) => { let idx = q[0]; const n = newell(idx.map((i) => cv[i])); if (n[0] * q[1][0] + n[1] * q[1][1] + n[2] * q[1][2] < 0) idx = idx.slice().reverse(); const pp = idx.map((i) => img(cv[i])); return area(pp) * sRef > 1e-6; });
+    hp = cv.map((q, i) => (cf.every((f2, kk) => !f2[0].includes(i) || !cvis[kk]) ? img(q) : null)).filter(Boolean); }
+  const dotR = 3.5 / z;
+  out.hidCon = hp.map((q) => fvp.map((vp) => pathOf([q, vp], false)).join('')).join('');
+  out.hidDots = hp.map((q) => 'M' + fx(q[0] - dotR) + ' ' + fx(q[1]) + 'a' + dotR + ' ' + dotR + ' 0 1 0 ' + 2 * dotR + ' 0a' + dotR + ' ' + dotR + ' 0 1 0 ' + -2 * dotR + ' 0Z').join('');
+  out._hp = hp.length; out._vp = fvp.length;
+  if (shape === 'box') return out;
+  const E = new Map();
+  F.forEach((fc, k) => fc.idx.forEach((a, i) => { const b = fc.idx[(i + 1) % fc.idx.length], key = a < b ? a + '-' + b : b + '-' + a; if (!E.has(key)) E.set(key, { a, b, f: [] }); E.get(key).f.push(k); }));
+  let edges = '', hid = '';
+  E.forEach((e) => { const fa = e.f[0], fb = e.f[1];
+    const seg2 = pathOf([P2[e.a], P2[e.b]], false);
+    if (shape === 'vase' && vf.length) { const m3 = [0, 1, 2].map((d) => (V[e.a][d] + V[e.b][d]) / 2), m2 = img(m3);
+      if (m2 && hiddenAt(m2, depthOf(m3), e.f)) { if (F[e.f[0]].g !== (e.f[1] === undefined ? '' : F[e.f[1]].g)) hid += seg2; return; } }
+    if (fb === undefined) { if (vis[fa]) edges += seg2; return; }
+    const crease = F[fa].g !== F[fb].g;
+    if (crease) { if (vis[fa] || vis[fb]) edges += seg2; else hid += seg2; }
+    else if (vis[fa] !== vis[fb]) edges += seg2; });
+  return { _img: img, hidCon: out.hidCon, hidDots: out.hidDots, _hp: out._hp, _vp: out._vp, f0: fills[0].join(''), f1: fills[1].join(''), f2: fills[2].join(''), f3: fills[3].join(''), edges, hid,
+    con: lines ? con.map((q) => { const a = img(q[0]), b = img(q[1]); return a && b ? pathOf([a, b], false) : ''; }).join('') : '' };
+})();
+if (shape !== 'box') { geo.front = ''; geo.top = ''; geo.bottom = ''; geo.left = ''; geo.right = ''; }
+geo.corners = geo_c;
+// Distortion check and true proportions (book: cone of normal vision, distance point, division points)
+const dc = (() => {
+  const fx1 = (v) => (Math.round(v * 10) / 10).toFixed(1);
+  const clp = (v, a, b) => Math.max(a, Math.min(b, v)), circ = (x, y, r) => 'M' + (x - r).toFixed(1) + ' ' + y.toFixed(1) + 'a' + r + ' ' + r + ' 0 1 0 ' + 2 * r + ' 0a' + r + ' ' + r + ' 0 1 0 ' + -2 * r + ' 0Z';
+  const showCone = !!s.dcheck, deg = 180 / Math.PI;
+  const sub2 = (a, b) => [a[0] - b[0], a[1] - b[1]], dot2 = (a, b) => a[0] * b[0] + a[1] * b[1];
+  let P0 = null, PD = 0, ok = true, real = null, fix = null, why = '';
+  if (mode === 1) { P0 = [vx, eye]; PD = pd1; const sD = PD / (PD + dz); real = { w: (x1 - x0) / sD, d: (1 / k - 1) * (PD + dz), h: (y1 - y0) / sD };
+    fix = (ratio) => this.setState({ kd: clp((PD + dz) / (PD + dz + real.w * ratio), 0.05, 0.999) }); }
+  else if (mode === 2) { const cxP = 180; P0 = [cxP, eye];
+    if (v1 < cxP && v2 > cxP) { PD = Math.sqrt((cxP - v1) * (v2 - cxP));
+      const g = geo.corners, M2 = [v2 - Math.hypot(PD, v2 - cxP), eye], M1 = [v1 + Math.hypot(PD, cxP - v1), eye];
+      const gl = (M, Q) => X(M, Q, [0, y1], [1, y1])[0];
+      real = { w: gl(M2, g.Rb) - xc, d: xc - gl(M1, g.Lb), h: y1 - y0, M1, M2 };
+      fix = (ratio) => { const want = real.d / ratio, Rb2 = X(Cb, V2, M2, [xc + want, y1]); this.setState({ fr: clp((Rb2[0] - xc) / (v2 - xc), 0.03, 0.95) }); };
+    } else { ok = false; why = 'Both vanishing points are on one side of the centre. No box with square corners looks like this. Move one point to the other side of the centre.'; } }
+  else { // three points: the centre of view is where the heights of the vanishing-point triangle meet
+    const alt = (A, B, C) => { const d = sub2(C, B); return { p: A, n: [-d[1], d[0]] }; };
+    const a1 = alt(V1, V2, V3), a2 = alt(V3, V1, V2);
+    const den = a1.n[0] * a2.n[1] - a1.n[1] * a2.n[0];
+    if (Math.abs(den) > 1e-9) { const t = ((a2.p[0] - a1.p[0]) * a2.n[1] - (a2.p[1] - a1.p[1]) * a2.n[0]) / den; P0 = [a1.p[0] + t * a1.n[0], a1.p[1] + t * a1.n[1]];
+      const q = -dot2(sub2(V1, P0), sub2(V2, P0)); if (q > 1) PD = Math.sqrt(q); else ok = false; } else ok = false;
+    if (!ok) why = 'These three vanishing points do not fit one eye position. Move the third point further from the horizon.'; }
+  let worst = 0;
+  if (ok && PD > 0) pts.forEach((q) => { worst = Math.max(worst, Math.atan(Math.hypot(q[0] - P0[0], q[1] - P0[1]) / PD) * deg); });
+  const level = !ok ? 'bad' : worst <= 18.5 ? 'good' : worst <= 30 ? 'edge' : 'bad';
+  const msg = !ok ? 'Distorted. ' + why
+    : level === 'good' ? 'Natural. The shape is inside the cone of clear vision (37°).'
+    : level === 'edge' ? 'Mild distortion. Past clear vision (37°), but inside the 60° limit of normal vision.'
+    : 'Distorted. Beyond the 60° limit of normal vision. ' + (mode === 1 ? 'Move your eye further back, or bring the shape closer to P.' : 'Move the vanishing points further apart, or bring the shape closer to the centre.');
+  const target = shape === 'tri' ? 0.75 : 1, round = ['hex', 'cyl', 'cone', 'vase', 'pyr', 'box'].includes(shape) || shape === 'tri';
+  let propMsg = '', needFix = false;
+  if (real && real.w > 0 && real.d > 0) {
+    const r = real.d / real.w; needFix = Math.abs(r / target - 1) > 0.06;
+    const n = (v) => (Math.round(v / real.h * 10) / 10).toString();
+    propMsg = 'True size, in box heights: width ' + n(real.w) + ', depth ' + n(real.d) + ', height 1.';
+    if (needFix && ['cyl', 'cone', 'vase', 'hex'].includes(shape)) propMsg += ' The base is not square in reality, so the circle is really an oval.';
+    if (needFix && shape === 'tri') propMsg += ' For a true 3-4-5 triangle the base must be 4 by 3.';
+  } else if (mode === 3) propMsg = 'True sizes are measured in one- or two-point mode.';
+  const circle = (deg2) => (ok && PD > 0 ? PD * Math.tan(deg2 / deg) : 0);
+  const offPage = mode === 2 ? (v1 < vbx || v2 > vbx + vbw) : mode === 1 ? (showCone && (vx - PD < vbx || vx + PD > vbx + vbw)) : false;
+  const msg2 = msg + (offPage ? (mode === 2 ? ' The vanishing points are off the page. Zoom out to see them.' : ' The distance points are off the page. Zoom out to see them.') : '');
+  const cut = msg2.indexOf('. ');
+  return { level, msg: msg2, head: (cut > 0 ? msg2.slice(0, cut) : msg2.replace(/\.$/, '')) + (ok && PD > 0 ? ' · ' + Math.round(worst * 2) + '° of view' : ''), detail: cut > 0 ? msg2.slice(cut + 2) : '', propMsg, showCone, col: level === 'good' ? '#1D6B3A' : level === 'edge' ? '#7A5516' : '#A63D2F',
+    cx: P0 ? fx1(P0[0]) : 0, cy: P0 ? fx1(P0[1]) : 0, r37: fx1(showCone ? circle(18.5) : 0), r60: fx1(showCone ? circle(30) : 0),
+    pmark: showCone && P0 ? circ(P0[0], P0[1], 4 / z) : '',
+    dpts: showCone ? (mode === 1 ? circ(vx - PD, eye, 5 / z) + circ(vx + PD, eye, 5 / z) : real && real.M1 ? circ(real.M1[0], eye, 5 / z) + circ(real.M2[0], eye, 5 / z) : '') : '',
+    canFix: !!(real && fix && needFix && shape !== 'box'),
+    fixLabel: shape === 'tri' ? 'Make base 4 by 3' : 'Make base square',
+    fix: () => { if (fix) fix(target); }, toggle: () => this.setState({ dcheck: !showCone }), toggleLabel: showCone ? 'Hide distortion check' : 'Show distortion check',
+    canFixView: ok && level !== 'good' && mode !== 3 && !!real,
+    anyFix: (ok && level !== 'good' && mode !== 3 && !!real) || !!(real && fix && needFix && shape !== 'box'),
+    fixView: () => {
+      if (!real) return;
+      let far = 0; pts.forEach((q) => { far = Math.max(far, Math.hypot(q[0] - P0[0], q[1] - P0[1])); });
+      const need = far / Math.tan(18.5 / deg) * 1.15;
+      if (mode === 1) { const np = clp(Math.ceil(need / 10) * 10, 60, 3000), sD = PD / (PD + dz), dzN = np * (1 / sD - 1); this.setState({ pd1: np, dz: dzN, kd: clp((np + dzN) / (np + dzN + real.d), 0.05, 0.999) }); return; }
+      const trial = (sF) => { const nv1 = 180 - (180 - v1) * sF, nv2 = 180 + (v2 - 180) * sF, nPD = PD * sF;
+        const nV1 = [nv1, eye], nV2 = [nv2, eye], nM2 = [nv2 - Math.hypot(nPD, nv2 - 180), eye], nM1 = [nv1 + Math.hypot(nPD, 180 - nv1), eye];
+        const Rb2 = X(Cb, nV2, nM2, [xc + real.w, y1]), Lb2 = X(Cb, nV1, nM1, [xc - real.d, y1]);
+        const Rt2 = X(Rb2, [Rb2[0], Rb2[1] - 1], Ct, nV2), Lt2 = X(Lb2, [Lb2[0], Lb2[1] - 1], Ct, nV1);
+        let wv = 0; [Ct, Cb, Rb2, Lb2, Rt2, Lt2].forEach((q) => { wv = Math.max(wv, Math.atan(Math.hypot(q[0] - 180, q[1] - eye) / nPD) * deg); });
+        return { nv1, nv2, Rb2, Lb2, wv }; };
+      let sF = Math.max(1, need / PD), T = trial(sF);
+      for (let it = 0; it < 30 && T.wv > 17.5; it++) { sF *= 1.15; T = trial(sF); }
+      const nv1 = T.nv1, nv2 = T.nv2, Rb2 = T.Rb2, Lb2 = T.Lb2;
+      this.setState({ v1: Math.round(nv1), v2: Math.round(nv2), fr: clp((Rb2[0] - xc) / (nv2 - xc), 0.002, 0.95), fl: clp((Lb2[0] - xc) / (nv1 - xc), 0.002, 0.95), pcx: xc, pcy: (y0 + y1) / 2 - 10 }); },
+    isOne: mode === 1, pd1, setPd: (e) => this.setState({ pd1: Number(e.target.value) }), _real: real, _PD: PD, _P: P0, _worst: worst, _ok: ok };
+})();
+
+const shapeInfo = { box: ['Box', 'Draw the box first. Every other shape is fitted inside it.'],
+  hex: ['Hexagon', 'A regular hexagon fits inside the square base. Its six corners lie on the circle that touches the square, and two of them touch the sides.'],
+  tri: ['3-4-5 prism', 'A right triangle with legs 3 and 4 has a long side of exactly 5, because 3² + 4² = 5². Builders used a 3-4-5 rope to set out right angles. The base grid has 4 by 3 squares: size the box until the squares look square.'],
+  pyr: ['Pyramid', 'The tip sits straight above the point where the diagonals of the base cross.'],
+  cyl: ['Cylinder', 'Each circle sits inside a square. Find the middle of each side and mark the diagonals, then draw the curve through those points.'],
+  cone: ['Cone', 'A circle for the base and a tip straight above its centre.'],
+  vase: ['Vase', 'Stack circles of different sizes on one upright axis, as in the book’s vase plates. Each circle fits in a square of its own.'] };
+const shapeIcons = {"box": "M4 8l8-4 8 4v8l-8 4-8-4zM4 8l8 4 8-4M12 12v8", "hex": "M6 6l3-2h6l3 2-3 2H9zM6 6v10l3 2h6l3-2V6M9 8v10M15 8v10", "tri": "M5 19V5l14 14zM5 15h4v4", "pyr": "M12 3L3 18l9 3 9-3zM12 3v18", "cyl": "M5 6a7 2.5 0 1 0 14 0a7 2.5 0 1 0-14 0M5 6v12a7 2.5 0 0 0 14 0V6", "cone": "M12 3L5 17M12 3l7 14M5 17a7 2.5 0 0 0 14 0a7 2.5 0 0 0-14 0", "vase": "M9 3h6M10 3v3c0 2-5 4-5 9a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4c0-5-5-7-5-9V3"};
+const shapePills = Object.keys(shapeInfo).map((k) => ({ label: shapeInfo[k][0], icon: shapeIcons[k], on: shape === k, cls: shape === k ? 'ib on' : 'ib', pick: () => this.setState({ shape: k }) }));
+
+const bb = [Math.min(...pts.map((p) => p[0])), Math.min(...pts.map((p) => p[1])), Math.max(...pts.map((p) => p[0])), Math.max(...pts.map((p) => p[1]))];
+const hs = mode === 1 ? [['vp', vx, eye], ['rs', x1, y1]] : [['v1', v1, eye], ['v2', v2, eye], ['rs', xc, y1]].concat(mode === 3 ? [['v3', xc, v3]] : []);
+const cl = (v, a, b) => Math.max(a, Math.min(b, v));
+const rect = (e) => e.currentTarget.getBoundingClientRect();
+const svgPt = (e) => { const r = rect(e); return [vbx + (e.clientX - r.left) * vbw / r.width, vby + (e.clientY - r.top) * vbh / r.height]; };
+// Move in depth (optional): slide the shape along the floor, keeping its real size
+const depthOn = !!s.depthOn && mode !== 3;
+const dpt = (() => {
+  const PDd = mode === 1 ? pd1 : (dc._PD || 0), Px = mode === 1 ? vx : 180;
+  const s0 = PDd > 0 ? PDd / (PDd + dz) : 1;
+  const Hr = (y1 - y0) / s0, Yd = (y1 - eye) / s0, Zc = PDd + dz;
+  const Xc = mode === 1 ? (x0 - Px) / s0 : (xc - Px) / s0;
+  const ok2 = mode === 1 || (mode === 2 && PDd > 0 && dc._real);
+  const nrm = (q) => { const l = Math.hypot(q[0], q[2]) || 1; return [q[0] / l, 0, q[2] / l]; };
+  const Rd = nrm([v2 - 180, 0, PDd]), Ld = nrm([v1 - 180, 0, PDd]);
+  const proj = (X, Z) => [Px + PDd * X / Z, eye + PDd * Yd / Z];
+  let grid = '';
+  if (depthOn && ok2 && Yd > 0.5 && PDd > 0) {
+    const seg = (A3, B3) => { let ta = 0, tb = 1; const za = A3[1], zb = B3[1], zmin = PDd;
+      if (za < zmin && zb < zmin) return ''; if (za < zmin) ta = (zmin - za) / (zb - za); if (zb < zmin) tb = (zmin - za) / (zb - za);
+      const at3 = (t) => [A3[0] + (B3[0] - A3[0]) * t, A3[1] + (B3[1] - A3[1]) * t]; const a = proj(...at3(ta)), b = proj(...at3(tb));
+      return 'M' + a[0].toFixed(1) + ' ' + a[1].toFixed(1) + 'L' + b[0].toFixed(1) + ' ' + b[1].toFixed(1); };
+    if (mode === 1) { for (let j = -12; j <= 24; j++) { const Z = Zc + j * Hr; if (Z < PDd) continue; grid += seg([Xc - 10 * Hr, Z], [Xc + 12 * Hr, Z]); }
+      for (let i = -10; i <= 12; i++) grid += seg([Xc + i * Hr, Math.max(PDd, Zc - 12 * Hr)], [Xc + i * Hr, Zc + 24 * Hr]); }
+    else { const P3 = (i, j) => [Xc + i * Hr * Rd[0] + j * Hr * Ld[0], Zc + i * Hr * Rd[2] + j * Hr * Ld[2]];
+      for (let j = -10; j <= 14; j++) grid += seg(P3(-10, j), P3(14, j));
+      for (let i = -10; i <= 14; i++) grid += seg(P3(i, -10), P3(i, 14)); }
+  }
+  // Floor under the finger. Exact far from the horizon; within dmin of it the depth changes at a steady, slower rate.
+  const dmin = 100 / z;
+  const fingerZ = (py) => { const t = py - eye; return t >= dmin ? PDd * Yd / t : (PDd * Yd / dmin) * Math.exp(-(t - dmin) / dmin); };
+  const startDrag = (p) => { const ground = (q) => (Yd > 0.5 ? (() => { const Z = fingerZ(q[1]); return [(q[0] - Px) * Z / PDd, Z]; })() : null);
+    return { p0: p, G0: ground(p), ground, Xc, Zc, Yd, Hr, W: (x1 - x0) / s0, D: Zc * (1 / k - 1), Wr: dc._real ? dc._real.w / s0 : 0, Dl: dc._real ? dc._real.d / s0 : 0, PDd, Px, bw }; };
+  const dragTo = (st, p) => {
+    const G = st.G0 ? st.ground(p) : null;
+    let Zn, Xn;
+    if (st.G0 && G) { Zn = st.Zc + (G[1] - st.G0[1]); Xn = st.Xc + (G[0] - st.G0[0]); }
+    else { Zn = st.Zc * Math.exp((st.p0[1] - p[1]) / 120); Xn = st.Xc + (p[0] - st.p0[0]) * st.Zc / st.PDd; }
+    Zn = Math.max(st.PDd, Math.min(st.PDd * 40, Zn));
+    const sN = st.PDd / Zn, y1n = eye + st.Yd * sN, bhn = st.Hr * sN;
+    if (mode === 1) this.setState({ bx: st.Px + Xn * sN, bw: st.W * sN, bh: bhn, by: y1n - bhn, kd: Zn / (Zn + st.D), dz: Zn - st.PDd });
+    else { const xcn = st.Px + Xn * sN;
+      const side = (dir, len, V) => { const X = Xn + len * dir[0], Z = Zn + len * dir[2]; const sx = st.Px + st.PDd * X / Z; return (sx - xcn) / (V - xcn); };
+      this.setState({ bx: xcn - st.bw / 2, bh: bhn, by: y1n - bhn, fr: Math.max(0.0005, Math.min(0.97, side(Rd, st.Wr, v2))), fl: Math.max(0.0005, Math.min(0.97, side(Ld, st.Dl, v1))), dz: Zn - st.PDd }); } };
+  const pct = Math.round(s0 * 100), hb = Hr > 0 ? dz / Hr : 0;
+  return { grid, startDrag, dragTo, fingerZ, dmin, can: ok2 && PDd > 0,
+    msg: !depthOn ? '' : (mode === 3 ? '' : !(ok2 && PDd > 0) ? 'Move in depth needs a real eye position. Use Fix the view first.' : (Yd <= 0.5 ? 'The floor is at or above your eye, so drag up or down to move in depth.' : 'Drag the shape to slide it along the floor. ') + (dz < 0.5 ? 'It stands on the picture plane, at full size.' : 'It is ' + (Math.round(hb * 10) / 10) + ' box heights behind the picture, drawn at ' + pct + '% size.')) };
+})();
+const down = (e) => { const p = svgPt(e); let best = null, bd = 32 / z;
+hs.forEach((h) => { const d = Math.hypot(p[0] - h[1], p[1] - h[2]); if (d < bd) { bd = d; best = h[0]; } });
+if (!best && p[0] > bb[0] && p[0] < bb[2] && p[1] > bb[1] && p[1] < bb[3]) best = 'box';
+if (!best && Math.abs(p[1] - eye) < 16 / z) best = 'h';
+if (best === 'box' && depthOn && dpt.can) { best = 'depth'; this._dstart = dpt.startDrag(p); }
+this._drag = best || 'pan'; this._last = [e.clientX, e.clientY];
+try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {} };
+const move = (e) => { const d = this._drag; if (!d) return; const r = rect(e);
+const dx = (e.clientX - this._last[0]) * vbw / r.width, dy = (e.clientY - this._last[1]) * vbh / r.height;
+const p = svgPt(e).map(Math.round), ny = cl(p[1], 30, 230);
+if (d === 'pan' || d === 'box') { this._last = [e.clientX, e.clientY]; }
+if (d === 'pan') this.setState({ pcx: cl(pcx - dx, -1500, 1900), pcy: cl(pcy - dy, -300, 500) });
+else if (d === 'box') this.setState({ bx: cl(bx + dx, -100, 400), by: cl(by + dy, 0, 230) });
+else if (d === 'depth') { if (this._dstart) dpt.dragTo(this._dstart, svgPt(e)); }
+else if (d === 'vp') this.setState({ vx: cl(p[0], 10, 350), eye: ny });
+else if (d === 'v1') this.setState({ v1: cl(p[0], -1500, xc - 40), eye: ny });
+else if (d === 'v2') this.setState({ v2: cl(p[0], xc + 40, 1860), eye: ny });
+else if (d === 'v3') this.setState({ v3: cl(p[1], -1500, 1700) });
+else if (d === 'rs') this.setState(mode === 1 ? { bw: cl(p[0] - bx, 30, 200), bh: cl(p[1] - by, 30, 160) } : { bh: cl(p[1] - by, 30, 160) });
+else this.setState({ eye: ny }); };
+const up = () => { this._drag = null; };
+const modePills = [[1, 'One point'], [2, 'Two points'], [3, 'Three points']].map((m) => ({ label: m[1], on: mode === m[0], cls: mode === m[0] ? 'on' : '', pick: () => this.setState({ mode: m[0] }) }));
+const scene = { v: 1, mode, shape, eye, vx, v1, v2, v3, bx, by, bw, bh, lines, kd: k, fl, fr, pd1, dz };
+const apply = (o) => { if (!o || typeof o !== 'object') throw new Error('bad'); const n = (v, a, b, d) => (typeof v === 'number' && isFinite(v)) ? cl(v, a, b, d) : d;
+this.setState({ dz: n(o.dz, 0, 100000, 0), kd: n(o.kd, 0.05, 0.999, 0.55), fl: n(o.fl, 0.002, 0.95, 0.45), fr: n(o.fr, 0.002, 0.95, 0.4), pd1: n(o.pd1, 60, 3000, 220), shape: ['box', 'hex', 'tri', 'pyr', 'cyl', 'cone', 'vase'].includes(o.shape) ? o.shape : 'box', mode: [1, 2, 3].includes(o.mode) ? o.mode : 1, eye: n(o.eye, 30, 230, 70), vx: n(o.vx, 10, 350, 230), v1: n(o.v1, -1500, 300, 20), v2: n(o.v2, 60, 1860, 335), v3: n(o.v3, -1500, 1700, 20), bx: n(o.bx, -100, 400, 60), by: n(o.by, 0, 230, 115), bw: n(o.bw, 30, 200, 90), bh: n(o.bh, 30, 160, 80), lines: o.lines !== false, note: 'Scene loaded.' }); };
+const save = async (name, data) => { try { const dl = await claude.use('downloads'); if (!dl) throw new Error('none'); await dl.save({ filename: name, data }); this.setState({ note: 'Saved ' + name + '.' }); } catch (err) { this.setState({ note: (err && err.code === 'declined') ? 'Save cancelled.' : 'Saving is not available here.' }); } };
+const svgStr = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + [vbx, vby, vbw, vbh].join(' ') + '" width="720" height="480"><rect x="' + vbx + '" y="' + vby + '" width="' + vbw + '" height="' + vbh + '" fill="#F6F7F8"/><line x1="-3000" y1="' + eye + '" x2="3000" y2="' + eye + '" stroke="#1B1F24" stroke-width="1.5"/><path d="' + geo.con + '" stroke="#B5832A" stroke-dasharray="4 3" fill="none"/><g fill="#D9E4EE" stroke="#1F4E79" stroke-width="2" stroke-linejoin="round">' + ['top', 'bottom', 'left', 'right', 'front'].map((nm) => '<polygon points="' + geo[nm] + '"/>').join('') + '</g>' + (shape === 'box' ? '' : [[shp.f3, '#AFC4DA'], [shp.f2, '#C3D3E3'], [shp.f1, '#D9E4EE'], [shp.f0, '#EEF3F8']].map((q) => '<path d="' + q[0] + '" fill="' + q[1] + '"/>').join('') + '<path d="' + shp.con + '" stroke="#8A8F94" stroke-dasharray="3 3" fill="none"/><path d="' + shp.edges + '" stroke="#1F4E79" stroke-width="2" stroke-linejoin="round" fill="none"/>') + (showHid ? '<path d="' + shp.hidCon + '" stroke="#B5832A" stroke-dasharray="2 3" fill="none"/><path d="' + shp.hidDots + '" fill="#fff" stroke="#1F4E79"/>' : '') + (showHid ? '<path d="' + (shape === 'box' ? geo.hid : shp.hid) + '" stroke=\"#1F4E79\" stroke-width=\"1.5\" stroke-dasharray=\"5 4\" fill=\"none\"/>' : '') + '</svg>';
+const tabs = [['draw','Draw','M4 20l4-1 11-11-3-3L5 16l-1 4zM14 6l3 3'],['sc','Scales','M3 16L16 3l5 5L8 21zM7 12l2 2M10 9l2 2M13 6l2 2'],['rf','Reflections','M6 3h12v18H6zM10 7l-2 2M14 7l-6 6M14 11l-4 4'],['lt','Light','M12 8a4 4 0 1 0 0 8a4 4 0 1 0 0-8zM12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2'],['ex','Explore','M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM15.5 8.5l-2 5-5 2 2-5z'],].map((t) => ({ label: t[1], icon: t[2], on: tab === t[0], cur: tab === t[0] ? 'page' : 'false', cls: tab === t[0] ? 'bn on' : 'bn', pick: () => this.setState({ tab: t[0] }) }));
+const secTitle = { draw: 'Draw', sc: 'Scales', rf: 'Reflections', lt: 'Light and shadow', ex: 'Explore' }[tab] || '';
+const H = 70, Ln = Math.min(130, H / Math.tan(alt * Math.PI / 180)), a = az * Math.PI / 180;
+const sdx = -Math.cos(a) * Ln, sdy = -Math.sin(a) * Ln * 0.4, gx = 150, gy = 170;
+const shadow = shOn ? P([[gx-10,gy],[gx+10,gy],[gx+10+sdx,gy+sdy],[gx-10+sdx,gy+sdy]]) : '';
+const cl2 = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const f1 = (n) => n.toFixed(1);
+const svgAt = (e, w, h) => { const r = e.currentTarget.getBoundingClientRect(); return [(e.clientX - r.left) * w / r.width, (e.clientY - r.top) * h / r.height]; };
+const person = (x, fy, h) => { const r = h * 0.09, top = fy - h, bw = h * 0.26;
+  return 'M' + f1(x - r) + ' ' + f1(top + r) + 'a' + f1(r) + ' ' + f1(r) + ' 0 1 0 ' + f1(2 * r) + ' 0a' + f1(r) + ' ' + f1(r) + ' 0 1 0 ' + f1(-2 * r) + ' 0Z'
+    + 'M' + f1(x - bw / 2) + ' ' + f1(top + 2.2 * r) + 'H' + f1(x + bw / 2) + 'V' + f1(fy) + 'H' + f1(x - bw / 2) + 'Z'; };
+const poly = (a) => 'M' + a.map((q) => f1(q[0]) + ' ' + f1(q[1])).join('L') + 'Z';
+
+// Idea 2: viewing distance (chapter 13)
+const dist = (() => {
+  const Hcm = s.dH ?? 175, A = s.dA ?? 37, Hm = Hcm / 100, t = Math.tan(A * Math.PI / 360);
+  const need = Hm / (2 * t), maxD = Math.max(5, Math.ceil(need * 1.6));
+  const D = cl2(s.dD ?? 2, 0.2, maxD), fits = D >= need - 0.05;
+  const sc = Math.min(290 / Math.max(D, need), 150 / Hm), gy = 185, sxr = 320;
+  const ex = sxr - D * sc, ey = gy - Hm / 2 * sc, nx = sxr - need * sc, half = t * (350 - ex);
+  const sw = Math.max(6, Math.min(40, Hm * sc * 0.3));
+  const presets = [['Vase', 30], ['Person', 175], ['Door', 210], ['House', 800]].map((q) => ({ label: q[0] + ' ' + q[1] + ' cm', on: Hcm === q[1], cls: Hcm === q[1] ? 'pill on' : 'pill', pick: () => this.setState({ dH: q[1] }) }));
+  return { Hcm, A, D: f1(D), Dv: D, maxD, presets,
+    cone: 'M' + f1(ex) + ' ' + f1(ey) + 'L350 ' + f1(ey - half) + 'L350 ' + f1(ey + half) + 'Z',
+    sx: f1(sxr - sw / 2), sy: f1(gy - Hm * sc), sw: f1(sw), sh: f1(Hm * sc), col: fits ? '#1F4E79' : '#B5832A',
+    ex: f1(ex), ey: f1(ey), ly: f1(ey - 10), nx: f1(nx), needPath: 'M' + f1(nx) + ' 185V166',
+    needLabel: fits ? 'Minimum' : 'Stand here',
+    msg: fits ? 'The whole subject fits in clear view. The minimum distance is ' + f1(need) + ' m, about ' + f1(need / Hm) + ' times its height.'
+              : 'Too close. Part of the subject falls outside clear view. Step back to at least ' + f1(need) + ' m.',
+    setH: (e) => this.setState({ dH: Number(e.target.value) }), setA: (e) => this.setState({ dA: Number(e.target.value) }), setD: (e) => this.setState({ dD: Number(e.target.value) }) };
+})();
+
+// Idea 4: find the viewpoint (chapter 5)
+const an = (() => {
+  const seed = s.anSeed ?? 1; let r = (seed * 7919) % 233280;
+  const rnd = () => { r = (r * 9301 + 49297) % 233280; return r / 233280; };
+  const px = 110 + rnd() * 140, py = 70 + rnd() * 80, k = 0.34 + rnd() * 0.12;
+  const bk = (x, y, f) => [px + (f ?? k) * (x - px), py + (f ?? k) * (y - py)];
+  const TL = bk(0, 0), TR = bk(360, 0), BR = bk(360, 240), BL = bk(0, 240);
+  let fl = '';
+  for (let x = 0; x <= 360; x += 45) { const e = bk(x, 240); fl += 'M' + x + ' 240L' + f1(e[0]) + ' ' + f1(e[1]); }
+  for (let i = 1; i < 12; i++) { const f = 1 / (1 + 0.5 * i); if (f <= k) break; const y = py + f * (240 - py); fl += 'M' + f1(px - f * px) + ' ' + f1(y) + 'H' + f1(px + f * (360 - px)); }
+  const wb = BR[0] - BL[0], hb = BL[1] - TL[1];
+  const door = poly([[BL[0] + 0.6 * wb, BL[1] - 0.62 * hb], [BL[0] + 0.78 * wb, BL[1] - 0.62 * hb], [BL[0] + 0.78 * wb, BL[1]], [BL[0] + 0.6 * wb, BL[1]]]);
+  const win = poly([bk(0, 50, 0.85), bk(0, 50, 0.6), bk(0, 140, 0.6), bk(0, 140, 0.85)]);
+  const pic = poly([bk(360, 70, 0.8), bk(360, 70, 0.55), bk(360, 130, 0.55), bk(360, 130, 0.8)]);
+  const gx = s.anGx ?? 40, gy = s.anGy ?? 30, checked = !!s.anChecked, hint = !!s.anHint;
+  const ext = (a, b, m) => 'M' + f1(a[0]) + ' ' + f1(a[1]) + 'L' + f1(a[0] + (b[0] - a[0]) * m) + ' ' + f1(a[1] + (b[1] - a[1]) * m);
+  const err = Math.hypot(gx - px, gy - py), herr = Math.abs(gy - py);
+  const set = (x, y) => this.setState({ anGx: cl2(x, 0, 360), anGy: cl2(y, 0, 240), anChecked: false });
+  return { ceil: poly([[0, 0], [360, 0], TR, TL]), left: poly([[0, 0], TL, BL, [0, 240]]), right: poly([[360, 0], TR, BR, [360, 240]]),
+    floor: poly([[0, 240], [360, 240], BR, BL]), back: poly([TL, TR, BR, BL]), floorLines: fl, details: door + win + pic,
+    hintLines: hint ? ext([0, 0], [px, py], 1.25) + ext([360, 240], [px, py], 1.25) : '',
+    answer: checked ? ext([0, 240], [px, py], 1) + ext([360, 0], [px, py], 1) + ext([0, 0], [px, py], 1) + ext([360, 240], [px, py], 1) + 'M0 ' + f1(py) + 'H360' : '',
+    px: f1(px), py: f1(py), pr: checked ? 6 : 0, pty: f1(py - 11), show: checked ? 1 : 0,
+    gx: f1(gx), gy: f1(gy), gxr: Math.round(gx), gyr: Math.round(gy), hint, hintLabel: hint ? 'Hide hint' : 'Show hint',
+    marker: 'M' + f1(gx - 14) + ' ' + f1(gy) + 'H' + f1(gx - 4) + 'M' + f1(gx + 4) + ' ' + f1(gy) + 'H' + f1(gx + 14) + 'M' + f1(gx) + ' ' + f1(gy - 14) + 'V' + f1(gy - 4) + 'M' + f1(gx) + ' ' + f1(gy + 4) + 'V' + f1(gy + 14),
+    msg: !checked ? 'Place the marker where the edges into depth would meet.'
+      : (err < 6 ? 'Very close. You found P.' : err < 15 ? 'Close. Look again at where the edges meet.' : 'Not yet. Extend two floor or ceiling edges until they cross.') + ' Your horizon is ' + Math.round(herr) + ' units off.',
+    down: (e) => { this._anDrag = true; const q = svgAt(e, 360, 240); set(q[0], q[1]); try { e.currentTarget.setPointerCapture(e.pointerId); } catch (x) {} },
+    move: (e) => { if (!this._anDrag) return; const q = svgAt(e, 360, 240); set(q[0], q[1]); },
+    up: () => { this._anDrag = false; },
+    check: () => this.setState({ anChecked: true }), toggleHint: () => this.setState({ anHint: !hint }),
+    next: () => this.setState({ anSeed: seed + 1, anChecked: false, anHint: false, anGx: 40, anGy: 30 }),
+    setX: (e) => set(Number(e.target.value), gy), setY: (e) => set(gx, Number(e.target.value)) };
+})();
+
+// Explore: shared helpers
+const dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const sub3 = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const boxV = (cx, cz, hw, rotDeg, h) => { const a = rotDeg * Math.PI / 180, c = Math.cos(a), sn = Math.sin(a);
+  const b = [[-hw, -hw], [hw, -hw], [hw, hw], [-hw, hw]].map((q) => [cx + q[0] * c - q[1] * sn, cz + q[0] * sn + q[1] * c]);
+  return b.map((q) => [q[0], 0, q[1]]).concat(b.map((q) => [q[0], h, q[1]])); };
+const boxFaces = (V) => { const cx = (V[0][0] + V[2][0]) / 2, cz = (V[0][2] + V[2][2]) / 2, h = V[4][1], out = [];
+  for (let i = 0; i < 4; i++) { const j = (i + 1) % 4, mx = (V[i][0] + V[j][0]) / 2, mz = (V[i][2] + V[j][2]) / 2;
+    out.push({ idx: [i, j, j + 4, i + 4], n: [mx - cx, 0, mz - cz], c: [mx, h / 2, mz], side: i }); }
+  out.push({ idx: [4, 5, 6, 7], n: [0, 1, 0], c: [cx, h, cz], top: true });
+  return out; };
+const circ = (x, y, r) => 'M' + f1(x - r) + ' ' + f1(y) + 'a' + r + ' ' + r + ' 0 1 0 ' + 2 * r + ' 0a' + r + ' ' + r + ' 0 1 0 ' + -2 * r + ' 0Z';
+const exM = ['dist', 'an', 'du', 'tb', 'ce'].includes(s.exM) ? s.exM : 'dist';
+const exPills = [["dist", "Distance", "M3 12h18M3 8v8M21 8v8M8 12l-2-2M8 12l-2 2M16 12l2-2M16 12l2 2"], ["an", "Analyse", "M4 4h16v16H4zM12 7v10M7 12h10M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0-4 0"], ["du", "Dürer’s frame", "M4 4h16v16H4zM4 12h16M12 4v16"], ["tb", "Tall building", "M8 21V5l4-2 4 2v16M8 9h8M8 13h8M8 17h8M4 21h16"], ["ce", "Ceiling", "M4 21V10M20 21V10M2 10h20M4 10a8 6 0 0 1 16 0M9 21v-7M15 21v-7"]].map((m) => ({ label: m[1], icon: m[2], on: exM === m[0], cls: exM === m[0] ? 'ib on' : 'ib', pick: () => this.setState({ exM: m[0] }) }));
+
+// Scales: true width, depth and height (book chapter 2, plates on scales and on angled views)
+const sc = (() => {
+  const mode = s.scM ?? 'one', three = mode === 'three', two = mode === 'two' || three, play = s.scPlay ?? 'watch', isTry = play === 'try';
+  const w = s.scW ?? 2, h = s.scH ?? 2, d = s.scD ?? 3, z0 = s.scZ ?? 1, xL = s.scX ?? -3, eye = s.scE ?? 1.6, PD = s.scP ?? 4;
+  const ang = s.scA ?? 35, xA = s.scXA ?? 0.5, PD2 = Math.min(s.scP2 ?? 3, 6);
+  const step = s.scS ?? 1, t = s.scT ?? 1, task = s.scTask ?? 0, miss = s.scMiss ?? 0, hintN = s.scHint ?? 0, whyOn = !!s.scWhy, lock = s.scLock || null;
+  const cx = 180, k = two ? 36 : 40;
+  const ms = (v) => (Math.abs(v - Math.round(v)) < 1e-9 ? String(Math.round(v)) : f1(v));
+  const r1 = (v) => Math.round(v * 10) / 10;
+  const isect = (a, b, c, e) => { const r = [b[0] - a[0], b[1] - a[1]], q = [e[0] - c[0], e[1] - c[1]], den = r[0] * q[1] - r[1] * q[0];
+    const u = ((c[0] - a[0]) * q[1] - (c[1] - a[1]) * q[0]) / den; return [a[0] + u * r[0], a[1] + u * r[1]]; };
+  const L = (a, b) => 'M' + f1(a[0]) + ' ' + f1(a[1]) + 'L' + f1(b[0]) + ' ' + f1(b[1]);
+  const part = (a, b, u) => L(a, [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u]);
+  const set = (key) => (e) => this.setState({ [key]: Number(e.target.value) });
+  const hyFree = 34 + Math.max(0, k * (h - eye));
+  let hy = lock ? (lock.kind === 'eye' ? lock.gy - k * eye : lock.hy) : hyFree;
+  let gy = hy + k * eye, vbH = lock ? lock.vbH : Math.round(gy + 46);
+  const G = (x) => cx + k * x, P0 = [cx, hy];
+  const onP = (q) => q[0] > -5 && q[0] < 365 && q[1] > -5 && q[1] < vbH + 5;
+  const noLab = { x: 0, y: 0, t: '' };
+  let g;
+
+  if (!two) {
+    // Facing the picture: widths and heights go to P, depths to the distance point D
+    const autoHalf = PD * k > 172, half = (s.scHalf ?? false) || autoHalf, m = half ? 0.5 : 1;
+    const xR = xL + w, Dp = [cx - k * PD * m, hy], dn = half ? 'D/2' : 'D';
+    const gL = [G(xL), gy], gR = [G(xR), gy], mN = [G(xL + z0 * m), gy], mF = [G(xL + (z0 + d) * m), gy];
+    const nL = z0 === 0 ? gL : isect(mN, Dp, gL, P0), fL = isect(mF, Dp, gL, P0);
+    const nR = isect(nL, [nL[0] + 1, nL[1]], gR, P0), fR = isect(fL, [fL[0] + 1, fL[1]], gR, P0);
+    const hT = [G(xL), gy - k * h], upP = (q) => isect(q, [q[0], q[1] - 1], hT, P0);
+    const nLt = upP(nL), fLt = upP(fL), nRt = [nR[0], nLt[1]], fRt = [fR[0], fLt[1]];
+    const dH = eye > h ? [fLt, h, xL] : (cx < nL[0] ? [fL, 0, xL] : (cx > nR[0] ? [fR, 0, xR] : null));
+    const faces = [poly([nL, nR, nRt, nLt])];
+    if (cx < nL[0]) faces.push(poly([nL, fL, fLt, nLt]));
+    if (cx > nR[0]) faces.push(poly([nR, fR, fRt, nRt]));
+    g = { half, autoHalf, m, corner: gL, vr: G(xL),
+      seg: { 2: [[gL, P0], [gR, P0]], 3: [[mN, Dp], [mF, Dp], [nL, nR], [fL, fR]], 4: [[hT, P0], [nL, nLt], [fL, fLt], [nLt, nRt], [fLt, fRt], [nR, nRt], [fR, fRt]], 5: [] },
+      mk: { 2: [[gL, gR]], 3: [[gL, mF]], 4: [[gL, hT]] },
+      dt: { 3: [nL, fL, nR, fR], 4: [nLt, fLt, nRt, fRt] },
+      lab: { 2: [(gL[0] + gR[0]) / 2, gy + 17, 'middle', ms(w) + ' m'], 3: [(gL[0] + mF[0]) / 2, gy + 17, 'middle', ms(z0) + ' m + ' + ms(d) + ' m' + (half ? ', halved' : '')], 4: [G(xL) - 6, gy - k * h / 2, 'end', ms(h) + ' m'] },
+      hid: (() => { const vs = { front: true, back: false, top: eye > h, bottom: false, left: cx < nL[0], right: cx > nR[0] };
+        const E = [[nLt, nRt, 'front', 'top'], [nRt, nR, 'front', 'right'], [nR, nL, 'front', 'bottom'], [nL, nLt, 'front', 'left'], [fLt, fRt, 'back', 'top'], [fRt, fR, 'back', 'right'], [fR, fL, 'back', 'bottom'], [fL, fLt, 'back', 'left'], [nLt, fLt, 'top', 'left'], [nRt, fRt, 'top', 'right'], [nR, fR, 'right', 'bottom'], [nL, fL, 'bottom', 'left']];
+        return E.filter((e) => !vs[e[2]] && !vs[e[3]]).map((e) => L(e[0], e[1])).join(''); })(),
+      box: faces.join(''), top: eye > h ? poly([nLt, nRt, fRt, fLt]) : '', ghost: faces.join('') + poly([nLt, nRt, fRt, fLt]),
+      pts: onP(Dp) ? circ(Dp[0], Dp[1], 5) : '', l1: onP(Dp) ? { x: f1(Dp[0]), t: dn } : noLab, l2: noLab, l3: noLab, l4: noLab,
+      handles: [['h', nLt], ['w', nR]].concat(dH ? [['d', dH[0]]] : []), dLvl: dH ? dH[1] : 0, dHx: dH ? dH[2] : 0, grab: onP(Dp) ? [['D', Dp]] : [],
+      tasks: {
+        2: [{ say: 'Tap the ground line ' + ms(w) + ' m to the right of the red corner.', at: gR, hint: 'Count the ticks. One tick is 1 m.', mk: [gL, gR] },
+            { say: 'Tap the point where lines into depth meet.', at: P0, hint: 'It is the dot straight ahead on the horizon.', ln: [[gL, P0], [gR, P0]] }],
+        3: [{ say: 'The far corner is ' + ms(z0 + d) + ' m deep' + (half ? '. With D/2 you halve it: ' + ms((z0 + d) / 2) + ' m' : '') + '. Tap that distance on the ground line, to the right of the red corner.', at: mF, hint: 'Count the ticks from the red corner.', mk: [gL, mF] },
+            { say: 'Tap the point that depth lines run to.', at: Dp, hint: 'It is ' + dn + ', on the horizon to the left of P.', ln: [[mF, Dp]] },
+            { say: 'Tap where your line crosses the line to P. That is the far corner.', at: fL, hint: 'Follow your new line until it meets the line from the red corner to P.', dot: fL }],
+        4: [{ say: 'Tap the true height, ' + ms(h) + ' m, on the vertical above the red corner.', at: hT, hint: 'Count the small ticks on the vertical. One tick is 1 m.', mk: [gL, hT] },
+            { say: 'Tap the point that carries this height into depth.', at: P0, hint: 'Heights travel along lines to P, like widths.', ln: [[hT, P0]] },
+            { say: 'Tap the top of the far corner.', at: fLt, hint: 'Go straight up from the far corner to your new line.', ln: [[fL, fLt]], dot: fLt }] },
+      titles: ['Set up the picture', 'Width', 'Depth', 'Height', 'Finish and check'], short: ['Setup', 'Width', 'Depth', 'Height', 'Check'],
+      instr: [
+        'Horizon at your eye height. P straight ahead. ' + dn + ' on the horizon, ' + ms(PD * m) + ' m from P.',
+        'Mark ' + ms(w) + ' m on the ground line. Draw lines from both ends to P.',
+        'Mark ' + ms(z0) + ' m, then ' + ms(d) + ' m more' + (half ? ', both halved' : '') + '. Draw lines from the marks to ' + dn + '. The crossings are the near and far corners.',
+        'Mark ' + ms(h) + ' m on a vertical at the corner. Draw a line from its top to P. Verticals at the corners end on this line.',
+        'Front width ' + f1(nR[0] - nL[0]) + ' units, back width ' + f1(fR[0] - fL[0]) + ' units: both are ' + ms(w) + ' m. Front height ' + f1(nL[1] - nLt[1]) + ', back height ' + f1(fL[1] - fLt[1]) + ': both are ' + ms(h) + ' m.' ],
+      why: [
+        'On the ground line, the picture touches the ground, so sizes there are true. Here 1 m is ' + k + ' units. D is the vanishing point of lines at 45° to the picture. It lies as far from P as your eye is from the picture.' + (half ? ' D is off the page at full distance, so we use D/2. Lines to D/2 are steeper, so every depth is halved.' : ''),
+        'Lines to P run straight into depth. Two such lines keep the same real distance apart, so the width between them is always ' + ms(w) + ' m.',
+        'Seen from above, a line at 45° that starts x m to the side ends x m deep. All lines at 45° run to D. So the crossing with the line to P is exactly x m deep.',
+        'The top line and the ground line both run to P. In reality they stay ' + ms(h) + ' m apart at every depth, so each vertical between them is ' + ms(h) + ' m.',
+        'Far things look smaller, but every size was measured where it is true and carried back with lines to P and ' + dn + '.' ],
+      intro: 'Sizes are true only on the ground line. Measure there, then carry each size into depth with lines to P and D.',
+      note: '', test: { _test: { nL, fL, nR, fR, nLt, fLt, xL, xR, z0, d, h, eye, PD, k, cx, hy } }, stF: (p, st) => [st.z0, nL[1]] };
+  } else if (!three) {
+    // Turned box: two vanishing points and the book's division points
+    const th = ang * Math.PI / 180;
+    const F1 = [cx - k * PD2 / Math.tan(th), hy], F2 = [cx + k * PD2 * Math.tan(th), hy];
+    const M1 = [F1[0] + k * PD2 / Math.sin(th), hy], M2 = [F2[0] - k * PD2 / Math.cos(th), hy];
+    const A = [G(xA), gy], mR = [A[0] + k * w, gy], mL = [A[0] - k * d, gy];
+    const Bc = isect(mR, M2, A, F2), Cc = isect(mL, M1, A, F1), Dc = isect(Bc, F1, Cc, F2);
+    const At = [A[0], gy - k * h], up2 = (q, F) => isect(q, [q[0], q[1] - 1], At, F);
+    const pj2 = (x, y, z) => { const q = PD2 / (z + PD2); return [cx + k * x * q, hy - k * (y - eye) * q]; };
+    const edgeR = Math.abs(A[0] - F2[0]) < 0.5, edgeL = Math.abs(A[0] - F1[0]) < 0.5;
+    const Bt = edgeR ? pj2(xA + w * Math.sin(th), h, w * Math.cos(th)) : up2(Bc, F2);
+    const Ct = edgeL ? pj2(xA - d * Math.cos(th), h, d * Math.sin(th)) : up2(Cc, F1);
+    const Dt = isect(Dc, [Dc[0], Dc[1] - 1], edgeR ? Ct : Bt, edgeR ? F2 : F1);
+    const lab = (q, tx) => (onP(q) ? { x: f1(q[0]), t: tx } : noLab);
+    const sides = poly([A, Bc, Bt, At]) + poly([A, Cc, Ct, At]);
+    const dist2 = PD2 / Math.cos(th), dist1 = PD2 / Math.sin(th);
+    g = { half: false, autoHalf: false, m: 1, corner: A, vr: A[0],
+      seg: { 2: [[A, F2], [mR, M2]], 3: [[A, F1], [mL, M1]], 4: [[At, F1], [At, F2], [Bc, Bt], [Cc, Ct]], 5: [[Bc, F1], [Cc, F2], [Bt, F1], [Ct, F2]] },
+      mk: { 2: [[A, mR]], 3: [[mL, A]], 4: [[A, At]] },
+      dt: { 2: [Bc], 3: [Cc], 4: [Bt, Ct], 5: [Dc, Dt] },
+      lab: { 2: [(A[0] + mR[0]) / 2, gy + 17, 'middle', ms(w) + ' m'], 3: [(A[0] + mL[0]) / 2, gy + 17, 'middle', ms(d) + ' m'], 4: [A[0] - 6, gy - k * h / 2, 'end', ms(h) + ' m'] },
+      hid: L(Dc, Dt) + L(Bc, Dc) + L(Cc, Dc) + (eye > h ? '' : L(Bt, Dt) + L(Ct, Dt)),
+      box: sides, top: eye > h ? poly([At, Bt, Dt, Ct]) : '', ghost: sides + poly([At, Bt, Dt, Ct]),
+      pts: [F1, F2, M1, M2].filter(onP).map((q) => circ(q[0], q[1], 5)).join(''),
+      l1: lab(F1, 'F1'), l2: lab(F2, 'F2'), l3: lab(M1, 'M1'), l4: lab(M2, 'M2'),
+      handles: [['A', A], ['B', Bc], ['C', Cc], ['H', At]], grab: [['F1', F1], ['F2', F2]].filter((q) => onP(q[1])), F1, F2, M1, M2,
+      tasks: {
+        2: [{ say: 'Tap the ground line ' + ms(w) + ' m to the right of the red corner.', at: mR, hint: 'Count the ticks. One tick is 1 m.', mk: [A, mR] },
+            { say: 'Tap the division point for the right side.', at: M2, hint: 'It is M2, on the horizon between P and F1.', ln: [[A, F2], [mR, M2]] },
+            { say: 'Tap where your line crosses the line to F2. That is the right corner.', at: Bc, hint: 'Follow the line from your mark toward M2 until it meets the line to F2.', dot: Bc }],
+        3: [{ say: 'Tap the ground line ' + ms(d) + ' m to the left of the red corner.', at: mL, hint: 'Count the ticks to the left.', mk: [mL, A] },
+            { say: 'Tap the division point for the left side.', at: M1, hint: 'It is M1, on the horizon between P and F2.', ln: [[A, F1], [mL, M1]] },
+            { say: 'Tap where your line crosses the line to F1. That is the left corner.', at: Cc, hint: 'Follow the line toward M1 until it meets the line to F1.', dot: Cc }],
+        4: [{ say: 'Tap the true height, ' + ms(h) + ' m, above the red corner.', at: At, hint: 'Count the small ticks on the vertical. One tick is 1 m.', mk: [A, At] },
+            { say: 'Tap the vanishing point of the right side.', at: F2, hint: 'Right-side edges run to F2.', ln: [[At, F2], [At, F1]] },
+            { say: 'Tap the top of the right corner.', at: Bt, hint: 'Go straight up from the right corner to the line to F2.', ln: [[Bc, Bt]], dot: Bt }] },
+      titles: ['Set up the picture', 'Right side', 'Left side', 'Height', 'Finish and check'], short: ['Setup', 'Right side', 'Left side', 'Height', 'Check'],
+      instr: [
+        'Two vanishing points, F1 and F2. Each division point M lies as far from its F as that F is from your eye.',
+        'Mark ' + ms(w) + ' m to the right on the ground line. A line from the mark to M2 crosses the line to F2 at the right corner.',
+        'Mark ' + ms(d) + ' m to the left. A line from the mark to M1 crosses the line to F1 at the left corner.',
+        'The near corner is on the ground line, so its height is true: ' + ms(h) + ' m. Lines from its top to F1 and F2 give the other heights.',
+        'Right side ' + f1(Math.hypot(Bc[0] - A[0], Bc[1] - A[1])) + ' units and left side ' + f1(Math.hypot(Cc[0] - A[0], Cc[1] - A[1])) + ' units on paper, yet they are ' + ms(w) + ' m and ' + ms(d) + ' m.' ],
+      why: [
+        'Swing the distance from your eye to each vanishing point down onto the horizon. That gives the division point. Here M2 is ' + f1(dist2) + ' m from F2 and M1 is ' + f1(dist1) + ' m from F1.',
+        'Seen from above, the mark, the corner and the far end of the side form a triangle with two equal sides. Lines that close such triangles all run to M2. So the side gets the same length as the mark: ' + ms(w) + ' m.',
+        'The same triangle works on the left, with M1 and F1.',
+        'Top edges are parallel to the bottom edges, so they run to the same vanishing points.',
+        'The far corner is where the edges from the two side corners meet. Each runs to the vanishing point of the opposite side.' ],
+      intro: 'A turned box has two vanishing points. Measure its sides on the ground line and carry them into depth with the division points M1 and M2.',
+      note: (edgeR || edgeL) ? 'From here one side is seen edge-on, as a single line. Move the near corner a little.' : (!onP(F1) || !onP(F2)) ? 'A vanishing point is off the page. Its lines still run toward it. Turn the box less, or bring your eye closer.' : '',
+      test: { _test2: { A, Bc, Cc, Dc, At, Bt, Ct, Dt, xA, w, d, h, eye, PD: PD2, k, cx, hy, th } } };
+  } else {
+    // Tilted picture: looking up, verticals run to a third point F3 (book chapter 7). Heights use a third division point M3.
+    const tilt = s.scTilt ?? 25, tau = tilt * Math.PI / 180, th = ang * Math.PI / 180, KP = k * PD2;
+    const fw = [0, Math.sin(tau), Math.cos(tau)], up3 = [0, Math.cos(tau), -Math.sin(tau)];
+    const za = (PD2 + eye * Math.sin(tau)) / Math.cos(tau);
+    const vpRaw = (v) => { const Z = v[1] * fw[1] + v[2] * fw[2]; return [cx + KP * v[0] / Z, -KP * (v[1] * up3[1] + v[2] * up3[2]) / Z]; };
+    const prRaw = (X) => vpRaw([X[0], X[1] - eye, X[2]]);
+    const Lv = [-Math.cos(th), 0, Math.sin(th)], Rv = [Math.sin(th), 0, Math.cos(th)];
+    // Setup points (what the artist chooses): vanishing points, the near corner, the centre of view
+    let F1 = vpRaw(Lv), F2 = vpRaw(Rv), F3 = vpRaw([0, 1, 0]), A = prRaw([xA, 0, za]), Pc = [cx, 0];
+    const dist = (V) => Math.sqrt((V[0] - Pc[0]) ** 2 + (V[1] - Pc[1]) ** 2 + KP * KP);
+    const unit = (a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1; return [dx / l, dy / l]; };
+    const u3 = unit(F2, F3);
+    let M1 = [F1[0] + dist(F1), F1[1]], M2 = [F2[0] - dist(F2), F2[1]], M3 = [F3[0] - dist(F3) * u3[0], F3[1] - dist(F3) * u3[1]];
+    // Fit the page: shift everything down so the top of the drawing shows
+    const mHraw = [A[0] + k * h * u3[0], A[1] + k * h * u3[1]];
+    const ys = [A[1], F1[1], mHraw[1] - 10, A[1] - k * h * 1.2];
+    if (A[1] - F3[1] < 700) ys.push(F3[1] - 14, M3[1] - 14);
+    const off = 24 - Math.min(...ys), sh = (q) => [q[0], q[1] + off];
+    F1 = sh(F1); F2 = sh(F2); F3 = sh(F3); A = sh(A); M1 = sh(M1); M2 = sh(M2); M3 = sh(M3); Pc = sh(Pc);
+    hy = F1[1]; gy = A[1]; vbH = Math.round(gy + 46);
+    const mR = [A[0] + k * w, gy], mL = [A[0] - k * d, gy], mH = [A[0] + k * h * u3[0], A[1] + k * h * u3[1]];
+    const Bc = isect(mR, M2, A, F2), Cc = isect(mL, M1, A, F1), At = isect(mH, M3, A, F3);
+    const Bt = isect(Bc, F3, At, F2), Ct = isect(Cc, F3, At, F1), Dc = isect(Bc, F1, Cc, F2), Dt = isect(Dc, F3, Bt, F1);
+    const onP3 = (q) => q[0] > -5 && q[0] < 365 && q[1] > -5 && q[1] < vbH + 5;
+    const lab = (q, tx) => (onP3(q) ? { x: f1(q[0]), y: f1(q[1] - 9), t: tx } : noLab);
+    const sides = poly([A, Bc, Bt, At]) + poly([A, Cc, Ct, At]);
+    let hTicks = L(A, [A[0] + k * 4.5 * u3[0], A[1] + k * 4.5 * u3[1]]); for (let i = 1; i <= 4; i++) { const q = [A[0] + k * i * u3[0], A[1] + k * i * u3[1]]; hTicks += 'M' + f1(q[0] - 5 * u3[1]) + ' ' + f1(q[1] + 5 * u3[0]) + 'L' + f1(q[0] + 5 * u3[1]) + ' ' + f1(q[1] - 5 * u3[0]); }
+    g = { half: false, autoHalf: false, m: 1, corner: A, vr: A[0], hTicks, pY: Pc[1],
+      seg: { 2: [[A, F2], [mR, M2]], 3: [[A, F1], [mL, M1]], 4: [[A, F3], [mH, M3], [At, F1], [At, F2], [Bc, F3], [Cc, F3]], 5: [[Bc, F1], [Cc, F2], [Dc, F3]] },
+      mk: { 2: [[A, mR]], 3: [[mL, A]], 4: [[A, mH]] },
+      dt: { 2: [Bc], 3: [Cc], 4: [At, Bt, Ct], 5: [Dc, Dt] },
+      lab: { 2: [(A[0] + mR[0]) / 2, gy + 17, 'middle', ms(w) + ' m'], 3: [(A[0] + mL[0]) / 2, gy + 17, 'middle', ms(d) + ' m'], 4: [(A[0] + mH[0]) / 2 - 8, (A[1] + mH[1]) / 2, 'end', ms(h) + ' m'] },
+      box: sides, top: eye > h ? poly([At, Bt, Dt, Ct]) : '', ghost: sides + poly([At, Bt, Dt, Ct]),
+      hid: L(Dc, Dt) + L(Bc, Dc) + L(Cc, Dc) + (eye > h ? '' : L(Bt, Dt) + L(Ct, Dt)),
+      pts: [F1, F2, F3, M1, M2, M3].filter(onP3).map((q) => circ(q[0], q[1], 5)).join(''),
+      l1: lab(F1, 'F1'), l2: lab(F2, 'F2'), l3: { ...lab(M1, 'M1'), y: f1(M1[1] + 18) }, l4: { ...lab(M2, 'M2'), y: f1(M2[1] + 18) }, l5: lab(F3, 'F3'), l6: { ...lab(M3, 'M3'), x: f1(M3[0] + 14) },
+      handles: [], grab: [], F1, F2, M1, M2, three: true,
+      tasks: {
+        2: [{ say: 'Tap the ground line ' + ms(w) + ' m to the right of the red corner.', at: mR, hint: 'Count the ticks. One tick is 1 m.', mk: [A, mR] },
+            { say: 'Tap the division point for the right side.', at: M2, hint: 'It is M2, on the horizon.', ln: [[A, F2], [mR, M2]] },
+            { say: 'Tap where your line crosses the line to F2. That is the right corner.', at: Bc, hint: 'Follow the line toward M2 until it meets the line to F2.', dot: Bc }],
+        3: [{ say: 'Tap the ground line ' + ms(d) + ' m to the left of the red corner.', at: mL, hint: 'Count the ticks to the left.', mk: [mL, A] },
+            { say: 'Tap the division point for the left side.', at: M1, hint: 'It is M1, on the horizon.', ln: [[A, F1], [mL, M1]] },
+            { say: 'Tap where your line crosses the line to F1. That is the left corner.', at: Cc, hint: 'Follow the line toward M1 until it meets the line to F1.', dot: Cc }],
+        4: [{ say: 'Heights are not true on the vertical any more. Tap ' + ms(h) + ' m on the slanted measuring line through the red corner.', at: mH, hint: 'Count the ticks on the slanted line. One tick is 1 m.', mk: [A, mH] },
+            { say: 'Tap the division point for heights.', at: M3, hint: 'It is M3, on the line from F3 toward F2.', ln: [[A, F3], [mH, M3]] },
+            { say: 'Tap where your line crosses the line to F3. That is the top of the near corner.', at: At, hint: 'Follow the line toward M3 until it meets the edge running up to F3.', dot: At }] },
+      titles: ['Set up the picture', 'Right side', 'Left side', 'Height', 'Finish and check'], short: ['Setup', 'Right side', 'Left side', 'Height', 'Check'],
+      instr: [
+        'You look up ' + tilt + '°, so the picture is tilted. Three vanishing points: F1 and F2 on the horizon, F3 for the verticals. Each has a division point M.',
+        'Mark ' + ms(w) + ' m to the right on the ground line. A line from the mark to M2 crosses the line to F2 at the right corner.',
+        'Mark ' + ms(d) + ' m to the left. A line from the mark to M1 crosses the line to F1 at the left corner.',
+        'Measure ' + ms(h) + ' m on the slanted line through the corner, parallel to F3–F2. A line from the mark to M3 crosses the edge to F3 at the top. Lines to F1 and F2 give the other tops.',
+        'The far corner is where lines to the opposite vanishing points cross. Every vertical edge runs to F3.' ],
+      why: [
+        'Each division point lies as far from its vanishing point as that point is from your eye. Here M3 is ' + f1(dist(F3) / k) + ' m from F3.',
+        'The mark, the corner and the far end of the side form a triangle with two equal sides. Lines that close such triangles run to M2.',
+        'The same triangle works on the left, with M1 and F1.',
+        'The near edge and the right side lie in one plane. Its vanishing line runs through F3 and F2, so heights are measured on a line parallel to it, and M3 lies on that vanishing line.',
+        'Parallel edges meet at one vanishing point, so the far corner is found from the two side corners.' ],
+      intro: 'Looking up tilts the picture. Vertical edges then run to a third point, F3. Sides are measured with M1 and M2, heights with M3.',
+      note: !onP3(F3) ? 'F3 is off the page. Tilt the view more to bring it closer.' : '',
+      test: { _test3: { A, Bc, Cc, Dc, At, Bt, Ct, Dt, F1, F2, F3, Pc, xA, w, d, h, eye, PD: PD2, k, cx, th, tau, za, off } } };
+  }
+
+  // Steps: watch (animated) or your turn (tap tasks)
+  const tasks = (g.tasks[step] || []).map((q) => ({ ...q, auto: !onP(q.at) }));
+  let eff = task; while (tasks[eff] && tasks[eff].auto) eff++;
+  const doneTasks = isTry ? tasks.slice(0, eff) : [];
+  const cur = isTry ? tasks[eff] : null;
+  let done = ''; for (let i = 2; i < step; i++) done += (g.seg[i] || []).map((q) => L(q[0], q[1])).join('');
+  let now = '', marks = '', dots = '';
+  if (!isTry) {
+    const segs = g.seg[step] || [], mks = g.mk[step] || [], hasMk = mks.length > 0;
+    const um = hasMk ? Math.min(1, t / 0.3) : 1, ul = Math.max(0, Math.min(1, (t - (hasMk ? 0.3 : 0)) / (hasMk ? 0.55 : 0.85)));
+    marks = mks.map((q) => part(q[0], q[1], um)).join('');
+    now = ul > 0 ? segs.map((q) => part(q[0], q[1], ul)).join('') : '';
+    dots = t >= 0.85 ? (g.dt[step] || []).map((q) => circ(q[0], q[1], 3.5)).join('') : '';
+  } else {
+    doneTasks.forEach((q) => { if (q.mk) marks += L(q.mk[0], q.mk[1]); if (q.ln) q.ln.forEach((l) => { now += L(l[0], l[1]); }); if (q.dot) dots += circ(q.dot[0], q.dot[1], 3.5); });
+    if (step === 5) dots = (g.dt[5] || []).map((q) => circ(q[0], q[1], 3.5)).join('');
+  }
+  const showBox = step === 5;
+  if (showBox) done = [2, 3, 4].map((i) => g.seg[i].map((q) => L(q[0], q[1])).join('')).join('');
+  const labOn = isTry ? (eff > 0 || step === 5) : t > 0.15;
+  const ML = (labOn && g.lab[step]) || [0, 0, 'start', ''];
+  let ruler = ''; for (let x = -6; x <= 6; x++) ruler += 'M' + f1(G(x)) + ' ' + f1(gy) + 'v' + (x === 0 ? 10 : 6);
+  if (step === 4 && g.hTicks) ruler += g.hTicks;
+  else if (isTry && step === 4) for (let y = 1; y <= 4; y++) ruler += 'M' + f1(g.vr - 5) + ' ' + f1(gy - k * y) + 'h10';
+  const ring = isTry && cur && hintN >= 2 ? cur.at : null;
+  const tasksLeft = isTry && step >= 2 && step <= 4 && eff < tasks.length;
+
+  // Animation for watch mode
+  const anim = () => { if (this._scTimer) { clearInterval(this._scTimer); this._scTimer = null; }
+    const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || typeof setInterval !== 'function') { this.setState({ scT: 1 }); return; }
+    let tt = 0; this.setState({ scT: 0 });
+    this._scTimer = setInterval(() => { tt = Math.min(1, tt + 0.035); this.setState({ scT: tt }); if (tt >= 1) { clearInterval(this._scTimer); this._scTimer = null; } }, 40); };
+  const goStep = (n) => { const nn = Math.max(1, Math.min(5, n)); this.setState({ scS: nn, scTask: 0, scHint: 0, scMsg: '' }); if (!isTry) anim(); };
+
+  // Pointer: drag handles in watch mode, tap tasks in your turn
+  const svgPt = (e) => { const r = e.currentTarget.getBoundingClientRect(); return [(e.clientX - r.left) * 360 / r.width, (e.clientY - r.top) * vbH / r.height]; };
+  const near = (p, q, rad) => Math.hypot(p[0] - q[0], p[1] - q[1]) <= rad;
+  const down = (e) => {
+    const p = svgPt(e);
+    if (isTry) {
+      if (!cur) return;
+      if (near(p, cur.at, 16)) {
+        let nx = eff + 1; while (tasks[nx] && tasks[nx].auto) nx++;
+        this.setState({ scTask: nx, scHint: 0, scMsg: nx >= tasks.length ? 'Right. Step done.' : 'Right.' });
+      } else {
+        this.setState({ scHint: hintN + 1, scMiss: miss + 1, scMsg: 'Not quite. ' + cur.hint + (hintN >= 1 ? ' The dashed ring shows where.' : '') });
+      }
+      return;
+    }
+    const nearest = (list) => { let kd = null, best = 22; list.forEach((hd) => { const dd = Math.hypot(p[0] - hd[1][0], p[1] - hd[1][1]); if (dd < best) { best = dd; kd = hd[0]; } }); return kd; };
+    const frontH = two ? g.handles : g.handles.filter((hd) => hd[0] === 'h' || hd[0] === 'w');
+    if (three) return;
+    let kind = nearest(frontH);
+    if (!kind && !two) { const c = g.handles[0][1], b = g.handles[1][1]; if (p[0] > c[0] - 4 && p[0] < b[0] + 4 && p[1] > c[1] - 4 && p[1] < b[1] + 4) kind = 'move'; }
+    if (!kind) kind = nearest(g.handles.filter((hd) => frontH.indexOf(hd) < 0).concat(g.grab));
+    if (!kind && Math.abs(p[1] - hy) < 12) kind = 'eye';
+    if (!kind) return;
+    this._scDrag = { kind, p0: p, w, h, d, z0, xL, eye, PD, m: g.m, ang, ny: two ? 0 : g.handles[1][1][1] };
+    this.setState({ scLock: { hy, gy, vbH, kind }, scT: 1 });
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (x) {}
+  };
+  const move = (e) => {
+    const st = this._scDrag; if (!st) return;
+    const p = svgPt(e), K = st.kind, dy = p[1] - st.p0[1];
+    if (K === 'eye') { this.setState({ scE: r1(cl2(st.eye - dy / k, 0.5, 4)) }); return; }
+    if (K === 'H') { this.setState({ scH: r1(cl2((gy - p[1]) / k, 0.5, 4)) }); return; }
+    if (K === 'h') { const s0 = PD / (z0 + PD); this.setState({ scH: r1(cl2((st.ny - p[1]) / (k * s0), 0.5, 4)) }); return; }
+    if (!two) {
+      const s0 = PD / (z0 + PD);
+      if (K === 'w') this.setState({ scW: r1(cl2((p[0] - cx) / (k * s0) - xL, 0.5, 4)) });
+      else if (K === 'd') { const den = k * (eye - g.dLvl), q = den !== 0 ? (p[1] - hy) / den : 0; if (q > 0.02) this.setState({ scD: r1(cl2(PD / q - PD - z0, 0.5, 6)) }); }
+      else if (K === 'D') this.setState({ scP: r1(cl2((cx - p[0]) / (k * st.m), 3, 12)) });
+      else if (K === 'move') { const s1 = st.PD / (st.z0 + st.PD), yb = st.ny + dy;
+        const nz = yb > hy + 2 ? cl2(k * eye * PD / (yb - hy) - PD, 0, 6) : st.z0;
+        this.setState({ scX: r1(cl2(st.xL + (p[0] - st.p0[0]) / (k * s1), -5, 3)), scZ: r1(nz) }); }
+    } else {
+      const mark = (M) => (p[1] > hy + 2 ? M[0] + (p[0] - M[0]) * (gy - hy) / (p[1] - hy) : null);
+      if (K === 'A') this.setState({ scXA: r1(cl2((p[0] - cx) / k, -3, 3)) });
+      else if (K === 'B') { const mx = mark(g.M2); if (mx != null) this.setState({ scW: r1(cl2((mx - g.corner[0]) / k, 0.5, 4)) }); }
+      else if (K === 'C') { const mx = mark(g.M1); if (mx != null) this.setState({ scD: r1(cl2((g.corner[0] - mx) / k, 0.5, 5)) }); }
+      else if (K === 'F2') this.setState({ scA: Math.round(cl2(Math.atan2(p[0] - cx, k * PD2) * 180 / Math.PI, 25, 65)) });
+      else if (K === 'F1') this.setState({ scA: Math.round(cl2(Math.atan2(k * PD2, cx - p[0]) * 180 / Math.PI, 25, 65)) });
+    }
+  };
+  const up = () => { if (this._scDrag) { this._scDrag = null; this.setState({ scLock: null }); } };
+
+  // New practice box with values that fit the page
+  const newTask = () => { const seed = (s.scSeed ?? 0) + 1; let r = (seed * 7919 + 13) % 233280; const rnd = () => { r = (r * 9301 + 49297) % 233280; return r / 233280; };
+    const pick = (a) => a[Math.floor(rnd() * a.length)];
+    if (!two) this.setState({ scSeed: seed, scW: pick([1, 1.5, 2, 2.5, 3]), scH: pick([1, 1.5, 2, 2.5, 3]), scD: pick([1, 1.5, 2, 2.5, 3]), scZ: pick([0.5, 1, 1.5, 2]), scX: pick([-3, -2.5, -2]), scP: 4, scHalf: false, scS: 2, scTask: 0, scHint: 0, scMiss: 0, scMsg: '' });
+    else this.setState({ scSeed: seed, scW: pick([1, 1.5, 2, 2.5]), scH: three ? pick([3, 3.5, 4]) : pick([1, 1.5, 2, 2.5]), scD: pick([1, 1.5, 2, 2.5, 3]), scA: pick([35, 40, 45, 50]), scXA: pick([0, 0.5, 1]), scP2: 3, scTilt: pick([20, 25, 30, 35]), scS: 2, scTask: 0, scHint: 0, scMiss: 0, scMsg: '' }); };
+
+  const instr = !isTry ? g.instr[step - 1]
+    : step === 1 ? 'These are the points you will use. Press Next step to start building.'
+    : step === 5 ? 'Your box is finished. ' + (miss === 0 ? 'No wrong taps. Well done.' : 'You needed ' + miss + ' extra tap' + (miss === 1 ? '' : 's') + '.') + ' Press New box to try another.'
+    : (cur ? cur.say : 'Step done. Press Next step.');
+  const msg = isTry ? (s.scMsg ?? '') : '';
+  const handlesPath = isTry ? '' : g.handles.map((hd) => 'M' + f1(hd[1][0] - 6) + ' ' + f1(hd[1][1] - 6) + 'h12v12h-12Z').join('');
+
+  return Object.assign({ mode, isOne: !two, isTwo: two, isThree: three, pY: f1(g.pY ?? hy), pLy: f1((g.pY ?? hy) - 9), tilt: s.scTilt ?? 25, setTilt: set('scTilt'), l5: g.l5 || noLab, l6: g.l6 || noLab, isTry, isWatch: !isTry, step, w, h, d, z0, xL, eye, xA, ang,
+    PD: two ? PD2 : PD, pdMax: two ? 6 : 12, half: g.half,
+    wL: ms(w), hL: ms(h), dL: ms(d), z0L: ms(z0), xLL: ms(xL), xAL: ms(xA), eyeL: ms(eye), PDL: ms(two ? PD2 : PD),
+    vb: '0 0 360 ' + vbH, hy: f1(hy), gy: f1(gy), gh: f1(vbH - gy), hly: f1(hy - 6), gly: f1(gy + 36), ply: f1(hy - 9), mpy: f1(hy + 18),
+    intro: g.intro, aria: three ? 'Construction of a box seen from below with three vanishing points and three division points.' : two ? 'Construction of a turned box with two vanishing points and division points.' : 'Construction of a box with true width, depth and height in one-point perspective.',
+    ruler, done, now, marks, dots, ghost: showBox || isTry ? '' : g.ghost, box: showBox ? g.box : '', boxTop: showBox ? g.top : '', hid: showBox && s.scHid ? g.hid : '', hidOn: !!s.scHid, isFinal: showBox, hidLabel: s.scHid ? 'Hide hidden edges' : 'Show hidden edges', toggleHid: () => this.setState({ scHid: !s.scHid }),
+    corner: isTry ? circ(g.corner[0], g.corner[1], 5) : '', ringX: ring ? f1(ring[0]) : 0, ringY: ring ? f1(ring[1]) : 0, ringR: ring ? 14 : 0,
+    mlx: f1(ML[0]), mly: f1(ML[1]), mla: ML[2], mlText: ML[3],
+    pts: g.pts, l1: g.l1, l2: g.l2, l3: g.l3, l4: g.l4, handles: handlesPath,
+    title: g.titles[step - 1], instr, msg, hasMsg: !!msg, why: g.why[step - 1], whyOn, whyLabel: whyOn ? 'Hide why' : 'Why does this work?',
+    tip: isTry ? (tasksLeft ? 'Tap on the drawing. A wrong tap gives a hint.' : '') : (three ? 'Change the box, the turn and the tilt under More settings.' : 'Drag the orange squares to change the box. Drag ' + (two ? 'F1 or F2 to turn it' : 'D to change your distance') + ', or the horizon to change your eye height.'),
+    check: g.note, hasNote: !!g.note, isFirst: step === 1, isLast: step === 5 || tasksLeft,
+    modePills: [['one', 'Facing'], ['two', 'Turned'], ['three', 'Tilted']].map((q) => ({ label: q[1], on: mode === q[0], cls: mode === q[0] ? 'on' : '', pick: () => { this.setState({ scM: q[0], scS: isTry ? 2 : 1, scTask: 0, scHint: 0, scMiss: 0, scMsg: '', ...(q[0] === 'three' && h < 3 ? { scH: 4 } : {}) }); if (!isTry) anim(); } })),
+    playPills: [['watch', 'Watch'], ['try', 'Your turn']].map((q) => ({ label: q[1], on: play === q[0], cls: play === q[0] ? 'on' : '', pick: () => this.setState({ scPlay: q[0], scS: q[0] === 'try' ? 2 : 1, scTask: 0, scHint: 0, scMiss: 0, scMsg: '', scT: 1 }) })),
+    stepPills: g.short.map((tx, i) => ({ label: (i + 1) + '. ' + tx, on: step === i + 1, cls: step === i + 1 ? 'pill on' : 'pill', pick: () => goStep(i + 1) })),
+    prev: () => goStep(step - 1), next: () => goStep(step + 1), replay: anim, newTask, toggleWhy: () => this.setState({ scWhy: !whyOn }),
+    halfLabel: g.autoHalf ? 'D/2 is needed: D is off the page' : (g.half ? 'Use full D' : 'Use D/2'),
+    toggleHalf: () => { if (!g.autoHalf) this.setState({ scHalf: !g.half }); },
+    down, move, up,
+    setW: set('scW'), setH: set('scH'), setD: set('scD'), setZ: set('scZ'), setX: set('scX'), setE: set('scE'), setP: set(two ? 'scP2' : 'scP'), setA: set('scA'), setXA: set('scXA'),
+    _tasks: tasks, _eff: eff, _dH: { lvl: g.dLvl, x: g.dHx, has: !two && g.handles.some((hd) => hd[0] === 'd') } }, g.test);
+})();
+
+// Idea 1: Dürer's frame (chapter 1)
+const du = (() => {
+  const ex = s.duX ?? 0.4, ey = s.duY ?? 1.4, D = s.duD ?? 2.5, rot = s.duR ?? 30, E = [ex, ey, -D];
+  const V = boxV(0, 1.6, 0.5, rot, 1), F = boxFaces(V);
+  const onGlass = (q) => { const t = D / (q[2] + D); return [ex + t * (q[0] - ex), ey + t * (q[1] - ey)]; };
+  const pic = (q) => { const g = onGlass(q); return [180 + 90 * g[0], 240 - 90 * g[1]]; };
+  let top = '', sides = '';
+  F.forEach((fc) => { if (dot3(fc.n, sub3(fc.c, E)) >= 0) return; const d = poly(fc.idx.map((i) => pic(V[i]))); if (fc.top) top = d; else sides += d; });
+  let grid = ''; for (let x = -2; x <= 2.001; x += 0.5) grid += 'M' + f1(180 + 90 * x) + ' 0V240'; for (let y = 0; y <= 2.67; y += 0.5) grid += 'M0 ' + f1(240 - 90 * y) + 'H360';
+  const PX = (x) => 180 + 30 * x, PZ = (z) => 195 - 30 * (z + 4.2);
+  const corners = V.slice(0, 4);
+  let rays = '', hits = '';
+  corners.forEach((q) => { rays += 'M' + f1(PX(ex)) + ' ' + f1(PZ(-D)) + 'L' + f1(PX(q[0])) + ' ' + f1(PZ(q[2]));
+    const gx = ex + D / (q[2] + D) * (q[0] - ex); hits += circ(PX(gx), PZ(0), 3); });
+  const hy = 240 - 90 * ey, set = (k) => (e) => this.setState({ [k]: Number(e.target.value) });
+  return { ex, ey, D, rot, exL: ex === 0 ? 'centre' : f1(Math.abs(ex)) + ' ' + (ex < 0 ? 'left' : 'right'), eyL: f1(ey), DL: f1(D),
+    planCube: poly(corners.map((q) => [PX(q[0]), PZ(q[2])])), rays, hits, gz: f1(PZ(0)), gzl: f1(PZ(0) + 4),
+    eyeX: f1(PX(ex)), eyeZ: f1(PZ(-D)), eyeLy: f1(PZ(-D) - 10),
+    grid, top, sides, hy: f1(hy), hly: f1(hy > 20 ? hy - 6 : hy + 16), pX: f1(180 + 90 * ex), pLy: f1(hy > 20 ? hy - 9 : hy + 18),
+    msg: ey > 1 ? 'Your eye is above the box, so you see its top. The horizon on the glass sits at your eye height.' : 'Your eye is below the top of the box, so its top is hidden. The horizon on the glass sits at your eye height.',
+    setX: set('duX'), setY: set('duY'), setD: set('duD'), setR: set('duR') };
+})();
+
+// Idea 7: tall building, tilted picture plane (chapter 7)
+const tb = (() => {
+  const tilt = s.tbT ?? 45, eyeH = s.tbH ?? 1.6, lines = s.tbL ?? true;
+  const pr = tilt * Math.PI / 180, f = 120, cx = 180, cy = 120, E = [0, eyeH, 0];
+  const fw = [0, Math.sin(pr), Math.cos(pr)], up = [0, Math.cos(pr), -Math.sin(pr)];
+  const proj = (P) => { const r = sub3(P, E), Z = dot3(r, fw); if (Z < 0.1) return null; return [cx + f * r[0] / Z, cy - f * dot3(r, up) / Z]; };
+  const V = boxV(0, 14, 5, 30, 40), F = boxFaces(V);
+  let faces = '', roof = '', floors = '', con = '';
+  const vis = F.map((fc) => dot3(fc.n, sub3(fc.c, E)) < 0);
+  F.forEach((fc, k) => { if (!vis[k]) return; const pts = fc.idx.map((i) => proj(V[i])); if (pts.some((q) => !q)) return;
+    if (fc.top) { roof = poly(pts); return; } faces += poly(pts);
+    for (let y = 4; y < 40; y += 4) { const a = proj([V[fc.idx[0]][0], y, V[fc.idx[0]][2]]), b = proj([V[fc.idx[1]][0], y, V[fc.idx[1]][2]]); if (a && b) floors += 'M' + f1(a[0]) + ' ' + f1(a[1]) + 'L' + f1(b[0]) + ' ' + f1(b[1]); } });
+  const hasV = Math.abs(tilt) >= 1, vy = hasV ? cy - f / Math.tan(pr) : 0;
+  if (lines && hasV) for (let i = 0; i < 4; i++) { if (!(vis[i] || vis[(i + 3) % 4])) continue; const b = proj(V[i]); if (b) con += 'M' + f1(b[0]) + ' ' + f1(b[1]) + 'L' + f1(cx) + ' ' + f1(vy); }
+  const hy = cy + f * Math.tan(pr), onPic = hasV && vy > -5 && vy < 245;
+  return { tilt, eyeH, lines, faces, roof, floors, con, hy: f1(cl2(hy, -2000, 2000)), hly: f1(hy - 6), hLabel: hy > -10 && hy < 250 ? 'Horizon (eye level)' : '',
+    vy: f1(cl2(vy, -2000, 2000)), vr: onPic ? 6 : 0, vly: f1(vy + 4), vLabel: onPic ? (tilt > 0 ? 'Third point (up)' : 'Third point (down)') : '',
+    tiltL: tilt === 0 ? 'level' : Math.abs(tilt) + '° ' + (tilt > 0 ? 'up' : 'down'), eyeL: f1(eyeH) + ' m',
+    linesLabel: lines ? 'Hide construction lines' : 'Show construction lines',
+    msg: !hasV ? 'The picture is upright. Vertical edges stay vertical: an ordinary two-point view.'
+      : (onPic ? 'The picture is tilted, so vertical edges meet at a third point.' : 'The picture is tilted, so vertical edges lean toward a third point ' + Math.round(Math.abs(vy - cy)) + ' units ' + (tilt > 0 ? 'above' : 'below') + ' the centre, off the picture.')
+        + ' The steeper the tilt, the closer that point comes.',
+    setT: (e) => this.setState({ tbT: Number(e.target.value) }), setH: (e) => this.setState({ tbH: Number(e.target.value) }), toggle: () => this.setState({ tbL: !lines }) };
+})();
+
+// Idea 8: painted ceiling, after Pozzo (chapter 12)
+const ce = (() => {
+  const vx = s.ceX ?? 0, ghostOn = s.ceG ?? true, H0 = 6, eye = 1.6, f = 110;
+  const paint = (A) => { const t = (H0 - eye) / (A[1] - eye); return [A[0] * t, H0, A[2] * t]; };
+  const view = (Q) => { const Y = Q[1] - eye; return [180 + f * (Q[0] - vx) / Y, 120 + f * Q[2] / Y]; };
+  const sq = (h, w) => [[-w, h, -w], [w, h, -w], [w, h, w], [-w, h, w]];
+  const cols = []; for (const z of [-4, -2, 0, 2, 4]) cols.push([-4, z], [4, z]); for (const x of [-2, 0, 2]) cols.push([x, -4], [x, 4]);
+  const seg = (a, b, m) => { const p = view(m(a)), q = view(m(b)); return 'M' + f1(p[0]) + ' ' + f1(p[1]) + 'L' + f1(q[0]) + ' ' + f1(q[1]); };
+  const draw = (m) => ({ cols: cols.map((c) => seg([c[0], H0, c[1]], [c[0], 10, c[1]], m)).join(''),
+    rings: poly(sq(10, 4).map((q) => view(m(q)))) + poly(sq(11, 3).map((q) => view(m(q)))) + sq(10, 4).map((q, i) => seg(q, sq(11, 3)[i], m)).join('') });
+  const P = draw(paint), R = draw((q) => q), off = Math.abs(vx);
+  return { vx, ghostOn, vxL: off === 0 ? 'on the marked spot' : f1(off) + ' m ' + (vx < 0 ? 'left' : 'right'),
+    frame: poly(sq(H0, 4).map(view)), cols: P.cols, rings: P.rings, ghost: ghostOn && off > 0 ? R.cols + R.rings : '',
+    ghostLabel: ghostOn ? 'Hide real columns' : 'Show real columns',
+    msg: off === 0 ? 'You stand on the marked spot. The painted columns match real ones, so the ceiling seems to open upward.'
+      : 'You stand ' + f1(off) + ' m off the spot. The painted columns no longer match real ones and seem to lean. The illusion works from one place only.',
+    setX: (e) => this.setState({ ceX: Number(e.target.value) }), toggle: () => this.setState({ ceG: !ghostOn }) };
+})();
+
+
+// Reflections (book chapter 9): water, a wall mirror facing you, a side mirror. Built step by step, like Scales.
+const rf = (() => {
+  const md = s.rfM ?? 'water', isTry = (s.rfPlay ?? 'watch') === 'try';
+  const step = s.rfS ?? 1, t = s.rfT ?? 1, task = s.rfTask ?? 0, miss = s.rfMiss ?? 0, hintN = s.rfHint ?? 0, whyOn = !!s.rfWhy;
+  const DEF = { water: [2.2, -1, 4.5, 0.4], wall: [1.6, -1.5, 3, 0], side: [2.4, -0.8, 5, 0], turn: [1.8, 0.9, 3, 0] }[md] || [1.6, -1, 5, 0];
+  const xMax = md === 'side' ? 0.4 : md === 'turn' ? 2.2 : 1.8, zMin = md === 'wall' || md === 'turn' ? 2.6 : 3, zMax = md === 'wall' ? 4 : md === 'turn' ? 5 : 8, cl = (v, a, b) => Math.max(a, Math.min(b, v));
+  const E = s.rfE ?? DEF[0], ox = cl(s.rfX ?? DEF[1], -2.4, xMax), oz = cl(s.rfZ ?? DEF[2], zMin, zMax), hb = md === 'water' ? (s.rfB ?? DEF[3]) : 0;
+  const picH = md === 'water' ? 300 : 240, hyR = md === 'water' ? 60 : 78;
+  const small = md === 'wall' || md === 'turn', cx = 180, f = 230, W = small ? 0.7 : 1.2, H = small ? 1 : 1.2, D = small ? 0.7 : 1.2, zm = 5.5, xm = 1.8, MW = 1.7, MH = 2.6, MZ0 = 1.5, MZ1 = 8.2, zFar = md === 'wall' ? zm : 9;
+  const fx = (n) => n.toFixed(1), P = (pts) => 'M' + pts.map((q) => fx(q[0]) + ' ' + fx(q[1])).join('L') + 'Z';
+  const L = (a, b) => 'M' + fx(a[0]) + ' ' + fx(a[1]) + 'L' + fx(b[0]) + ' ' + fx(b[1]);
+  const part = (a, b, u) => (u <= 0 ? '' : L(a, [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u]));
+  const mark = (a, b) => { const l = Math.hypot(b[0] - a[0], b[1] - a[1]); if (l < 8) return L(a, b); const g = 2.5 / l; return L([a[0] + (b[0] - a[0]) * g, a[1] + (b[1] - a[1]) * g], [b[0] - (b[0] - a[0]) * g, b[1] - (b[1] - a[1]) * g]); };
+  const dot = (q, r) => 'M' + fx(q[0] - r) + ' ' + fx(q[1]) + 'a' + r + ' ' + r + ' 0 1 0 ' + 2 * r + ' 0a' + r + ' ' + r + ' 0 1 0 ' + -2 * r + ' 0Z';
+  // Turned mirror: a standing panel turned by A degrees, centre C. nv is square to it, tv runs along it.
+  const TC = [0, 0, 5.5], THW = 1.8, TMH = 2.4;
+  const mkTurn = (A) => { const a = A * Math.PI / 180, nv = [-Math.sin(a), 0, Math.cos(a)], tv = [Math.cos(a), 0, Math.sin(a)];
+    const dn = (q) => (q[0] - TC[0]) * nv[0] + (q[2] - TC[2]) * nv[2];
+    return { a, nv, tv, dn, refl: (q) => { const d = dn(q); return [q[0] - 2 * d * nv[0], q[1], q[2] - 2 * d * nv[2]]; }, reflN: (v) => { const d = v[0] * nv[0] + v[2] * nv[2]; return [v[0] - 2 * d * nv[0], v[1], v[2] - 2 * d * nv[2]]; } }; };
+  const A = Math.max(15, Math.min(35, s.rfA ?? 30)), TU = mkTurn(A);
+  const reflFor = (TUx) => (md === 'water' ? (q) => [q[0], -q[1], q[2]] : md === 'wall' ? (q) => [q[0], q[1], 2 * zm - q[2]] : md === 'side' ? (q) => [2 * xm - q[0], q[1], q[2]] : TUx.refl);
+  const refl = reflFor(TU);
+  const boxV = (x, y, z, w, h, d) => [[x, y, z], [x + w, y, z], [x + w, y, z + d], [x, y, z + d], [x, y + h, z], [x + w, y + h, z], [x + w, y + h, z + d], [x, y + h, z + d]];
+  const FACES = [[[0, 1, 2, 3], [0, -1, 0], 'tb'], [[4, 5, 6, 7], [0, 1, 0], 'tb'], [[0, 1, 5, 4], [0, 0, -1], 'fb'], [[3, 2, 6, 7], [0, 0, 1], 'fb'], [[0, 3, 7, 4], [-1, 0, 0], 'lr'], [[1, 2, 6, 5], [1, 0, 0], 'lr']];
+  const inside = (pt, poly2) => { let c2 = false; for (let i = 0, j = poly2.length - 1; i < poly2.length; j = i++) { const a = poly2[i], b = poly2[j];
+    if ((a[1] > pt[1]) !== (b[1] > pt[1]) && pt[0] < (b[0] - a[0]) * (pt[1] - a[1]) / (b[1] - a[1]) + a[0]) c2 = !c2; } return c2; };
+
+  // All geometry for one set of settings. Used for drawing and to test new random tasks.
+  const geom = (E, ox, oz, hb, Ag) => {
+    const pj = (q) => [cx + f * q[0] / q[2], hyR - f * (q[1] - E) / q[2]];
+    const tu = md === 'turn' ? mkTurn(Ag ?? A) : TU, refl = reflFor(tu);
+    const objV = boxV(ox, hb, oz, W, H, D), base = hb > 0.01 ? boxV(ox, 0, oz, W, hb, D) : null;
+    const mPoly = md === 'wall' ? [[-MW, 0, zm], [MW, 0, zm], [MW, MH, zm], [-MW, MH, zm]].map(pj) : md === 'side' ? [[xm, 0, MZ0], [xm, 0, MZ1], [xm, MH, MZ1], [xm, MH, MZ0]].map(pj)
+      : md === 'turn' ? [[-1, 0], [1, 0], [1, TMH], [-1, TMH]].map((u) => pj([TC[0] + u[0] * THW * tu.tv[0], u[1], TC[2] + u[0] * THW * tu.tv[2]])) : null;
+    let ki = md === 'side' ? 5 : 4;
+    if (md === 'wall') { ki = ox + W / 2 < 0 ? 5 : 4; if (Math.abs(objV[ki][0]) > MW - 0.05) ki = 9 - ki; }
+    if (md === 'turn') { const vis = (i) => inside(pj(refl(objV[i])), mPoly) && inside(pj(refl([objV[i][0], 0, objV[i][2]])), mPoly); ki = [4, 5, 7, 6].find(vis) ?? 4; }
+    const T3 = objV[ki], x = T3[0], y = T3[1], z = T3[2];
+    const T = pj(T3), F = pj([x, 0, z]), Tr = pj(refl(T3)), Fr = pj(refl([x, 0, z]));
+    const allCorners = objV.concat(base ? base.slice(0, 4) : []);
+    const allDots = allCorners.map((q) => pj(refl(q)));
+    let allCon = [];
+    if (md === 'water') allCon = allCorners.map((q) => [pj(q), pj(refl(q))]);
+    else if (md === 'side') allCon = allCorners.map((q) => [pj(q), pj(refl(q))]);
+    else allCon = allCorners.map((q) => [pj(q), pj(refl(q))]);
+    const g = { pj, objV, base, mPoly, T, F, Tr, Fr, allDots, allCon };
+    const n = (q) => q.map(fx);
+    if (md === 'water') {
+      const T2_3 = objV[5], T2 = pj(T2_3), F2 = pj([T2_3[0], 0, T2_3[2]]), T2r = pj(refl(T2_3));
+      Object.assign(g, { pts: { T, F, Tr, T2, T2r },
+        seg: { 2: [[T, F]], 3: [[F, Tr]], 4: allCon }, mk: { 3: [[T, F], [F, Tr]] }, dt: { 2: [F], 3: [Tr], 4: allDots },
+        tasks: {
+          2: [{ say: 'Tap the water level straight below the red corner.', at: F, hint: hb > 0.01 ? 'Go straight down past the box, to the foot of the pier.' : 'The box stands in the water. Go straight down to its base.', ln: [[T, F]], dot: F }],
+          3: [{ say: 'Tap where the reflection of the red corner goes.', at: Tr, hint: 'Go as far below the water level as the corner is above it.', ln: [[F, Tr]], mk: [[T, F], [F, Tr]], dot: Tr }],
+          4: [{ say: 'Now tap the reflection of the other front top corner.', at: T2r, hint: 'Straight down from that corner, as far below the water as it is above it.', ln: [[T2, F2], [F2, T2r]], dot: T2r }] },
+        key: [T, F, Tr, T2r], ok: true });
+    } else if (md === 'wall') {
+      const Mf = pj([x, 0, zm]), Mt = pj([x, y, zm]), M = pj([x, y / 2, zm]);
+      Object.assign(g, { pts: { T, F, Mf, Mt, M, Fr, Tr },
+        seg: { 2: [[F, Mf], [T, Mt], [Mf, Mt]], 4: [[T, Fr], [Mf, Fr], [Fr, Tr], [Mt, Tr]], 5: allCon }, mk: { 3: [[Mf, M], [M, Mt]] }, dt: { 2: [Mf, Mt], 3: [M], 4: [Fr, Tr], 5: allDots },
+        tasks: {
+          2: [{ say: 'Tap where the floor line from the corner below the red one reaches the mirror wall.', at: Mf, hint: 'Follow the floor line toward P until it meets the base of the wall.', ln: [[F, Mf]], dot: Mf },
+              { say: 'Tap where the line from the red corner to P reaches the wall, straight above.', at: Mt, hint: 'Go straight up from the point you found until you meet the line from the red corner to P.', ln: [[T, Mt], [Mf, Mt]], dot: Mt }],
+          3: [{ say: 'Tap the middle of the vertical on the wall.', at: M, hint: 'Halfway between the two points on the wall.', mk: [[Mf, M], [M, Mt]], dot: M }],
+          4: [{ say: 'Draw from the red corner through the middle point. Tap where it meets the floor line behind the mirror.', at: Fr, hint: 'Extend the line from the red corner through the middle until it meets the floor line toward P.', ln: [[T, Fr], [Mf, Fr]], dot: Fr },
+              { say: 'Tap the reflected top corner, straight above that point.', at: Tr, hint: 'Go straight up until you meet the line from the red corner to P.', ln: [[Fr, Tr], [Mt, Tr]], dot: Tr }] },
+        key: [T, F, Mf, Mt, Fr, Tr] });
+    } else if (md === 'turn') {
+      const dd = tu.dn(T3), go = (q) => [q[0] - dd * tu.nv[0], q[1], q[2] - dd * tu.nv[2]];
+      const Mf = pj(go([x, 0, z])), Mt = pj(go(T3)), M = pj(go([x, y / 2, z])), Fn = [cx + f * tu.nv[0] / tu.nv[2], hyR];
+      Object.assign(g, { Fn, pts: { T, F, Mf, Mt, M, Fr, Tr, Fn },
+        seg: { 1: [], 2: [[F, Mf], [T, Mt], [Mf, Mt]], 4: [[T, Fr], [Mf, Fr], [Fr, Tr], [Mt, Tr]], 5: allCon }, mk: { 3: [[Mf, M], [M, Mt]] }, dt: { 2: [Mf, Mt], 3: [M], 4: [Fr, Tr], 5: allDots },
+        tasks: {
+          2: [{ say: 'Tap where the line from the corner below the red one, toward Fn, reaches the base of the mirror.', at: Mf, hint: 'Follow the floor line toward Fn until it meets the bottom edge of the mirror.', ln: [[F, Mf]], dot: Mf },
+              { say: 'Tap where the line from the red corner to Fn reaches the mirror, straight above.', at: Mt, hint: 'Go straight up from the point you found until you meet the line from the red corner to Fn.', ln: [[T, Mt], [Mf, Mt]], dot: Mt }],
+          3: [{ say: 'Tap the middle of the vertical on the mirror.', at: M, hint: 'Halfway between the two points on the mirror.', mk: [[Mf, M], [M, Mt]], dot: M }],
+          4: [{ say: 'Draw from the red corner through the middle point. Tap where it meets the floor line behind the mirror.', at: Fr, hint: 'Extend the line from the red corner through the middle until it meets the floor line toward Fn.', ln: [[T, Fr], [Mf, Fr]], dot: Fr },
+              { say: 'Tap the reflected top corner, straight above that point.', at: Tr, hint: 'Go straight up until you meet the line from the red corner to Fn.', ln: [[Fr, Tr], [Mt, Tr]], dot: Tr }] },
+        key: [T, F, Mf, Mt, Fr, Tr, Fn] });
+    } else {
+      const Mf = pj([xm, 0, z]);
+      Object.assign(g, { pts: { T, F, Mf, Fr, Tr },
+        seg: { 2: [[F, Mf]], 3: [[Mf, Fr]], 4: [[Fr, Tr]], 5: allCon }, mk: { 3: [[F, Mf], [Mf, Fr]], 4: [[F, T], [Fr, Tr]] }, dt: { 2: [Mf], 3: [Fr], 4: [Tr], 5: allDots },
+        tasks: {
+          2: [{ say: 'Tap where a level line from the corner below the red one meets the base of the mirror.', at: Mf, hint: 'Go straight across, level, to the line where the mirror meets the floor.', ln: [[F, Mf]], dot: Mf }],
+          3: [{ say: 'Tap the reflected bottom corner: the same distance beyond the mirror.', at: Fr, hint: 'Measure the length from the corner to the mirror. Go the same length further.', ln: [[Mf, Fr]], mk: [[F, Mf], [Mf, Fr]], dot: Fr }],
+          4: [{ say: 'Tap the reflected top corner.', at: Tr, hint: 'Go straight up the same height as the real edge.', ln: [[Fr, Tr]], mk: [[F, T], [Fr, Tr]], dot: Tr }] },
+        key: [T, F, Mf, Fr, Tr] });
+    }
+    const onPic = (q) => q[0] > 4 && q[0] < 356 && q[1] > 4 && q[1] < picH - 4;
+    g.ok = g.key.every(onPic) && (!mPoly || (inside([(Tr[0] + Fr[0]) / 2, (Tr[1] + Fr[1]) / 2], mPoly) && inside([Tr[0], Tr[1] + 0.5], mPoly)
+      && (md !== 'wall' || Math.abs(x) < MW) && (md !== 'side' || (z > MZ0 && z < MZ1))
+      && (md !== 'turn' || allCorners.every((q) => tu.dn(q) < -0.05))));
+    return g;
+  };
+  const g = geom(E, ox, oz, hb, A), pj = g.pj;
+
+  // Picture: object, reflection, surfaces
+  const eyeP = [0, E, 0];
+  const render = (V, mirrorIt, noTop) => { const out = { tb: '', fb: '', lr: '' };
+    const VV = mirrorIt ? V.map(refl) : V;
+    FACES.forEach(([idx, nn, key], fi) => { if (noTop && fi === 1) return;
+      const nr = mirrorIt ? (md === 'water' ? [nn[0], -nn[1], nn[2]] : md === 'wall' ? [nn[0], nn[1], -nn[2]] : md === 'side' ? [-nn[0], nn[1], nn[2]] : TU.reflN(nn)) : nn;
+      const c = [0, 1, 2].map((d2) => idx.reduce((a, i) => a + VV[i][d2], 0) / 4);
+      if (nr[0] * (c[0] - eyeP[0]) + nr[1] * (c[1] - eyeP[1]) + nr[2] * (c[2] - eyeP[2]) < 0) out[key] += P(idx.map((i) => pj(VV[i]))); });
+    return out; };
+  const none = { tb: '', fb: '', lr: '' };
+  const obj = render(g.objV, false), objB = g.base ? render(g.base, false, true) : none, rObj = render(g.objV, true), rB = g.base ? render(g.base, true, true) : none;
+  let floor = '', wall = '', water = '', mirror = '', grid = '', rgrid = '', clip = '';
+  if (md === 'water') { water = 'M0 ' + hyR + 'H360V' + picH + 'H0Z'; for (let i = 0; i < 6; i++) grid += 'M0 ' + fx(pj([0, 0, 3 + i * 3])[1]) + 'H360'; }
+  else { const near = 2.2;
+    floor = P([pj([-3.2, 0, near]), pj([3.2, 0, near]), pj([3.2, 0, zFar]), pj([-3.2, 0, zFar])]);
+    for (let x = -3; x <= 3.01; x += 0.6) grid += L(pj([x, 0, near]), pj([x, 0, zFar]));
+    for (let z = near; z <= zFar + 0.01; z += 1) grid += L(pj([-3.2, 0, z]), pj([3.2, 0, z]));
+    if (md === 'wall') { wall = P([pj([-3.2, 0, zm]), pj([3.2, 0, zm]), pj([3.2, 3, zm]), pj([-3.2, 3, zm])]);
+      for (let x = -3; x <= 3.01; x += 0.6) rgrid += L(pj([x, 0, zm]), pj([x, 0, 2 * zm - near]));
+      for (let z = near; z <= zm; z += 1) rgrid += L(pj([-3.2, 0, 2 * zm - z]), pj([3.2, 0, 2 * zm - z])); }
+    else if (md === 'turn') {
+      const seg2 = (a, b) => { const da = TU.dn(a), db = TU.dn(b); if (da >= 0 && db >= 0) return; if (db >= 0) { const u = da / (da - db); b = [a[0] + (b[0] - a[0]) * u, 0, a[2] + (b[2] - a[2]) * u]; } else if (da >= 0) { const u = db / (db - da); a = [b[0] + (a[0] - b[0]) * u, 0, b[2] + (a[2] - b[2]) * u]; }
+        const ra = refl(a), rb = refl(b); if (ra[2] > 0.3 && rb[2] > 0.3) rgrid += L(pj(ra), pj(rb)); };
+      for (let x = -3; x <= 3.01; x += 0.6) seg2([x, 0, near], [x, 0, zFar]);
+      for (let z = near; z <= zFar + 0.01; z += 1) seg2([-3.2, 0, z], [3.2, 0, z]); }
+    else { wall = P([pj([xm, 0, near]), pj([xm, 0, zFar]), pj([xm, 3, zFar]), pj([xm, 3, near])]);
+      for (let x = -3; x <= xm + 0.01; x += 0.6) rgrid += L(pj([2 * xm - x, 0, near]), pj([2 * xm - x, 0, zFar]));
+      for (let z = near; z <= zFar + 0.01; z += 1) rgrid += L(pj([xm, 0, z]), pj([2 * xm + 3.2, 0, z])); }
+    mirror = P(g.mPoly); clip = mirror; }
+
+  // Steps: watch (animated) or your turn (tap tasks)
+  const onP = (q) => q[0] > 2 && q[0] < 358 && q[1] > 2 && q[1] < picH - 2;
+  const tasks = (g.tasks[step] || []).map((q) => ({ ...q, auto: !onP(q.at) }));
+  let eff = task; while (tasks[eff] && tasks[eff].auto) eff++;
+  const cur = isTry ? tasks[eff] : null;
+  let done = '', now = '', marks = '', dots = '', allDots = '';
+  for (let i = 2; i < step; i++) { done += (g.seg[i] || []).map((q) => L(q[0], q[1])).join(''); dots += (g.dt[i] || []).map((q) => dot(q, 3.5)).join(''); }
+  if (!isTry) {
+    const segs = g.seg[step] || [], mks = g.mk[step] || [], hasMk = mks.length > 0;
+    const um = hasMk ? Math.min(1, t / 0.3) : 1, ul = Math.max(0, Math.min(1, (t - (hasMk ? 0.3 : 0)) / (hasMk ? 0.55 : 0.85)));
+    marks = mks.map((q) => (um >= 1 ? mark(q[0], q[1]) : part(q[0], q[1], um))).join('');
+    now = ul > 0 ? segs.map((q) => part(q[0], q[1], ul)).join('') : '';
+    if (t >= 0.85) dots += (g.dt[step] || []).map((q) => dot(q, 3.5)).join('');
+  } else {
+    tasks.slice(0, eff).forEach((q) => { if (q.mk) marks += q.mk.map((m) => mark(m[0], m[1])).join(''); if (q.ln) now += q.ln.map((l) => L(l[0], l[1])).join(''); if (q.dot) dots += dot(q.dot, 3.5); });
+    if (step === 5) { now = (g.seg[5] || []).map((q) => L(q[0], q[1])).join(''); dots += (g.dt[5] || []).map((q) => dot(q, 3.5)).join(''); }
+  }
+  if (step >= 4) allDots = g.allDots.map((q) => dot(q, 2.5)).join('');
+  const showRef = step === 5, ghost = !isTry && !showRef;
+  const ring = isTry && cur && hintN >= 2 ? cur.at : null;
+  const tasksLeft = isTry && step >= 2 && step <= 4 && eff < tasks.length;
+
+  const anim = () => { if (this._rfTimer) { clearInterval(this._rfTimer); this._rfTimer = null; }
+    const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || typeof setInterval !== 'function') { this.setState({ rfT: 1 }); return; }
+    let tt = 0; this.setState({ rfT: 0 });
+    this._rfTimer = setInterval(() => { tt = Math.min(1, tt + 0.035); this.setState({ rfT: tt }); if (tt >= 1) { clearInterval(this._rfTimer); this._rfTimer = null; } }, 40); };
+  const goStep = (nn) => { this.setState({ rfS: Math.max(1, Math.min(5, nn)), rfTask: 0, rfHint: 0, rfMsg: '' }); if (!isTry) anim(); };
+  const newTask = () => { let sd = s.rfSeed ?? 0, st = null;
+    for (let k = 0; k < 80 && !st; k++) { sd++; let r = (sd * 7919 + 3) % 233280; const rnd = () => { r = (r * 9301 + 49297) % 233280; return r / 233280; };
+      const c = { rfX: Math.round((-2.4 + rnd() * (xMax + 2.4)) * 10) / 10, rfZ: Math.round((zMin + rnd() * (zMax - zMin)) * 10) / 10, rfE: Math.round((0.8 + rnd() * 1.8) * 10) / 10, rfB: md === 'water' ? Math.round(rnd() * 12) / 10 : (s.rfB ?? 0.6), rfA: md === 'turn' ? 15 + Math.round(rnd() * 20) : A };
+      if (md === 'turn') c.rfX = Math.round((-0.5 + rnd() * 2.7) * 10) / 10;
+      if (geom(c.rfE, c.rfX, c.rfZ, md === 'water' ? c.rfB : 0, c.rfA).ok) st = c; }
+    this.setState({ ...(st || {}), rfSeed: sd, rfS: 2, rfTask: 0, rfHint: 0, rfMiss: 0, rfMsg: '' }); };
+
+  // Pointer: drag the box in watch mode, tap answers in your turn
+  const svgPt = (e) => { const r = e.currentTarget.getBoundingClientRect(); return [(e.clientX - r.left) * 360 / r.width, (e.clientY - r.top) * 360 / r.width]; };
+  const floorAt = (p) => (p[1] > hyR + 1 ? (() => { const z = f * E / (p[1] - hyR); return [(p[0] - cx) * z / f, z]; })() : null);
+  const objPts = g.objV.concat(g.base || []).map(pj), bx0 = Math.min(...objPts.map((q) => q[0])), bx1 = Math.max(...objPts.map((q) => q[0])), by0 = Math.min(...objPts.map((q) => q[1])), by1 = Math.max(...objPts.map((q) => q[1]));
+  const down = (e) => { const p = svgPt(e);
+    if (isTry) { if (!cur) return;
+      if (Math.hypot(p[0] - cur.at[0], p[1] - cur.at[1]) <= 16) { let nx = eff + 1; while (tasks[nx] && tasks[nx].auto) nx++; this.setState({ rfTask: nx, rfHint: 0, rfMsg: nx >= tasks.length ? 'Right. Step done.' : 'Right.' }); }
+      else this.setState({ rfHint: hintN + 1, rfMiss: miss + 1, rfMsg: 'Not quite. ' + cur.hint + (hintN >= 1 ? ' The dashed ring shows where.' : '') });
+      return; }
+    if (p[0] < bx0 - 8 || p[0] > bx1 + 8 || p[1] < by0 - 8 || p[1] > by1 + 8) return;
+    const a = floorAt([p[0], Math.max(p[1], hyR + 2)]); if (!a) return;
+    this._rfDrag = { a, ox, oz, py: Math.max(p[1], hyR + 2) - p[1] };
+    if (e.currentTarget.setPointerCapture && e.pointerId !== undefined) { try { e.currentTarget.setPointerCapture(e.pointerId); } catch (er) { /* ignore */ } } };
+  const move = (e) => { const d0 = this._rfDrag; if (!d0) return; const p = svgPt(e); const b = floorAt([p[0], p[1] + d0.py]); if (!b) return;
+    const nx = Math.max(-2.4, Math.min(xMax, d0.ox + (b[0] - d0.a[0]))), nz = Math.max(zMin, Math.min(zMax, d0.oz + (b[1] - d0.a[1])));
+    this.setState({ rfX: Math.round(nx * 20) / 20, rfZ: Math.round(nz * 20) / 20 }); };
+  const up = () => { this._rfDrag = null; };
+
+  const TX = {
+    water: { intro: 'From chapter 9. Still water is a flat mirror. The reflection is the object turned upside down in the water surface.',
+      titles: ['The scene', 'Down to the water', 'Same length below', 'Every corner', 'Join and check'], short: ['Scene', 'Water level', 'Measure', 'Corners', 'Check'],
+      instr: ['A box stands on a pier in still water. Watch how its red corner is reflected, one step at a time.',
+        hb > 0.01 ? 'Drop a vertical line from the red corner to the water level. The box stands on a pier, so go past the box, down to the foot of the pier.' : 'Drop a vertical line from the red corner to the water level. The box stands in the water, so the water level is at its base.',
+        'Mark the same length below the water level as the corner is above it. That point is the reflected corner.',
+        'Do the same for every corner. Each one goes straight down, as far below the water as it is above it.',
+        'Join the points. The reflection is the box upside down. Edges that run into depth still run to P, just like on the real box.'],
+      why: ['Water sends light back at the same angle it arrives. So you see each point as if it were below the surface, at the same distance.',
+        'A point and its reflection lie on a line square to the mirror. For water, that line is vertical.',
+        'A vertical line at one depth is parallel to the picture. Lengths on it keep their true ratio, so equal lengths in space are equal on paper.',
+        'Measure from the water level, not from the base of the box. A box high above the water has its reflection start far below it.',
+        'The reflection is a real box, only upside down. It follows the same perspective: the same horizon and the same vanishing point.'],
+      notOk: 'Part of the reflection is off the picture. Move the box further away or lower the pier.' },
+    wall: { intro: 'From chapter 9. A mirror on the wall facing you. The reflection lies as far behind the mirror as the box is in front of it.',
+      titles: ['The scene', 'Run to the mirror', 'Find the middle', 'Cross through the middle', 'Join and check'], short: ['Scene', 'To mirror', 'Middle', 'Cross', 'Check'],
+      instr: ['The mirror faces you. Depth shrinks on paper, so you cannot copy the length to the mirror. A diagonal does the measuring for you.',
+        'Draw lines toward P from the red corner and from the corner below it. Where they reach the mirror wall, join them with a vertical.',
+        'Find the middle of that vertical. A vertical at one depth keeps its proportions, so the middle on paper is the real middle.',
+        'Draw a line from the red corner through the middle and on to the floor line. That is the reflected bottom corner. Go straight up to the line to P for the reflected top corner.',
+        'Do the same for each corner and join the points. The reflection is smaller and closer to the horizon. Its edges still run to P.'],
+      why: ['The mirror is parallel to the picture. Lines square to the mirror run to P.',
+        'The corner, the corner below it and both reflections lie in one vertical plane, square to the mirror. Its lines in depth all run to P.',
+        'The vertical on the wall is parallel to the picture. It is not shortened, so its middle on paper is its real middle.',
+        'The line from the top corner through the middle of the wall vertical is a diagonal. It reaches the floor exactly as far behind the mirror as the corner is in front. Straight lines stay straight in perspective, so this works on paper.',
+        'Equal depths in space look unequal on paper. The diagonal measures depth without any scale.'],
+      notOk: 'Move the box so its reflection shows in the mirror.' },
+    side: { intro: 'From chapter 9. A mirror on the side wall, square to the picture. The reflection is at the same depth as the box.',
+      titles: ['The scene', 'Across to the mirror', 'Same distance beyond', 'Same height', 'Join and check'], short: ['Scene', 'Across', 'Measure', 'Height', 'Check'],
+      instr: ['The mirror stands on the right wall. The reflection lies as far beyond the mirror as the box is from it, at the same depth.',
+        'From the corner below the red one, draw a level line across to the base of the mirror.',
+        'Mark the same length beyond the mirror base on that line. That is the reflected bottom corner.',
+        'Go straight up by the height of the real edge. That is the reflected top corner.',
+        'Do the same for each corner and join the points. The reflection runs to the same P.'],
+      why: ['The mirror is square to the picture, so lines square to the mirror are parallel to the picture.',
+        'Lines square to the mirror are level on paper here, so the path to the mirror is a plain level line.',
+        'Every point on this line is at the same depth. At one depth, lengths across the picture keep their ratio, so equal lengths in space are equal on paper.',
+        'The reflected corner is at the same depth as the real one, so its height on paper is the same too.',
+        'Every corner keeps its depth, so the reflection is the same size as the box, only turned around.'],
+      notOk: 'Move the box so its reflection shows in the mirror.' },
+    turn: { intro: 'From chapter 9. A mirror turned at an angle. Lines square to it are no longer square to the picture. They run to their own point on the horizon, Fn.',
+      titles: ['The scene', 'Run to the mirror', 'Find the middle', 'Cross through the middle', 'Join and check'], short: ['Scene', 'To mirror', 'Middle', 'Cross', 'Check'],
+      instr: ['The mirror is turned ' + A + '°. Lines square to it run to Fn on the horizon. Each step works like the wall mirror, with Fn in place of P.',
+        'Draw lines toward Fn from the red corner and from the corner below it. Where they reach the mirror, join them with a vertical.',
+        'Find the middle of that vertical. Verticals are not shortened, so the middle on paper is the real middle.',
+        'Draw a line from the red corner through the middle and on to the floor line. That is the reflected bottom corner. Go straight up to the line to Fn for the reflected top corner.',
+        'Do the same for each corner and join the points. The reflection is turned: its edges no longer run to P.'],
+      why: ['Fn is where all level lines square to the mirror meet. Turn the mirror and Fn slides along the horizon. Seen from your eye, Fn and the vanishing point of the mirror base are at a right angle.',
+        'The corner, the corner below it and both reflections lie in one vertical plane, square to the mirror. Its level lines all run to Fn.',
+        'Vertical lines stay parallel to the picture, so lengths on one vertical keep their ratio.',
+        'The line from the top corner through the middle of the mirror vertical is a diagonal. It reaches the floor exactly as far behind the mirror as the corner is in front. Straight lines stay straight in perspective, so this works on paper.',
+        'A mirror turned by an angle turns the reflection by twice that angle. So the reflected edges run to new vanishing points, not to P.'],
+      notOk: 'Move the box in front of the mirror, so its reflection shows.' } }[md];
+  const instr = !isTry ? TX.instr[step - 1]
+    : step === 1 ? 'The red corner is the one you will reflect. Press Next step to start.'
+    : step === 5 ? 'Your reflection is finished. ' + (miss === 0 ? 'No wrong taps. Well done.' : 'You needed ' + miss + ' extra tap' + (miss === 1 ? '' : 's') + '.') + ' Press New box to try another.'
+    : (cur ? cur.say : 'Step done. Press Next step.');
+  const msg = isTry ? (s.rfMsg ?? '') : '';
+  const pickMode = (m) => this.setState({ rfM: m, rfS: isTry ? 2 : 1, rfTask: 0, rfHint: 0, rfMiss: 0, rfMsg: '', rfT: 1, rfE: undefined, rfX: undefined, rfZ: undefined, rfB: undefined, rfA: undefined });
+  return { md, isWater: md === 'water', isTurn: md === 'turn', A, setA: (e) => this.setState({ rfA: Number(e.target.value) }),
+    fnDot: md === 'turn' && g.Fn ? dot(g.Fn, 4) : '', fnX: g.Fn ? fx(g.Fn[0]) : 0, fnLy: fx(hyR - 8), fnLab: md === 'turn' ? 'Fn' : '', E, ox, oz, hb, xMax, zMin, zMax, vb: '0 0 360 ' + picH, isTry, isWatch: !isTry, step, ok: g.ok,
+    intro: TX.intro, title: TX.titles[step - 1], instr, msg, hasMsg: !!msg, why: TX.why[step - 1], whyOn, whyLabel: whyOn ? 'Hide why' : 'Why does this work?',
+    note: g.ok ? '' : TX.notOk, hasNote: !g.ok,
+    tip: isTry ? (tasksLeft ? 'Tap on the drawing. A wrong tap gives a hint.' : '') : 'Drag the box to move it. Change the eye height under More settings.',
+    isFirst: step === 1, isLast: step === 5 || tasksLeft,
+    modes: [['water', 'Water'], ['wall', 'Wall mirror'], ['side', 'Side mirror'], ['turn', 'Turned mirror']].map((q) => ({ label: q[1], on: md === q[0], cls: md === q[0] ? 'on' : '', pick: () => pickMode(q[0]) })),
+    playPills: [['watch', 'Watch'], ['try', 'Your turn']].map((q) => ({ label: q[1], on: (q[0] === 'try') === isTry, cls: (q[0] === 'try') === isTry ? 'on' : '', pick: () => this.setState({ rfPlay: q[0], rfS: q[0] === 'try' ? 2 : 1, rfTask: 0, rfHint: 0, rfMiss: 0, rfMsg: '', rfT: 1 }) })),
+    stepPills: TX.short.map((tx, i) => ({ label: (i + 1) + '. ' + tx, on: step === i + 1, cls: step === i + 1 ? 'pill on' : 'pill', pick: () => goStep(i + 1) })),
+    prev: () => goStep(step - 1), next: () => goStep(step + 1), replay: anim, newTask, toggleWhy: () => this.setState({ rfWhy: !whyOn }),
+    floor, wall, water, mirror, grid, rgrid, clip, clipRef: clip ? 'url(#rfclip)' : 'none', hy: fx(hyR), hly: fx(hyR - 6), hlx: md === 'turn' ? 354 : 6, hla: md === 'turn' ? 'end' : 'start', pLy: fx(hyR - 8),
+    o_tb: objB.tb + obj.tb, o_fb: objB.fb + obj.fb, o_lr: objB.lr + obj.lr,
+    r_tb: showRef ? rB.tb + rObj.tb : '', r_fb: showRef ? rB.fb + rObj.fb : '', r_lr: showRef ? rB.lr + rObj.lr : '',
+    ghost: ghost ? rB.tb + rObj.tb + rB.fb + rObj.fb + rB.lr + rObj.lr : '',
+    done, now, marks, dots, allDots, corner: dot(g.T, 5),
+    ringX: ring ? fx(ring[0]) : 0, ringY: ring ? fx(ring[1]) : 0, ringR: ring ? 14 : 0,
+    down, move, up,
+    setE: (e) => this.setState({ rfE: Number(e.target.value) }), setX: (e) => this.setState({ rfX: Number(e.target.value) }), setZ: (e) => this.setState({ rfZ: Number(e.target.value) }), setB: (e) => this.setState({ rfB: Number(e.target.value) }),
+    _g: g, _tasks: tasks, _eff: eff, _pj: pj, _refl: refl, _objV: g.objV, _geom: geom };
+})();
+
+// Light and shadow (book chapter on shadows): sun ahead, sun behind, lamp. 3D objects with own and cast shadows, built step by step.
+const lt = (() => {
+  const md = ['ahead', 'behind', 'lamp'].includes(s.ltM) ? s.ltM : 'ahead', shape = ['box', 'post', 'pyr', 'cyl', 'cone', 'sph'].includes(s.ltSh) ? s.ltSh : 'box';
+  const isTry = (s.ltPlay ?? 'watch') === 'try', isLamp = md === 'lamp';
+  const step = s.ltS ?? 1, t = s.ltT ?? 1, task = s.ltTask ?? 0, miss = s.ltMiss ?? 0, hintN = s.ltHint ?? 0, whyOn = !!s.ltWhy;
+  const cx = 180, hyR = md === 'ahead' ? 190 : 110, f = 320, picH = 360, NR = 32;
+  const cl = (v, a, b) => Math.max(a, Math.min(b, v));
+  const syMin = md === 'behind' ? hyR + 15 : 8, syMax = md === 'behind' ? picH - 8 : hyR - 25;
+  const E = s.ltE ?? 1.6, ox = cl(s.ltX ?? -0.2, -2.5, 2), oz = cl(s.ltZ ?? (md === 'ahead' ? 6 : 5), 3.5, 8);
+  const SX = cl(s.ltSX ?? (md === 'behind' ? 40 : 250), 8, 352), SY = cl(s.ltSY ?? (md === 'behind' ? 250 : 20), syMin, syMax);
+  const LX = cl(s.ltLX ?? 1.6, -3, 3), LY = cl(s.ltLY ?? 2.6, 1.8, 4), LZ = cl(s.ltLZ ?? 4.6, 3, 8);
+  const fx = (n) => n.toFixed(1), P = (pts) => 'M' + pts.map((q) => fx(q[0]) + ' ' + fx(q[1])).join('L') + 'Z';
+  const L = (a, b) => 'M' + fx(a[0]) + ' ' + fx(a[1]) + 'L' + fx(b[0]) + ' ' + fx(b[1]);
+  const part = (a, b, u) => (u <= 0 ? '' : L(a, [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u]));
+  const dot = (q, r) => 'M' + fx(q[0] - r) + ' ' + fx(q[1]) + 'a' + r + ' ' + r + ' 0 1 0 ' + 2 * r + ' 0a' + r + ' ' + r + ' 0 1 0 ' + -2 * r + ' 0Z';
+  const span = (a, b, c) => { const pr = [[a, b], [a, c], [b, c]]; let best = pr[0], bd = -1; pr.forEach((q) => { const d = Math.hypot(q[0][0] - q[1][0], q[0][1] - q[1][1]); if (d > bd) { bd = d; best = q; } }); return best; };
+  const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]], dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const hull = (pts) => { const p = pts.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]); if (p.length < 3) return p;
+    const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]); const lo = [], hi = [];
+    p.forEach((q) => { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], q) <= 0) lo.pop(); lo.push(q); });
+    for (let i = p.length - 1; i >= 0; i--) { const q = p[i]; while (hi.length >= 2 && cr(hi[hi.length - 2], hi[hi.length - 1], q) <= 0) hi.pop(); hi.push(q); }
+    return lo.slice(0, -1).concat(hi.slice(0, -1)); };
+  const inPoly = (pt, poly2) => { let c2 = false; for (let i = 0, j = poly2.length - 1; i < poly2.length; j = i++) { const a = poly2[i], b = poly2[j];
+    if ((a[1] > pt[1]) !== (b[1] > pt[1]) && pt[0] < (b[0] - a[0]) * (pt[1] - a[1]) / (b[1] - a[1]) + a[0]) c2 = !c2; } return c2; };
+
+  // Meshes: vertices, faces with groups. tops = points whose shadows make the outline, with their feet.
+  const mesh = (sh, x0, z0) => {
+    const V = [], F = []; let tops = [], label = '';
+    if (sh === 'box' || sh === 'post') { const w = sh === 'post' ? 0.16 : 1, d = sh === 'post' ? 0.16 : 1, h = sh === 'post' ? 1.8 : 1.2, x = x0 + (sh === 'post' ? 0.42 : 0), z = z0 + (sh === 'post' ? 0.42 : 0);
+      [[x, 0, z], [x + w, 0, z], [x + w, 0, z + d], [x, 0, z + d]].forEach((q) => V.push(q)); V.slice(0, 4).forEach((q) => V.push([q[0], h, q[2]]));
+      F.push({ i: [0, 1, 2, 3], g: 'bot' }, { i: [4, 5, 6, 7], g: 'top' }, { i: [0, 1, 5, 4], g: 'f' }, { i: [2, 3, 7, 6], g: 'b' }, { i: [1, 2, 6, 5], g: 'r' }, { i: [3, 0, 4, 7], g: 'l' });
+      tops = sh === 'post' ? [{ p: [x + w / 2, h, z + d / 2], foot: [x + w / 2, 0, z + d / 2] }] : [4, 5, 6, 7].map((i) => ({ p: V[i], foot: V[i - 4] })); label = sh === 'post' ? 'top of the post' : 'corner';
+    } else if (sh === 'pyr') { const b = 1.2, h = 1.6;
+      [[x0, 0, z0], [x0 + b, 0, z0], [x0 + b, 0, z0 + b], [x0, 0, z0 + b], [x0 + b / 2, h, z0 + b / 2]].forEach((q) => V.push(q));
+      F.push({ i: [0, 1, 2, 3], g: 'bot' }, { i: [0, 1, 4], g: 'f' }, { i: [1, 2, 4], g: 'r' }, { i: [2, 3, 4], g: 'b' }, { i: [3, 0, 4], g: 'l' });
+      tops = [{ p: V[4], foot: [x0 + b / 2, 0, z0 + b / 2] }]; label = 'apex';
+    } else if (sh === 'sph') { const r = 0.6, c = [x0 + 0.5, r, z0 + 0.5], nl = 12, nm = 24;
+      V.push([c[0], 0, c[2]]);
+      for (let i = 1; i < nl; i++) { const la = -Math.PI / 2 + Math.PI * i / nl; for (let j = 0; j < nm; j++) { const lo = 2 * Math.PI * j / nm; V.push([c[0] + r * Math.cos(la) * Math.cos(lo), c[1] + r * Math.sin(la), c[2] + r * Math.cos(la) * Math.sin(lo)]); } }
+      V.push([c[0], 2 * r, c[2]]); const top = V.length - 1, at = (i, j) => 1 + (i - 1) * nm + (j % nm);
+      for (let j = 0; j < nm; j++) { F.push({ i: [0, at(1, j + 1), at(1, j)], g: 'sph' }); F.push({ i: [top, at(nl - 1, j), at(nl - 1, j + 1)], g: 'sph' }); }
+      for (let i = 1; i < nl - 1; i++) for (let j = 0; j < nm; j++) F.push({ i: [at(i, j), at(i, j + 1), at(i + 1, j + 1), at(i + 1, j)], g: 'sph' });
+      label = 'point on the line of light and shade';
+      return finish({ V, F, tops: [], label, sphere: { c, r } });
+    } else { const r = shape === 'cone' ? 0.6 : 0.5, h = sh === 'cone' ? 1.6 : 1.3, c = [x0 + 0.5, 0, z0 + 0.5];
+      for (let i = 0; i < NR; i++) { const a = 2 * Math.PI * i / NR; V.push([c[0] + r * Math.cos(a), 0, c[2] + r * Math.sin(a)]); }
+      if (sh === 'cyl') { for (let i = 0; i < NR; i++) V.push([V[i][0], h, V[i][2]]);
+        for (let i = 0; i < NR; i++) { const j = (i + 1) % NR; F.push({ i: [i, j, NR + j, NR + i], g: 'side' }); }
+        F.push({ i: [...Array(NR).keys()].map((k) => NR + k), g: 'top' }, { i: [...Array(NR).keys()], g: 'bot' });
+        tops = [...Array(NR).keys()].map((k) => ({ p: V[NR + k], foot: V[k] })); label = 'point on the rim';
+      } else { V.push([c[0], h, c[2]]);
+        for (let i = 0; i < NR; i++) { const j = (i + 1) % NR; F.push({ i: [i, j, NR], g: 'side' }); }
+        F.push({ i: [...Array(NR).keys()], g: 'bot' });
+        tops = [{ p: V[NR], foot: c }]; label = 'apex'; } }
+    return finish({ V, F, tops, label });
+  };
+  const finish = (mm) => { const { V, F } = mm;
+    const cen = [0, 1, 2].map((k) => V.reduce((a, q) => a + q[k], 0) / V.length);
+    F.forEach((fc) => { const n = [0, 0, 0]; fc.i.forEach((a, k) => { const p = V[a], q = V[fc.i[(k + 1) % fc.i.length]];
+        n[0] += (p[1] - q[1]) * (p[2] + q[2]); n[1] += (p[2] - q[2]) * (p[0] + q[0]); n[2] += (p[0] - q[0]) * (p[1] + q[1]); });
+      fc.c = [0, 1, 2].map((k) => fc.i.reduce((a, i) => a + V[i][k], 0) / fc.i.length);
+      if (dot3(n, sub(fc.c, cen)) < 0) { n[0] = -n[0]; n[1] = -n[1]; n[2] = -n[2]; }
+      const l = Math.hypot(...n) || 1; fc.n = n.map((v) => v / l); });
+    return { ...mm, topY: Math.max(...V.map((q) => q[1])) };
+  };
+
+  // Geometry for one set of settings (used to draw and to test new tasks)
+  const geom = (o) => {
+    const pj = (q) => [cx + f * q[0] / q[2], hyR - f * (q[1] - o.E) / q[2]];
+    const m = mesh(shape, o.ox, o.oz);
+    let Sp, Sf, shadow3, toLight;
+    if (isLamp) { const Lw = [o.LX, o.LY, o.LZ]; Sp = pj(Lw); Sf = pj([o.LX, 0, o.LZ]);
+      shadow3 = (q) => { const k = o.LY / (o.LY - q[1]); return [o.LX + (q[0] - o.LX) * k, 0, o.LZ + (q[2] - o.LZ) * k]; };
+      toLight = (c) => sub(Lw, c); }
+    else { const d = [(o.SX - cx) / f, (hyR - o.SY) / f, 1], u = md === 'behind' ? d.map((v) => -v) : d;
+      Sp = [o.SX, o.SY]; Sf = [o.SX, hyR];
+      shadow3 = (q) => [q[0] - u[0] * q[1] / u[1], 0, q[2] - u[2] * q[1] / u[1]]; toLight = () => u; }
+    const eye = [0, o.E, 0];
+    m.F.forEach((fc) => { fc.vis = dot3(fc.n, sub(eye, fc.c)) > 1e-9; const tl = toLight(fc.c), l = Math.hypot(...tl); fc.lam = dot3(fc.n, tl) / l; fc.lit = fc.lam > 1e-9; });
+    // The line of light and shade. Its points cast the outline of the shadow.
+    let edgePts = [], termCircle = null;
+    if (m.sphere) { const C = m.sphere.c, r = m.sphere.r; let nrm, cc = C, rr = r;
+      if (isLamp) { const Lw = [o.LX, o.LY, o.LZ], v = sub(Lw, C), d2 = dot3(v, v); nrm = v.map((x) => x / Math.sqrt(d2)); cc = C.map((x, k) => x + v[k] * r * r / d2); rr = r * Math.sqrt(Math.max(0, 1 - r * r / d2)); }
+      else { const u = toLight(C), l = Math.hypot(...u); nrm = u.map((x) => x / l); }
+      let a = [nrm[2], 0, -nrm[0]]; const la = Math.hypot(...a); a = la < 1e-6 ? [1, 0, 0] : a.map((x) => x / la);
+      const b = [nrm[1] * a[2] - nrm[2] * a[1], nrm[2] * a[0] - nrm[0] * a[2], nrm[0] * a[1] - nrm[1] * a[0]];
+      termCircle = []; for (let k = 0; k < 48; k++) { const t2 = 2 * Math.PI * k / 48; const q = [0, 1, 2].map((d) => cc[d] + rr * (Math.cos(t2) * a[d] + Math.sin(t2) * b[d])); termCircle.push(q); }
+      edgePts = termCircle.filter((q, k) => k % 2 === 0 && q[1] > 1e-6).map((q) => ({ p: q, foot: [q[0], 0, q[2]] }));
+    } else {
+      const onTerm = new Set(); const ek0 = new Map();
+      m.F.forEach((fc, fi) => fc.i.forEach((a, k) => { const b = fc.i[(k + 1) % fc.i.length], key = Math.min(a, b) + '-' + Math.max(a, b); if (!ek0.has(key)) ek0.set(key, []); ek0.get(key).push(fc); }));
+      ek0.forEach((fs, key) => { if (fs.length === 2 && fs[0].lit !== fs[1].lit && fs.every((q) => q.g !== 'bot')) key.split('-').forEach((v) => onTerm.add(Number(v))); });
+      edgePts = m.tops.filter((tp) => onTerm.has(m.V.indexOf(tp.p)));
+      if (!edgePts.length) edgePts = m.tops; }
+    const sh3 = m.V.map((q) => (q[1] > 1e-9 ? shadow3(q) : q));
+    const front = sh3.every((q) => q[2] > 0.8) && (!isLamp || o.LY > m.topY + 0.3);
+    const shPts = sh3.map((q) => (q[2] > 0.8 ? pj(q) : null));
+    const tps = edgePts.map((tp) => { const s3 = shadow3(tp.p); return { K: pj(tp.p), K0: pj(tp.foot), Ks: s3[2] > 0.8 ? pj(s3) : [NaN, NaN], s3, p3: tp.p }; });
+    // key point: the one whose shadow lands farthest from its foot; a second one far from it
+    const dd = (q) => Math.hypot(q.Ks[0] - q.K0[0], q.Ks[1] - q.K0[1]);
+    let ki = 0; tps.forEach((q, i) => { if (dd(q) > dd(tps[ki])) ki = i; });
+    let k2 = null; if (tps.length > 1) { let bd = -1; tps.forEach((q, i) => { if (i === ki) return; const d = Math.hypot(q.Ks[0] - tps[ki].Ks[0], q.Ks[1] - tps[ki].Ks[1]); if (d > bd) { bd = d; k2 = i; } }); }
+    const objHull = hull(m.V.map(pj));
+    const K = tps[ki], key = [Sp, Sf, K.K, K.K0, K.Ks].concat(k2 !== null ? [tps[k2].Ks] : []);
+    const onPic = (q) => q[0] > 4 && q[0] < 356 && q[1] > 4 && q[1] < picH - 4;
+    const ok = front && key.every(onPic) && dd(K) > 14 && !inPoly(K.Ks, objHull)
+      && (k2 === null || (!inPoly(tps[k2].Ks, objHull) && Math.hypot(tps[k2].Ks[0] - K.Ks[0], tps[k2].Ks[1] - K.Ks[1]) > 20));
+    return { pj, m, Sp, Sf, shadow3, sh3, shPts, tps, ki, k2, objHull, front, ok, termCircle, eyeP: eye };
+  };
+  const st = { E, ox, oz, SX, SY, LX, LY, LZ };
+  const g = geom(st), pj = g.pj, m = g.m;
+
+  // Faces, outlines, own shadow and the edge between light and shade
+  const mix = (a, b, u) => { const h = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)); const A = h(a), B = h(b);
+    return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * u).toString(16).padStart(2, '0')).join(''); };
+  const showShade = step >= 4, showCast = step === 6;
+  const faces = m.F.filter((fc) => fc.vis).map((fc) => { const col = !showShade ? (fc.g === 'top' ? '#EEF3F8' : '#D9E4EE') : fc.lit ? mix('#C3CFDA', '#F4F7FA', Math.min(1, fc.lam)) : '#7F8C99';
+    return { d: P(fc.i.map((i) => pj(m.V[i]))), col }; });
+  const ek = new Map(); m.F.forEach((fc, fi) => fc.i.forEach((a, k) => { const b = fc.i[(k + 1) % fc.i.length], key = Math.min(a, b) + '-' + Math.max(a, b); if (!ek.has(key)) ek.set(key, { a, b, fs: [] }); ek.get(key).fs.push(fi); }));
+  let edges = '', hid = '', term = '';
+  ek.forEach((e) => { const fs = e.fs.map((i) => m.F[i]); const anyVis = fs.some((q) => q.vis), sharp = fs.length < 2 || fs[0].g !== fs[1].g || fs[0].vis !== fs[1].vis;
+    const seg2 = L(pj(m.V[e.a]), pj(m.V[e.b]));
+    if (anyVis && sharp) edges += seg2; else if (!anyVis && sharp && fs.some((q) => q.g !== 'side' && q.g !== 'sph')) hid += seg2;
+    if (!m.sphere && fs.length === 2 && fs[0].lit !== fs[1].lit && anyVis && fs.every((q) => q.g !== 'bot')) term += seg2; });
+  if (g.termCircle) { const C = m.sphere.c, tc = g.termCircle, vis = tc.map((q) => dot3(sub(q, C), sub(g.eyeP, q)) > 0);
+    tc.forEach((q, k) => { const k1 = (k + 1) % tc.length; if (vis[k] && vis[k1]) term += L(pj(q), pj(tc[k1])); }); }
+  const shadowFill = g.front ? P(hull(g.shPts.filter(Boolean).concat(g.tps.map((q) => q.Ks).filter((q) => !isNaN(q[0]))))) : '';
+
+  // Steps: 1 scene, 2 light and its foot, 3 one point, 4 line of light and shade, 5 every point, 6 fill
+  const T = g.tps[g.ki], T2 = g.k2 !== null ? g.tps[g.k2] : null, Sp = g.Sp, Sf = g.Sf;
+  const ground = (q) => span(Sf, q.K0, q.Ks), ray = (q) => span(Sp, q.K, q.Ks);
+  const LN = isLamp ? 'L' : 'S', LF = isLamp ? 'L′' : 'S′';
+  const edgeDots = g.tps.map((q) => dot(q.K, 2.6)).join('');
+  const lab = (q, tx, dx, dy) => ({ x: fx(q[0] + (dx || 0)), y: fx(q[1] + (dy || 0)), t: tx });
+  const along = (a, u) => [a[0][0] + (a[1][0] - a[0][0]) * u, a[0][1] + (a[1][1] - a[0][1]) * u];
+  const gl = ground(T), rl = ray(T), nearEnd = (sg, q) => (Math.hypot(sg[0][0] - q[0], sg[0][1] - q[1]) < Math.hypot(sg[1][0] - q[0], sg[1][1] - q[1]) ? 0.25 : 0.75);
+  const footHint = shape === 'box' ? 'Follow the edge below the red corner straight down to the ground. If it is hidden, use the dashed edge.' : shape === 'post' ? 'It is the bottom of the post.' : shape === 'cyl' ? 'Follow the side straight down to the bottom rim.' : shape === 'sph' ? 'Go straight down from the red point to the ground. The foot is hidden under the ball.' : 'It is the centre of the base, straight below the apex. It is hidden inside the object.';
+  const tasksAll = {
+    2: isLamp ? [] : [{ say: 'Tap the foot of the sun: the point on the horizon straight ' + (md === 'behind' ? 'above' : 'below') + ' S.', at: Sf, hint: 'Go straight ' + (md === 'behind' ? 'up' : 'down') + ' from S to the horizon.', ln: [[Sp, Sf]], dot: Sf }],
+    3: [{ say: 'Tap the foot of the red ' + (shape === 'sph' ? 'point' : m.label) + ': the spot on the ground straight below it.', at: T.K0, hint: footHint, ln: [[T.K, T.K0], ground(T)], dot: T.K0 },
+        { say: 'A ground line now runs from ' + LF + ' through the foot. Tap the shadow of the red point.', at: T.Ks, hint: 'Draw a ray from ' + LN + ' through the red point. The shadow is where the ray meets the ground line.', ln: [ray(T)], mk: [[T.K0, T.Ks]], dot: T.Ks }],
+    5: T2 ? [{ say: 'Now tap the shadow of the orange point.', at: T2.Ks, hint: 'The same two lines: a ground line from ' + LF + ' through its foot, and a ray from ' + LN + ' through the point.', ln: [[T2.K, T2.K0], ground(T2), ray(T2)], dot: T2.Ks }] : [] };
+  const onP = (q) => q[0] > 2 && q[0] < 358 && q[1] > 2 && q[1] < picH - 2;
+  const tasks = (tasksAll[step] || []).map((q) => ({ ...q, auto: !onP(q.at) }));
+  let eff = task; while (tasks[eff] && tasks[eff].auto) eff++;
+  const cur = isTry ? tasks[eff] : null;
+  let done = '', now = '', marks = '', dots = '', faint = '', labels = [];
+  const seg3 = [[T.K, T.K0], ground(T), ray(T)];
+  if (step > 2 && !isLamp) done += L(Sp, Sf);
+  if (step > 3) { done += seg3.map((q) => L(q[0], q[1])).join(''); marks += L(T.K0, T.Ks); dots += dot(T.Ks, 3.5); }
+  if (step >= 2 && (!isTry || step > 2 || eff > 0)) dots += isLamp ? '' : dot(Sf, 3.5);
+  if (!isTry) {
+    if (step === 2 && !isLamp) now = part(Sp, Sf, Math.min(1, t / 0.8));
+    if (step === 3) { const ph = [[0, 0.22], [0.22, 0.5], [0.5, 0.78]];
+      seg3.forEach((q, k) => { const u = Math.max(0, Math.min(1, (t - ph[k][0]) / (ph[k][1] - ph[k][0]))); now += part(q[0], q[1], u); });
+      if (t >= 0.22) { dots += dot(T.K0, 3); labels.push(lab(T.K0, 'foot', 7, 14)); }
+      if (t >= 0.5) labels.push(lab(along(gl, nearEnd(gl, Sf)), 'ground line', 6, 14));
+      if (t >= 0.78) { labels.push(lab(along(rl, nearEnd(rl, Sp)), 'ray', 6, -6)); marks += part(T.K0, T.Ks, Math.min(1, (t - 0.78) / 0.15)); }
+      if (t >= 0.93) { dots += dot(T.Ks, 3.5); labels.push(lab(T.Ks, 'shadow', 7, -7)); } }
+    if (step === 5) { const pts = g.tps, n = pts.length;
+      pts.forEach((q, k) => { const a0 = 0.85 * k / n, a1 = 0.85 * (k + 1) / n;
+        if (t >= a1) { faint += L(...ground(q)) + L(...ray(q)); dots += dot(q.Ks, 3); }
+        else if (t > a0) { const u = (t - a0) / (a1 - a0); now += part(...ground(q), Math.min(1, u * 2)) + part(...ray(q), Math.max(0, u * 2 - 1)); } }); }
+  } else {
+    tasks.slice(0, eff).forEach((q) => { if (q.mk) marks += q.mk.map((k) => L(k[0], k[1])).join(''); if (q.ln) now += q.ln.map((l) => L(l[0], l[1])).join(''); if (q.dot) dots += dot(q.dot, 3.5); });
+    if (step === 5 && eff >= tasks.length) g.tps.forEach((q) => { dots += dot(q.Ks, 3); });
+  }
+  if (step === 6) { g.tps.forEach((q) => { dots += dot(q.Ks, 2.5); }); marks = ''; }
+  if (!g.front) { done = ''; marks = ''; faint = ''; labels = []; if (step >= 3) { now = ''; dots = ''; } }
+  const outlineOn = step === 5 && (isTry ? eff >= tasks.length : t >= 0.9);
+  const outline = outlineOn ? shadowFill : '';
+  const ring = isTry && cur && hintN >= 2 ? cur.at : null;
+  const tasksLeft = isTry && step >= 2 && step <= 5 && eff < tasks.length;
+
+  const anim = () => { if (this._ltTimer) { clearInterval(this._ltTimer); this._ltTimer = null; }
+    const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || typeof setInterval !== 'function') { this.setState({ ltT: 1 }); return; }
+    let tt = 0; this.setState({ ltT: 0 });
+    this._ltTimer = setInterval(() => { tt = Math.min(1, tt + 0.035); this.setState({ ltT: tt }); if (tt >= 1) { clearInterval(this._ltTimer); this._ltTimer = null; } }, 40); };
+  const goStep = (nn) => { this.setState({ ltS: Math.max(1, Math.min(6, nn)), ltTask: 0, ltHint: 0, ltMsg: '' }); if (!isTry) anim(); };
+  const newTask = () => { let sd = s.ltSeed ?? 0, pick = null;
+    for (let k = 0; k < 120 && !pick; k++) { sd++; let r = (sd * 7919 + 11) % 233280; const rnd = () => { r = (r * 9301 + 49297) % 233280; return r / 233280; };
+      const c = { E: Math.round((1.2 + rnd() * 1) * 10) / 10, ox: Math.round((-2 + rnd() * 3) * 10) / 10, oz: Math.round((4 + rnd() * 3) * 10) / 10,
+        SX: Math.round(30 + rnd() * 300), SY: Math.round(syMin + rnd() * (syMax - syMin)), LX: Math.round((-2.5 + rnd() * 5) * 10) / 10, LY: Math.round((2.2 + rnd() * 1.6) * 10) / 10, LZ: Math.round((3.5 + rnd() * 4) * 10) / 10 };
+      if (geom(c).ok) pick = c; }
+    const c = pick || st;
+    this.setState({ ltE: c.E, ltX: c.ox, ltZ: c.oz, ltSX: c.SX, ltSY: c.SY, ltLX: c.LX, ltLY: c.LY, ltLZ: c.LZ, ltSeed: sd, ltS: 2, ltTask: 0, ltHint: 0, ltMiss: 0, ltMsg: '' }); };
+
+  // Pointer: drag the light, the lamp foot or the object in watch mode; tap answers in your turn
+  const svgPt = (e) => { const r = e.currentTarget.getBoundingClientRect(); return [(e.clientX - r.left) * 360 / r.width, (e.clientY - r.top) * 360 / r.width]; };
+  const floorAt = (p) => (p[1] > hyR + 1 ? (() => { const z = f * E / (p[1] - hyR); return [(p[0] - cx) * z / f, z]; })() : null);
+  const near = (p, q, r) => Math.hypot(p[0] - q[0], p[1] - q[1]) <= r;
+  const down = (e) => { const p = svgPt(e);
+    if (isTry) { if (!cur) return;
+      if (near(p, cur.at, 16)) { let nx = eff + 1; while (tasks[nx] && tasks[nx].auto) nx++; this.setState({ ltTask: nx, ltHint: 0, ltMsg: nx >= tasks.length ? 'Right. Step done.' : 'Right.' }); }
+      else this.setState({ ltHint: hintN + 1, ltMiss: miss + 1, ltMsg: 'Not quite. ' + cur.hint + (hintN >= 1 ? ' The dashed ring shows where.' : '') });
+      return; }
+    let kind = null;
+    if (near(p, Sp, 20)) kind = 'light'; else if (isLamp && near(p, Sf, 18)) kind = 'foot'; else if (inPoly(p, g.objHull)) kind = 'obj';
+    if (!kind) return;
+    const a = floorAt([p[0], Math.max(p[1], hyR + 2)]);
+    this._ltDrag = { kind, a, ox, oz, LX, LZ, py: Math.max(p[1], hyR + 2) - p[1] };
+    if (e.currentTarget.setPointerCapture && e.pointerId !== undefined) { try { e.currentTarget.setPointerCapture(e.pointerId); } catch (er) { /* ignore */ } } };
+  const move = (e) => { const d0 = this._ltDrag; if (!d0) return; const p = svgPt(e);
+    if (d0.kind === 'light') { if (!isLamp) this.setState({ ltSX: Math.round(cl(p[0], 8, 352)), ltSY: Math.round(cl(p[1], syMin, syMax)) });
+      else this.setState({ ltLY: Math.round(cl(E + (hyR - p[1]) * LZ / f, Math.max(1.8, m.topY + 0.4), 4) * 20) / 20 }); return; }
+    const b = floorAt([p[0], p[1] + d0.py]); if (!b || !d0.a) return;
+    if (d0.kind === 'foot') this.setState({ ltLX: Math.round(cl(d0.LX + b[0] - d0.a[0], -3, 3) * 20) / 20, ltLZ: Math.round(cl(d0.LZ + b[1] - d0.a[1], 3, 8) * 20) / 20 });
+    else this.setState({ ltX: Math.round(cl(d0.ox + b[0] - d0.a[0], -2.5, 2) * 20) / 20, ltZ: Math.round(cl(d0.oz + b[1] - d0.a[1], 3.5, 8) * 20) / 20 }); };
+  const up = () => { this._ltDrag = null; };
+
+  const light = { ahead: 'the sun', behind: 'the sun', lamp: 'the lamp' }[md];
+  const titles = ['The scene', isLamp ? 'The lamp and its foot' : 'The sun and its foot', 'Shadow of one point', 'Light and shade on the object', 'Shadow of every point', 'Fill the shadow'];
+  const short = ['Scene', isLamp ? 'Lamp' : 'Sun', 'One point', 'Light line', 'All points', 'Fill'];
+  const instr = [
+    md === 'ahead' ? 'The sun is ahead of you, behind the object. Its rays come toward you, so the shadow falls toward you. The sun is the point S in the sky.'
+      : md === 'behind' ? 'The sun is behind you. Its rays run away from you, so the shadow falls away from you. The rays meet at the point S below the horizon.'
+      : 'A lamp L lights the object. Its rays spread out from one point, so the shadow fans out away from the lamp.',
+    isLamp ? 'The lamp hangs straight above its foot L′ on the floor. You need both points: the light, and the spot under it.' : 'Drop a vertical from S to the horizon. That point, S′, is the foot of the sun: the spot on the ground plane under it.',
+    'Every shadow point is found with two lines. 1: drop the red point straight down to its foot. 2: draw a ground line from ' + LF + ' through the foot. 3: draw a ray from ' + LN + ' through the red point. The shadow is where the ray meets the ground line.',
+    'Find where light meets shade on the object: the red line. Faces turned away from the light are darker: that is the own shadow. Only the red line casts the edge of the shadow, so you only need its points.',
+    'Cast each point of the red line the same way, one after another. Join the shadow points, and the points where the object touches the ground. That is the outline.',
+    'Fill the outline. The cast shadow is darker than the own shadow. It starts where the line of light and shade meets the ground.'];
+  const why = [
+    isLamp ? 'A lamp is close, so its rays spread out from one point, L.' : 'The sun is so far away that its rays are parallel. In perspective, parallel lines meet at one point, so all rays run to S.',
+    isLamp ? 'Every shadow line on the floor runs from L′, the point straight under the lamp.' : 'Each ray lies in a vertical plane. On the ground these planes leave lines that all run to S′, the point on the horizon under the sun.',
+    'The point, its foot and its shadow lie in one vertical plane with the light. The ray and the ground line both lie in that plane, so they meet at the shadow.',
+    shape === 'sph' ? 'On a ball, the line of light and shade is a circle. Rays just touch the ball along this circle. Its shadow is the outline: an oval on the ground.' : 'Rays that just graze the object touch it along the line of light and shade. These grazing rays draw the edge of the shadow. Rays that hit lit faces stop there, so they make no edge.',
+    'The shadow of a straight edge is straight, so the corners are enough. For round objects, cast enough points to draw a smooth curve.',
+    'Own shadow is the dark side of the object. Cast shadow is the shadow on the ground. The cast shadow is darker, with its sharpest edge close to the object.'];
+  const tryInstr = !isTry ? instr[step - 1]
+    : step === 1 ? 'The red point is the one you will cast. Press Next step to start.'
+    : step === 4 ? 'The red line is where light meets shade. Its points cast the outline. Press Next step.'
+    : step === 6 ? 'Your shadow is finished. ' + (miss === 0 ? 'No wrong taps. Well done.' : 'You needed ' + miss + ' extra tap' + (miss === 1 ? '' : 's') + '.') + ' Press New scene to try another.'
+    : (cur ? cur.say : (tasks.length ? (step === 5 ? 'Right. The other points are cast the same way. Press Next step.' : 'Step done. Press Next step.') : (step === 2 ? 'The lamp and its foot are given. Press Next step.' : 'The outline is the shadow of the apex joined to the base. Press Next step.')));
+  const msg = isTry ? (s.ltMsg ?? '') : '';
+  const shapes = [['box', 'Box', 'M4 8l8-4 8 4v9l-8 4-8-4zM4 8l8 4 8-4M12 12v9'], ['post', 'Post', 'M11 3h2v18h-2zM6 21h12'], ['pyr', 'Pyramid', 'M12 3L3 19h18zM12 3l3 16'], ['cyl', 'Cylinder', 'M5 6a7 3 0 1 0 14 0a7 3 0 1 0-14 0M5 6v12a7 3 0 0 0 14 0V6'], ['cone', 'Cone', 'M12 3L5 18a7 3 0 0 0 14 0zM5 18a7 3 0 0 1 14 0'], ['sph', 'Ball', 'M12 4a8 8 0 1 0 0 16a8 8 0 1 0 0-16zM4 12a8 3 0 0 0 16 0']];
+  const reset = { ltS: isTry ? 2 : 1, ltTask: 0, ltHint: 0, ltMiss: 0, ltMsg: '', ltT: 1 };
+  return { md, shape, isLamp, isSun: !isLamp, isTry, isWatch: !isTry, step, ok: g.ok, vb: '0 0 360 ' + picH, hy: fx(hyR), hly: fx(hyR - 6), picH,
+    E, ox, oz, SX, SY, LX, LY, LZ, syMin, syMax, lyMin: fx(Math.max(1.8, m.topY + 0.4)),
+    sunUp: fx(Math.atan(Math.abs(hyR - SY) / f * Math.cos(Math.atan((SX - cx) / f))) * 180 / Math.PI),
+    floor: 'M0 ' + fx(hyR) + 'H360V' + picH + 'H0Z',
+    grid: (() => { let gr = ''; for (let x = -12; x <= 12.01; x += 1) gr += L(pj([x, 0, 2]), pj([x, 0, 40])); for (const z of [3, 4, 5, 6, 7, 8, 10, 13, 18, 26]) gr += 'M0 ' + fx(pj([0, 0, z])[1]) + 'H360'; return gr; })(),
+    shadowFill: showCast ? shadowFill : '', outline, faces, edges, hid, term: showShade ? term : '', faint, labels, edgeDots: step === 4 || step === 5 ? edgeDots : '',
+    sun: md === 'ahead' ? dot(Sp, 9) : md === 'behind' ? dot(Sp, 5) : '', sunRays: md === 'ahead' ? [0, 1, 2, 3, 4, 5, 6, 7].map((k) => { const a = k * Math.PI / 4; return L([Sp[0] + 12 * Math.cos(a), Sp[1] + 12 * Math.sin(a)], [Sp[0] + 16 * Math.cos(a), Sp[1] + 16 * Math.sin(a)]); }).join('') : '',
+    lamp: isLamp ? dot(Sp, 7) : '', lampPost: isLamp ? L(Sp, Sf) : '', footDot: isLamp ? dot(Sf, 3.5) : '',
+    lx: fx(Sp[0] + (md === 'behind' ? 8 : 12)), ly: fx(Sp[1] - (md === 'behind' ? 6 : 10)), lLab: LN, fx2: fx(Sf[0] + 8), fy2: fx(Sf[1] + (isLamp ? 14 : -6)), fLab: isLamp || step >= 2 ? LF : '',
+    done, now, marks, dots, corner: dot(T.K, 5), corner2: T2 && isTry && step === 5 ? dot(T2.K, 5) : '',
+    ringX: ring ? fx(ring[0]) : 0, ringY: ring ? fx(ring[1]) : 0, ringR: ring ? 14 : 0,
+    intro: 'From the chapter on shadows. Light makes two kinds of shadow: own shadow on the object and cast shadow on the ground. Both follow perspective.',
+    title: titles[step - 1], instr: tryInstr, msg, hasMsg: !!msg, why: why[step - 1], whyOn, whyLabel: whyOn ? 'Hide why' : 'Why does this work?',
+    note: g.ok ? '' : (!g.front ? (isLamp ? 'The lamp must hang higher than the object.' : 'The shadow runs off the picture. Move the sun higher or the object further away.') : 'Part of the construction is off the picture. Move the light or the object.'), hasNote: !g.ok,
+    tip: isTry ? (tasksLeft ? 'Tap on the drawing. A wrong tap gives a hint.' : '') : (isLamp ? 'Drag the lamp up or down, its foot L′ to move it, or the object.' : 'Drag the sun S or the object.'),
+    isFirst: step === 1, isLast: step === 6 || tasksLeft,
+    modes: [['ahead', 'Sun ahead'], ['behind', 'Sun behind'], ['lamp', 'Lamp']].map((q) => ({ label: q[1], on: md === q[0], cls: md === q[0] ? 'on' : '', pick: () => this.setState({ ltM: q[0], ltSX: undefined, ltSY: undefined, ...reset }) })),
+    shapes: shapes.map((q) => ({ label: q[1], icon: q[2], on: shape === q[0], cls: shape === q[0] ? 'ib on' : 'ib', pick: () => this.setState({ ltSh: q[0], ...reset }) })),
+    playPills: [['watch', 'Watch'], ['try', 'Your turn']].map((q) => ({ label: q[1], on: (q[0] === 'try') === isTry, cls: (q[0] === 'try') === isTry ? 'on' : '', pick: () => this.setState({ ltPlay: q[0], ...reset, ltS: q[0] === 'try' ? 2 : 1 }) })),
+    stepPills: short.map((tx, i) => ({ label: (i + 1) + '. ' + tx, on: step === i + 1, cls: step === i + 1 ? 'pill on' : 'pill', pick: () => goStep(i + 1) })),
+    prev: () => goStep(step - 1), next: () => goStep(step + 1), replay: anim, newTask, toggleWhy: () => this.setState({ ltWhy: !whyOn }),
+    down, move, up,
+    setE: (e) => this.setState({ ltE: Number(e.target.value) }), setX: (e) => this.setState({ ltX: Number(e.target.value) }), setZ: (e) => this.setState({ ltZ: Number(e.target.value) }),
+    setSX: (e) => this.setState({ ltSX: Number(e.target.value) }), setSY: (e) => this.setState({ ltSY: Number(e.target.value) }),
+    setLX: (e) => this.setState({ ltLX: Number(e.target.value) }), setLY: (e) => this.setState({ ltLY: Number(e.target.value) }), setLZ: (e) => this.setState({ ltLZ: Number(e.target.value) }),
+    _g: g, _tasks: tasks, _eff: eff, _geom: geom };
+})();
+
+return {
+tabs, isDraw: tab === 'draw', isSc: tab === 'sc', sc, isDist: tab === 'ex' && exM === 'dist', isAn: tab === 'ex' && exM === 'an', dist, an, isEx: tab === 'ex', isExOwn: tab === 'ex' && ['du', 'tb', 'ce'].includes(exM), exPills, secTitle, exDu: exM === 'du', exTb: exM === 'tb', exCe: exM === 'ce', du, tb, ce,
+isRf: tab === 'rf', rf, isLt: tab === 'lt', lt,
+dc, shp, shapePills, shapeName: shapeInfo[shape][0], shapeTip: shapeInfo[shape][1],
+toolBtns: [['Zoom out', 'M10 4a6 6 0 1 0 0 12a6 6 0 1 0 0-12zM20 20l-5.5-5.5M7 10h6', null, () => this.setState({ zoom: Math.max(0.25, z / 1.5) })], ['Zoom in', 'M10 4a6 6 0 1 0 0 12a6 6 0 1 0 0-12zM20 20l-5.5-5.5M10 7v6M7 10h6', null, () => this.setState({ zoom: Math.min(4, z * 1.5) })], ['Fit view', 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5', null, () => this.setState({ zoom: 1, pcx: 180, pcy: 120 })], ['Guides', 'M3 20L12 4l9 16M6.5 14h11', lines, () => this.setState({ lines: !lines })], ['Hidden edges', 'M4 8l8-4 8 4v8l-8 4-8-4zM4 8l8 4 8-4M12 12v8', showHid, () => this.setState({ hid: !showHid })], ['Distortion check', 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM12 8a4 4 0 1 0 0 8a4 4 0 1 0 0-8z', dc.showCone, dc.toggle], ['Move in depth', 'M12 21V9M8 13l4-4 4 4M5 21h14M8 3h8', depthOn, () => this.setState(mode === 3 ? { note: 'Move in depth works in one- and two-point modes.' } : { depthOn: !s.depthOn })], ['Reset', 'M4 12a8 8 0 1 0 2.3-5.7M4 4v4h4', null, () => this.setState({ dz: 0, depthOn: false, mode: 1, shape: 'box', kd: 0.55, fl: 0.45, fr: 0.4, pd1: 220, eye: 70, vx: 230, v1: 20, v2: 335, v3: 20, bx: 60, by: 115, bw: 90, bh: 80, lines: true, zoom: 1, pcx: 180, pcy: 120, note: '' })]].map((q) => ({ label: q[0], icon: q[1], pressed: q[2] === null ? undefined : String(!!q[2]), cls: q[2] ? 'tl on' : 'tl', act: q[3] })),
+floorGrid: dpt.grid, depthMsg: dpt.msg, hasDepthMsg: !!dpt.msg,
+hidCon: showHid ? shp.hidCon : '', hidDots: showHid ? shp.hidDots : '',
+showHid, hiddenD: showHid ? (shape === 'box' ? geo.hid : shp.hid) : '', hidLabel: showHid ? 'Hide hidden edges' : 'Show hidden edges', toggleHid: () => this.setState({ hid: !showHid }),
+eye, vx, v1, v2, v3, lines, linesLabel: lines ? 'Hide construction lines' : 'Show construction lines',
+...geo, vb: [vbx, vby, vbw, vbh].join(' '), hx1: mode === 1 ? vx : v1, hx2: v2, hx3: xc, hy3: v3, hr: 8 / z, r2: mode >= 2 ? 8 / z : 0, r3: mode === 3 ? 8 / z : 0,
+rsx: (mode === 1 ? x1 : xc) - 6 / z, rsy: y1 - 6 / z, rsz: 12 / z,
+modePills, down, move, up, isOne: mode === 1, isTwo: mode >= 2, isThree: mode === 3,
+hint: mode === 1 ? 'Raise the eye level above the box to see its top.' : (mode === 2 ? 'Each side of the box runs to its own point. Vertical edges stay vertical.' : 'The third point makes vertical edges meet. Above the box suits an upward view.'),
+setV1: (e) => this.setState({ v1: cl(Number(e.target.value), -1500, xc - 40) }),
+setV2: (e) => this.setState({ v2: cl(Number(e.target.value), xc + 40, 1860) }),
+setV3: (e) => this.setState({ v3: Number(e.target.value) }),
+zoomIn: () => this.setState({ zoom: Math.min(4, z * 1.5) }), zoomOut: () => this.setState({ zoom: Math.max(0.25, z / 1.5) }),
+resetView: () => this.setState({ zoom: 1, pcx: 180, pcy: 120 }),
+resetAll: () => this.setState({ dz: 0, depthOn: false, kd: 0.55, fl: 0.45, fr: 0.4, pd1: 220, mode: 1, eye: 70, vx: 230, v1: 20, v2: 335, v3: 20, bx: 60, by: 115, bw: 90, bh: 80, lines: true, zoom: 1, pcx: 180, pcy: 120, note: '' }),
+exportSvg: () => save('perspective-drawing.svg', svgStr),
+saveFile: () => save('perspective-scene.json', JSON.stringify(scene, null, 2)),
+loadFile: (e) => { const f = e.target.files && e.target.files[0]; if (!f || f.size > 100000) { this.setState({ note: 'Choose a small scene file.' }); return; } const r = new FileReader(); r.onload = () => { try { apply(JSON.parse(r.result)); } catch (err) { this.setState({ note: 'That file is not a valid scene.' }); } }; r.readAsText(f); },
+makeCode: () => { const c = JSON.stringify(scene); this.setState({ code: c, note: 'Scene code ready. Copy it from the box.' }); try { navigator.clipboard.writeText(c).catch(() => {}); } catch (err) {} },
+loadCode: () => { try { apply(JSON.parse(s.code || '')); } catch (err) { this.setState({ note: 'That code is not a valid scene.' }); } },
+setCode: (e) => this.setState({ code: e.target.value }), code: s.code ?? '', note: s.note ?? '',
+labY: eye - 6 / z, labX: vbx + 8 / z, fs: 13 / z,
+setEye: (e) => this.setState({ eye: Number(e.target.value) }),
+setVx: (e) => this.setState({ vx: Number(e.target.value) }),
+toggleLines: () => this.setState({ lines: !lines }),
+az, alt, shadow, shOn, rfOn, rfH: rfOn ? 70 : 0,
+sunX: 180 + Math.cos(a) * 150, sunY: 20 + (80 - alt) * 0.5,
+shLabel: shOn ? 'Hide shadow' : 'Show shadow', rfLabel: rfOn ? 'Hide reflection' : 'Show reflection',
+setAz: (e) => this.setState({ az: Number(e.target.value) }),
+setAlt: (e) => this.setState({ alt: Number(e.target.value) }),
+toggleSh: () => this.setState({ shOn: !shOn }), toggleRf: () => this.setState({ rfOn: !rfOn }),
+_q: 0
+};
+}
+}
+
+window.__dcBoot(Component);
+</script>
+</body>
+</html>
